@@ -72,7 +72,7 @@
   "source_file": "sources.json",
   "ground_truth_file": "ground_truth.json",
   "edits_file": "edits.json",
-  "memory_file": "memory.json",
+  "memory_file": "memory/INDEX.md",
   "manual_intermediates": {
     "evidence_digest_selected": [
       "S1 indicates telehealth usage remains above pre-2020 baseline in behavioral health, rural follow-ups, and chronic-care monitoring.",

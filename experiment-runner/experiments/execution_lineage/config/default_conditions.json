@@ -14,7 +14,11 @@
     "thruwire_fresh_recompute",
     "thruwire_replay_selective_recompute"
   ],
-  "context_strategy": "full_transcript",
+  "context_strategy": "rolling_summary_plus_memory_tool",
+  "loop_summary_trigger_tokens": 80000,
+  "loop_summary_keep_messages": 4,
+  "openai_max_retries": 3,
+  "openai_retry_base_delay_ms": 1000,
   "model": {
     "provider": "openai",
     "name": "${EXPERIMENT_MODEL:-gpt-5.2}",

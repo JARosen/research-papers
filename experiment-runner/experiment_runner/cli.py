@@ -56,6 +56,37 @@ def _graph_condition_payload(results: dict[str, Any], fresh_key: str, replay_key
     return results.get(fresh_key), results.get(replay_key)
 
 
+def _build_paired_comparisons(results: dict[str, Any]) -> dict[str, Any]:
+    graph_fresh = results.get("simple_dag_fresh_recompute") or results.get("thruwire_fresh_recompute")
+    graph_update = results.get("simple_dag_replay_selective_recompute") or results.get("thruwire_replay_selective_recompute")
+    paired: dict[str, Any] = {}
+    if results.get("loop_centric_fresh") and graph_fresh:
+        paired["loop_fresh_vs_dag_fresh"] = {
+            "left_condition": "loop_centric_fresh",
+            "right_condition": graph_fresh.get("condition_name"),
+            "rq": ["RQ1", "RQ3"],
+        }
+    if results.get("loop_centric_update_final_only") and graph_update:
+        paired["loop_update_final_only_vs_dag_update"] = {
+            "left_condition": "loop_centric_update_final_only",
+            "right_condition": graph_update.get("condition_name"),
+            "rq": ["RQ2", "RQ3"],
+        }
+    if results.get("loop_centric_update_with_intermediates") and graph_update:
+        paired["loop_update_with_intermediates_vs_dag_update"] = {
+            "left_condition": "loop_centric_update_with_intermediates",
+            "right_condition": graph_update.get("condition_name"),
+            "rq": ["RQ2", "RQ3"],
+        }
+    if results.get("loop_centric_with_procedural_memory") and graph_update:
+        paired["loop_memory_vs_dag_update"] = {
+            "left_condition": "loop_centric_with_procedural_memory",
+            "right_condition": graph_update.get("condition_name"),
+            "rq": ["RQ2", "RQ3"],
+        }
+    return paired
+
+
 def _build_summary(results: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
     loop_fresh = results.get("loop_centric_fresh")
@@ -101,6 +132,7 @@ def _build_summary(results: dict[str, Any]) -> dict[str, Any]:
         "judge_modes": ["output_only", "traceability"],
         "judge_bundle_builder": "experiments/execution_lineage/scripts/build_judge_bundle.py",
     }
+    summary["paired_comparisons"] = _build_paired_comparisons(results)
     return summary
 
 

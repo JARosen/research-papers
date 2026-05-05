@@ -10,4 +10,7 @@ def blank_memory_metadata(*, uses_memory: bool) -> dict[str, Any]:
         "memory_entry_ids_retrieved": [],
         "retrieval_queries": [],
         "retrieved_context": [],
+        "memory_index": "",
+        "memory_tool_calls": [],
+        "rolling_summary_triggered": False,
     }

@@ -67,6 +67,10 @@ class RunnerConfig:
     chatgpt_cdp_url: str
     openai_eval_model: str
     run_openai_evaluation: bool
+    loop_summary_trigger_tokens: int
+    loop_summary_keep_messages: int
+    openai_max_retries: int
+    openai_retry_base_delay_ms: int
     raw_config: dict[str, Any]
 
     @classmethod
@@ -104,6 +108,16 @@ class RunnerConfig:
             chatgpt_cdp_url=os.getenv("CHATGPT_CDP_URL", "http://127.0.0.1:9222"),
             openai_eval_model=os.getenv("OPENAI_EVAL_MODEL", "gpt-5-mini"),
             run_openai_evaluation=os.getenv("RUN_OPENAI_EVALUATION", "1").lower() in {"1", "true", "yes"},
+            loop_summary_trigger_tokens=int(
+                os.getenv("LOOP_SUMMARY_TRIGGER_TOKENS", str(file_config.get("loop_summary_trigger_tokens", 80000)))
+            ),
+            loop_summary_keep_messages=int(
+                os.getenv("LOOP_SUMMARY_KEEP_MESSAGES", str(file_config.get("loop_summary_keep_messages", 4)))
+            ),
+            openai_max_retries=int(os.getenv("OPENAI_MAX_RETRIES", str(file_config.get("openai_max_retries", 3)))),
+            openai_retry_base_delay_ms=int(
+                os.getenv("OPENAI_RETRY_BASE_DELAY_MS", str(file_config.get("openai_retry_base_delay_ms", 1000)))
+            ),
             raw_config=file_config,
         )
 
@@ -111,15 +125,15 @@ class RunnerConfig:
 def load_default_experiment_config() -> dict[str, Any]:
     if DEFAULT_CONFIG_PATH.exists():
         return json.loads(DEFAULT_CONFIG_PATH.read_text())
-        return {
-            "default_conditions": [
-                "loop_centric_fresh",
-                "loop_centric_update_final_only",
-                "loop_centric_update_with_intermediates",
-                "loop_centric_with_procedural_memory",
-                "simple_dag_fresh_recompute",
-                "simple_dag_replay_selective_recompute",
-            ],
+    return {
+        "default_conditions": [
+            "loop_centric_fresh",
+            "loop_centric_update_final_only",
+            "loop_centric_update_with_intermediates",
+            "loop_centric_with_procedural_memory",
+            "simple_dag_fresh_recompute",
+            "simple_dag_replay_selective_recompute",
+        ],
         "optional_conditions": [
             "chatgpt_product_selenium",
         ],
@@ -127,7 +141,11 @@ def load_default_experiment_config() -> dict[str, Any]:
             "thruwire_fresh_recompute",
             "thruwire_replay_selective_recompute",
         ],
-        "context_strategy": "full_transcript",
+        "context_strategy": "rolling_summary_plus_memory_tool",
+        "loop_summary_trigger_tokens": 4000,
+        "loop_summary_keep_messages": 4,
+        "openai_max_retries": 3,
+        "openai_retry_base_delay_ms": 1000,
         "model": {
             "provider": "openai",
             "name": "gpt-5.2",

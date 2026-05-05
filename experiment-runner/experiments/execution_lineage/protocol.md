@@ -102,10 +102,10 @@ The default scientific comparison is:
 - same provider/model family under a loop-centric harness
 - versus a minimal in-repo execution-lineage DAG harness
 
-The loop-centric harness carries workflow state through prompt text,
-conversation history, and optional transparent memory retrieval. It does not
-use executable dependency edges, execution identities, replay, or automatic
-invalidation.
+The loop-centric harness carries workflow state through prompt text, compact
+conversation history, rolling summaries, and optional transparent memory
+retrieval. It does not use executable dependency edges, execution identities,
+replay, or automatic invalidation.
 
 The simple DAG harness uses the same model client and prompt assets as the
 loop-centric harness, but routes work through explicit stage dependencies,
@@ -128,8 +128,21 @@ The current default model alignment is:
 Judge/evaluator models may differ and may be later.
 
 The procedural-memory baseline stores recipe-as-text and prior artifacts as
-transparent memory entries. It does not attempt to replicate proprietary
-product memory.
+transparent markdown memory entries behind `memory.list()` and `memory.get(id)`.
+It does not attempt to replicate proprietary product memory.
+
+## Reporting Structure
+
+Although the raw experiment records multiple loop-centric baselines and two DAG
+execution modes, the recommended reporting structure is paired:
+
+- `loop_fresh_vs_dag_fresh`
+- `loop_update_final_only_vs_dag_update`
+- `loop_update_with_intermediates_vs_dag_update`
+- `loop_memory_vs_dag_update`
+
+This avoids presenting the experiment as an unhelpful `4 vs 2` condition grid
+while preserving the stronger challenge baselines.
 
 ## Workflow Graph
 
@@ -149,7 +162,7 @@ The final memo should depend only on declared current artifacts, especially:
 - `recommendation_criteria.current`
 - `evidence_digest.selected`
 
-It should not receive the full transcript or all raw sources unless the
+It should not receive the full raw transcript or all raw sources unless the
 condition explicitly tests that behavior.
 
 ## Controlled Hazards

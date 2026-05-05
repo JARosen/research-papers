@@ -40,8 +40,15 @@ class SimpleDAGHarnessRunner:
         self.cache: dict[str, CachedArtifact] = {}
 
     def run_all(self, task: ContextDisciplineTask, repeats: int) -> dict[str, HarnessRunResult]:
-        replay_runs = [self._run_graph(task, updated=False, allow_replay=True) for _ in range(repeats)]
-        fresh_runs = [self._run_graph(task, updated=False, allow_replay=False) for _ in range(repeats)]
+        replay_runs = []
+        for index in range(repeats):
+            print(f"[dag] replay-capable run {index + 1}/{repeats}")
+            replay_runs.append(self._run_graph(task, updated=False, allow_replay=True))
+        fresh_runs = []
+        for index in range(repeats):
+            print(f"[dag] fresh recompute run {index + 1}/{repeats}")
+            fresh_runs.append(self._run_graph(task, updated=False, allow_replay=False))
+        print("[dag] update run with selective recompute")
         updated_run = self._run_graph(task, updated=True, allow_replay=True)
 
         preserved = []
@@ -86,10 +93,12 @@ class SimpleDAGHarnessRunner:
         run_start = time.perf_counter()
         source_text = task.render_sources(updated=updated)
         edit = task.primary_edit if updated else None
+        instructions = "You are operating a DAG-scoped workflow. Use only the declared dependency artifacts and current inputs for the current stage."
 
         artifacts_by_stage: dict[str, CachedArtifact] = {}
         execution_sources_by_step: dict[str, dict[str, Any]] = {}
         intermediate_outputs: list[dict[str, Any]] = []
+        prompt_response_log: list[dict[str, Any]] = []
         total_input_tokens = 0
         total_output_tokens = 0
         model_calls = 0
@@ -106,11 +115,13 @@ class SimpleDAGHarnessRunner:
             )
             if allow_replay and stage_identity in self.cache:
                 artifact = self.cache[stage_identity]
+                print(f"[dag] reused {spec['name']}")
                 execution_sources_by_step[spec["name"]] = {
                     "execution_source": "replay",
                     "from_execution_cache": True,
                 }
             else:
+                print(f"[dag] computing {spec['name']}")
                 user_prompt = self._build_stage_prompt(
                     task=task,
                     stage_name=spec["name"],
@@ -119,26 +130,53 @@ class SimpleDAGHarnessRunner:
                     dependency_artifacts=dependency_artifacts,
                     edit=edit,
                 )
-                transcript.add(
+                input_items = [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": user_prompt,
+                    }
+                ]
+                transcript.add_message(
                     role="user",
                     content=user_prompt,
                     step_name=spec["name"],
                     model=self.config.model_name,
                     provider=self.config.model_provider,
                 )
-                response = self.model_client.generate(prompt=user_prompt, step_name=spec["name"])
+                response = self.model_client.generate_items(
+                    instructions=instructions,
+                    input_items=input_items,
+                    step_name=spec["name"],
+                )
+                print(
+                    f"[dag] completed {spec['name']} "
+                    f"({response['input_tokens']} in / {response['output_tokens']} out, {response['duration_ms']} ms)"
+                )
                 model_calls += 1
                 total_input_tokens += response["input_tokens"]
                 total_output_tokens += response["output_tokens"]
-                transcript.add(
-                    role="assistant",
-                    content=response["text"],
+                transcript.add_output_items(
+                    items=response["output_items"],
                     step_name=spec["name"],
                     model=self.config.model_name,
                     provider=self.config.model_provider,
                     input_tokens=response["input_tokens"],
                     output_tokens=response["output_tokens"],
                     duration_ms=response["duration_ms"],
+                )
+                prompt_response_log.append(
+                    {
+                        "step_name": spec["name"],
+                        "instructions": instructions,
+                        "input_items": input_items,
+                        "output_items": response["output_items"],
+                        "response": response["text"],
+                        "input_tokens": response["input_tokens"],
+                        "output_tokens": response["output_tokens"],
+                        "duration_ms": response["duration_ms"],
+                        "response_id": response["response_id"],
+                    }
                 )
                 artifact = CachedArtifact(
                     identity=stage_identity,
@@ -182,13 +220,16 @@ class SimpleDAGHarnessRunner:
             "final_output": artifacts_by_stage["final_memo"].content,
             "intermediate_outputs": intermediate_outputs,
             "conversation_transcript": transcript.to_list(),
-            "prompt_response_log": transcript.to_list(),
+            "prompt_response_log": prompt_response_log,
             "memory_metadata": {
                 "uses_memory": False,
                 "memory_entry_ids_available": [],
                 "memory_entry_ids_retrieved": [],
                 "retrieval_queries": [],
                 "retrieved_context": [],
+                "memory_index": "",
+                "memory_tool_calls": [],
+                "rolling_summary_triggered": False,
             },
             "execution_metadata": {
                 "harness_type": "simple_dag",

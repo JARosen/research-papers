@@ -138,6 +138,20 @@ Result bundles should capture, at minimum:
 - transcripts and prompt/response logs for loop-centric runs
 - memory retrieval logs for the procedural-memory baseline
 
+## Loop Context Strategy
+
+The loop baseline no longer replays the full raw transcript into every later
+step. It now uses:
+
+- compact live conversation history
+- a rolling summary once estimated history crosses `4000` tokens
+- a transparent markdown memory wiki with `INDEX.md`, `memory.list()`, and `memory.get(id)`
+- full prompt logs retained only for audit
+
+The procedural-memory baseline is intentionally file-backed and transparent. It
+is not semantic retrieval and it does not use DAG dependency knowledge to
+pre-scope artifacts.
+
 The primary scientific comparison is loop-centric execution versus the in-repo
 simple DAG harness. ThruWire remains available in code as a secondary
 confirmation path, but it is disabled in the default config for the first pass.
@@ -151,6 +165,19 @@ cd /Users/dev/Documents/GitHub/research-papers/experiment-runner
   --output-dir results/execution-lineage-with-thruwire \
   --conditions loop_centric_fresh loop_centric_update_final_only loop_centric_update_with_intermediates loop_centric_with_procedural_memory simple_dag_fresh_recompute simple_dag_replay_selective_recompute thruwire_fresh_recompute thruwire_replay_selective_recompute
 ```
+
+## Comparison Structure
+
+The default experiment is reported as paired comparisons rather than as a flat
+`4 vs 2` condition inventory:
+
+- `loop_fresh_vs_dag_fresh`
+- `loop_update_final_only_vs_dag_update`
+- `loop_update_with_intermediates_vs_dag_update`
+- `loop_memory_vs_dag_update`
+
+The raw run still records all underlying conditions, but summaries and scoring
+are organized around these matchups.
 
 Fresh-run variation under `RQ1` is diagnostic. The primary `RQ1` criterion is
 exact replay under unchanged execution identity.

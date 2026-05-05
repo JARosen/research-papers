@@ -38,6 +38,29 @@ def main() -> None:
     claim_counts = _claim_counts(judged)
     tension_counts = _tension_counts(judged)
 
+    paired_comparisons = {
+        "loop_fresh_vs_dag_fresh": {
+            "left_condition": "loop_centric_fresh",
+            "right_condition": "simple_dag_fresh_recompute",
+            "comparison_focus": ["fresh variation", "fresh semantic overlap"],
+        },
+        "loop_update_final_only_vs_dag_update": {
+            "left_condition": "loop_centric_update_final_only",
+            "right_condition": "simple_dag_replay_selective_recompute",
+            "comparison_focus": ["update locality", "claim churn", "regression"],
+        },
+        "loop_update_with_intermediates_vs_dag_update": {
+            "left_condition": "loop_centric_update_with_intermediates",
+            "right_condition": "simple_dag_replay_selective_recompute",
+            "comparison_focus": ["strong baseline update locality", "claim churn", "regression"],
+        },
+        "loop_memory_vs_dag_update": {
+            "left_condition": "loop_centric_with_procedural_memory",
+            "right_condition": "simple_dag_replay_selective_recompute",
+            "comparison_focus": ["memory-augmented update behavior", "current-state control", "invalid reuse"],
+        },
+    }
+
     rq_metrics = {
         "RQ1": {
             "exact_artifact_hash_match_rate": (
@@ -99,6 +122,7 @@ def main() -> None:
                 "invalid_downstream_reuse_rate": judged["summary_scores"].get("invalid_downstream_reuse_rate"),
             },
         },
+        "paired_comparisons": paired_comparisons,
     }
     write_json(args.output_file, rq_metrics)
 
