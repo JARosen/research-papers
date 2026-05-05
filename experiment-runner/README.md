@@ -8,7 +8,7 @@ comparison between:
 
 ## What it does
 
-- Runs repeated baseline trials against ChatGPT via Playwright
+- Runs repeated baseline trials against ChatGPT by attaching to an already running Chrome session
 - Runs repeated graph trials against ThruWire via the sibling `verification` repo
 - Applies one controlled upstream edit
 - Re-runs both conditions
@@ -20,8 +20,7 @@ comparison between:
 2. Install dependencies:
 
 ```bash
-pip install -e .
-python -m playwright install chromium
+pip install .
 ```
 
 3. Ensure `.env` exists in this directory.
@@ -32,14 +31,28 @@ This runner is designed to reuse the same env values as the sibling
 
 ## ChatGPT authentication
 
-Bootstrap an authenticated persistent browser profile once:
+Do not launch Chrome through Playwright directly for ChatGPT authentication.
+Instead, start a cloned Chrome profile with remote debugging enabled and let
+the runner attach to it.
+
+See:
+
+- [docs/chatgpt-browser-setup.md](/Users/dev/Documents/GitHub/research-papers/experiment-runner/docs/chatgpt-browser-setup.md)
+
+To verify the browser is attachable:
+
+```bash
+curl http://127.0.0.1:9222/json/version
+```
+
+Optional sanity check before a full run:
 
 ```bash
 python -m experiment_runner.cli bootstrap-chatgpt
 ```
 
-This opens a persistent Playwright Chromium profile under `.auth/`. Log in
-manually, solve any challenge, then return to the terminal and press Enter.
+This attaches to the already-running Chrome session and opens ChatGPT so you can
+confirm the logged-in state manually.
 
 ## Run the experiment
 
@@ -47,12 +60,15 @@ manually, solve any challenge, then return to the terminal and press Enter.
 python -m experiment_runner.cli run \
   --task-file tasks/sample_task.json \
   --repeats 5 \
-  --output-dir results/sample-run
+  --output-dir results/sample-run \
+  --arms both
 ```
 
 ## Notes
 
 - The ChatGPT side is intentionally brittle and UI-dependent.
+- If Selenium cannot find `New chat` or the `Temporary` pill, the runner pauses
+  and asks you to perform that step manually before continuing.
 - The ThruWire side uses the API patterns already present in the sibling
   `verification` harness.
 - This runner is meant for collecting paper data, not for producing a stable

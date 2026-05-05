@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -33,17 +34,29 @@ def required_env(name: str) -> str:
 class RunnerConfig:
     chatgpt_url: str
     chatgpt_profile_dir: Path
+    chatgpt_profile_name: Optional[str]
     chatgpt_timeout_s: float
     thruwire_model_provider: str
     keep_thruwire_project: bool
+    chatgpt_browser_channel: str
+    chatgpt_cdp_url: str
 
     @classmethod
     def from_env(cls) -> "RunnerConfig":
         load_environment()
+        profile_path = Path(
+            os.getenv(
+                "CHATGPT_CHROME_PROFILE_PATH",
+                "/Users/dev/Library/Application Support/Google/Chrome/Profile 4",
+            )
+        )
         return cls(
             chatgpt_url=os.getenv("CHATGPT_URL", "https://chatgpt.com/"),
-            chatgpt_profile_dir=REPO_DIR / ".auth" / "chatgpt-profile",
+            chatgpt_profile_dir=profile_path.parent,
+            chatgpt_profile_name=profile_path.name,
             chatgpt_timeout_s=float(os.getenv("CHATGPT_TIMEOUT_S", "240")),
             thruwire_model_provider=os.getenv("THRUWIRE_EXPERIMENT_MODEL_PROVIDER", "openai"),
             keep_thruwire_project=os.getenv("THRUWIRE_KEEP_PROJECT", "").lower() in {"1", "true", "yes"},
+            chatgpt_browser_channel=os.getenv("CHATGPT_BROWSER_CHANNEL", "chrome"),
+            chatgpt_cdp_url=os.getenv("CHATGPT_CDP_URL", "http://127.0.0.1:9222"),
         )

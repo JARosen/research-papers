@@ -2,43 +2,56 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
 
 from .config import RunnerConfig
 
 try:
-    from playwright.sync_api import BrowserContext, Page, TimeoutError as PlaywrightTimeoutError, sync_playwright
-except Exception:  # pragma: no cover - lazy import for environments without Playwright
-    BrowserContext = Page = object  # type: ignore[assignment,misc]
-    PlaywrightTimeoutError = Exception  # type: ignore[assignment]
-    sync_playwright = None  # type: ignore[assignment]
+    from selenium import webdriver
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver import ChromeOptions
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.remote.webdriver import WebDriver
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
+except Exception:  # pragma: no cover - import checked at runtime
+    webdriver = None  # type: ignore[assignment]
+    TimeoutException = Exception  # type: ignore[assignment]
+    ChromeOptions = object  # type: ignore[assignment,misc]
+    By = Keys = WebDriver = WebDriverWait = EC = object  # type: ignore[assignment,misc]
 
 
 ASSISTANT_SELECTORS = [
-    "[data-message-author-role='assistant']",
-    "article [data-message-author-role='assistant']",
-    "main article",
+    (By.CSS_SELECTOR, "[data-message-author-role='assistant']"),
+    (By.CSS_SELECTOR, "article [data-message-author-role='assistant']"),
+    (By.CSS_SELECTOR, "main article"),
 ]
 COMPOSER_SELECTORS = [
-    "#prompt-textarea",
-    "textarea",
-    "div[contenteditable='true']#prompt-textarea",
-    "div[contenteditable='true']",
-]
-SEND_BUTTON_SELECTORS = [
-    "button[data-testid='send-button']",
-    "button[aria-label*='Send']",
-    "button:has(svg)",
-]
-STOP_BUTTON_SELECTORS = [
-    "button[data-testid='stop-button']",
-    "button[aria-label*='Stop']",
+    (By.CSS_SELECTOR, "#prompt-textarea"),
+    (By.CSS_SELECTOR, "textarea"),
+    (By.CSS_SELECTOR, "div[contenteditable='true']#prompt-textarea"),
+    (By.CSS_SELECTOR, "div[contenteditable='true']"),
 ]
 NEW_CHAT_SELECTORS = [
-    "a[href='/']",
-    "button:has-text('New chat')",
-    "[data-testid='new-chat-button']",
+    (By.CSS_SELECTOR, "a[href='/']"),
+    (By.XPATH, "//button[contains(., 'New chat')]"),
+    (By.CSS_SELECTOR, "[data-testid='new-chat-button']"),
+]
+TEMPORARY_SELECTORS = [
+    (By.XPATH, "//button[contains(., 'Temporary')]"),
+    (By.XPATH, "//*[contains(@aria-label, 'Temporary')]"),
+]
+TEMPORARY_ACTIVE_SELECTORS = [
+    (By.XPATH, "//*[contains(., 'Temporary Chat')]"),
+    (By.XPATH, "//*[contains(., 'Temporary')]"),
+]
+SEND_BUTTON_SELECTORS = [
+    (By.CSS_SELECTOR, "button[data-testid='send-button']"),
+    (By.XPATH, "//button[contains(@aria-label, 'Send')]"),
+]
+STOP_BUTTON_SELECTORS = [
+    (By.CSS_SELECTOR, "button[data-testid='stop-button']"),
+    (By.XPATH, "//button[contains(@aria-label, 'Stop')]"),
 ]
 
 
@@ -53,146 +66,221 @@ class ChatRunResult:
 class ChatGPTBaselineRunner:
     def __init__(self, config: RunnerConfig) -> None:
         self.config = config
-        if sync_playwright is None:
-            raise RuntimeError("Playwright is not installed. Run `pip install -e .` first.")
+        if webdriver is None:
+            raise RuntimeError("Selenium is not installed. Run `pip install .` first.")
 
     def bootstrap_login(self) -> None:
-        self.config.chatgpt_profile_dir.mkdir(parents=True, exist_ok=True)
-        with sync_playwright() as playwright:
-            context = playwright.chromium.launch_persistent_context(
-                str(self.config.chatgpt_profile_dir),
-                headless=False,
+        driver = self._connect_driver()
+        try:
+            print(f"Opening ChatGPT at {self.config.chatgpt_url} ...")
+            driver.get(self.config.chatgpt_url)
+            print(
+                "Attached to existing Chrome over the remote debugging port. "
+                "Verify you are logged in, then press Enter here to continue."
             )
-            page = context.new_page()
-            page.goto(self.config.chatgpt_url)
-            print("Complete ChatGPT login in the opened browser, then press Enter here to continue.")
             input()
-            context.storage_state(path=str(self.config.chatgpt_profile_dir / "storage_state.json"))
-            context.close()
+        finally:
+            self._detach_driver(driver)
 
     def run_repeated_trials(self, prompts: list[str]) -> list[ChatRunResult]:
+        driver = self._connect_driver()
         results: list[ChatRunResult] = []
-        with sync_playwright() as playwright:
-            context = playwright.chromium.launch_persistent_context(
-                str(self.config.chatgpt_profile_dir),
-                headless=False,
-            )
-            page = context.new_page()
-            page.goto(self.config.chatgpt_url)
-            for prompt in prompts:
-                self._start_new_chat(page)
-                results.append(self._submit_prompt(page, prompt))
-            context.close()
-        return results
+        try:
+            print(f"Opening ChatGPT at {self.config.chatgpt_url} ...")
+            driver.get(self.config.chatgpt_url)
+            for index, prompt in enumerate(prompts, start=1):
+                print(f"[chatgpt] starting repeated run {index}/{len(prompts)}")
+                self._start_new_chat(driver)
+                self._ensure_temporary_chat(driver)
+                results.append(self._submit_prompt(driver, prompt))
+                print(
+                    f"[chatgpt] completed repeated run {index}/{len(prompts)} "
+                    f"in {results[-1].duration_s:.2f}s"
+                )
+            return results
+        finally:
+            self._detach_driver(driver)
 
     def run_initial_and_update(self, initial_prompt: str, update_prompt: str) -> tuple[ChatRunResult, ChatRunResult]:
-        with sync_playwright() as playwright:
-            context = playwright.chromium.launch_persistent_context(
-                str(self.config.chatgpt_profile_dir),
-                headless=False,
-            )
-            page = context.new_page()
-            page.goto(self.config.chatgpt_url)
-            self._start_new_chat(page)
-            initial = self._submit_prompt(page, initial_prompt)
-            updated = self._submit_prompt(page, update_prompt)
-            context.close()
-        return initial, updated
+        driver = self._connect_driver()
+        try:
+            print(f"Opening ChatGPT at {self.config.chatgpt_url} ...")
+            driver.get(self.config.chatgpt_url)
+            print("[chatgpt] starting initial run for update scenario")
+            self._start_new_chat(driver)
+            self._ensure_temporary_chat(driver)
+            initial = self._submit_prompt(driver, initial_prompt)
+            print(f"[chatgpt] completed initial run for update scenario in {initial.duration_s:.2f}s")
+            print("[chatgpt] submitting upstream update prompt")
+            updated = self._submit_prompt(driver, update_prompt)
+            print(f"[chatgpt] completed updated run in {updated.duration_s:.2f}s")
+            return initial, updated
+        finally:
+            self._detach_driver(driver)
 
-    def _start_new_chat(self, page: Page) -> None:
-        for selector in NEW_CHAT_SELECTORS:
-            locator = page.locator(selector).first
+    def _connect_driver(self) -> WebDriver:
+        print("Attaching Selenium to existing Chrome at 127.0.0.1:9222 ...")
+        options = ChromeOptions()
+        options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        return webdriver.Chrome(options=options)
+
+    def _detach_driver(self, driver: WebDriver) -> None:
+        try:
+            driver.service.stop()
+        except Exception:
+            pass
+
+    def _start_new_chat(self, driver: WebDriver) -> None:
+        print("[chatgpt] opening a new chat")
+        for by, selector in NEW_CHAT_SELECTORS:
             try:
-                locator.wait_for(timeout=2_000)
-                locator.click()
-                page.wait_for_timeout(1_500)
+                element = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((by, selector)))
+                element.click()
+                time.sleep(1.5)
+                print(f"[chatgpt] clicked new chat via selector {selector!r}")
                 return
             except Exception:
                 continue
-        page.goto(self.config.chatgpt_url)
-        page.wait_for_timeout(1_500)
+        print("[chatgpt] could not find explicit new chat button")
+        input("[chatgpt] Open a new chat manually in Chrome, then press Enter here to continue...")
+        time.sleep(1.0)
 
-    def _submit_prompt(self, page: Page, prompt: str) -> ChatRunResult:
-        composer = self._find_composer(page)
-        previous_count = self._assistant_count(page)
+    def _ensure_temporary_chat(self, driver: WebDriver) -> None:
+        if self._is_temporary_chat_active(driver):
+            print("[chatgpt] temporary chat already active")
+            return
+        print("[chatgpt] enabling temporary chat")
+        for by, selector in TEMPORARY_SELECTORS:
+            try:
+                element = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((by, selector)))
+                element.click()
+                time.sleep(1.5)
+                if self._is_temporary_chat_active(driver):
+                    print(f"[chatgpt] temporary chat enabled via selector {selector!r}")
+                    return
+            except Exception:
+                continue
+        input("[chatgpt] Could not enable Temporary automatically. Click the Temporary pill manually, then press Enter here...")
+        time.sleep(1.0)
+        if self._is_temporary_chat_active(driver):
+            print("[chatgpt] temporary chat confirmed after manual enable")
+            return
+        raise RuntimeError("Temporary Chat still does not appear active after manual confirmation.")
+
+    def _is_temporary_chat_active(self, driver: WebDriver) -> bool:
+        for by, selector in TEMPORARY_ACTIVE_SELECTORS:
+            try:
+                elements = driver.find_elements(by, selector)
+                if any(element.is_displayed() for element in elements):
+                    return True
+            except Exception:
+                continue
+        return False
+
+    def _submit_prompt(self, driver: WebDriver, prompt: str) -> ChatRunResult:
+        previous_count = self._assistant_count(driver)
+        composer = self._find_composer(driver)
         start = time.perf_counter()
-        try:
-            composer.fill(prompt)  # type: ignore[union-attr]
-        except Exception:
-            composer.click()  # type: ignore[union-attr]
-            composer.press_sequentially(prompt)  # type: ignore[union-attr]
-        self._click_send(page)
-        final_text = self._wait_for_last_assistant_message(page, previous_count=previous_count)
+        print(f"[chatgpt] submitting prompt ({len(prompt)} chars)")
+        self._set_composer_text(driver, composer, prompt)
+        self._click_send(driver, composer)
+        print("[chatgpt] prompt submitted, waiting for assistant response")
+        final_text = self._wait_for_last_assistant_message(driver, previous_count=previous_count)
         duration_s = time.perf_counter() - start
+        print(f"[chatgpt] received assistant response ({len(final_text)} chars)")
         return ChatRunResult(
             prompt=prompt,
             final_text=final_text,
             duration_s=duration_s,
-            conversation_url=page.url,
+            conversation_url=driver.current_url,
         )
 
-    def _find_composer(self, page: Page):
-        for selector in COMPOSER_SELECTORS:
-            locator = page.locator(selector).first
+    def _find_composer(self, driver: WebDriver):
+        last_exc = None
+        for by, selector in COMPOSER_SELECTORS:
             try:
-                locator.wait_for(timeout=4_000)
-                return locator
+                return WebDriverWait(driver, 10).until(EC.presence_of_element_located((by, selector)))
+            except Exception as exc:
+                last_exc = exc
+                continue
+        raise RuntimeError(f"Could not find ChatGPT composer: {last_exc!r}")
+
+    def _click_send(self, driver: WebDriver, composer) -> None:
+        for by, selector in SEND_BUTTON_SELECTORS:
+            try:
+                button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((by, selector)))
+                button.click()
+                print(f"[chatgpt] clicked send via selector {selector!r}")
+                return
             except Exception:
                 continue
-        raise RuntimeError("Could not find ChatGPT composer.")
+        print("[chatgpt] send button not found, falling back to Enter key")
+        composer.send_keys(Keys.ENTER)
 
-    def _click_send(self, page: Page) -> None:
-        for selector in SEND_BUTTON_SELECTORS:
-            locator = page.locator(selector).first
-            try:
-                if locator.is_visible(timeout=2_000):  # type: ignore[call-arg]
-                    locator.click()
-                    return
-            except Exception:
-                continue
-        composer = self._find_composer(page)
-        composer.press("Enter")  # type: ignore[union-attr]
+    def _set_composer_text(self, driver: WebDriver, composer, prompt: str) -> None:
+        print("[chatgpt] filling composer directly to avoid newline submission issues")
+        driver.execute_script(
+            """
+            const el = arguments[0];
+            const text = arguments[1];
+            el.focus();
+            if (el.tagName === 'TEXTAREA') {
+              el.value = text;
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+              return;
+            }
+            if (el.isContentEditable) {
+              el.textContent = text;
+              el.dispatchEvent(new InputEvent('input', {
+                bubbles: true,
+                inputType: 'insertText',
+                data: text
+              }));
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+              return;
+            }
+            el.value = text;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            """,
+            composer,
+            prompt,
+        )
+        time.sleep(0.5)
 
-    def _assistant_locator(self, page: Page):
-        for selector in ASSISTANT_SELECTORS:
-            locator = page.locator(selector)
-            try:
-                if locator.count() > 0:
-                    return locator
-            except Exception:
-                continue
-        return page.locator(ASSISTANT_SELECTORS[0])
+    def _assistant_elements(self, driver: WebDriver):
+        for by, selector in ASSISTANT_SELECTORS:
+            elements = driver.find_elements(by, selector)
+            if elements:
+                return elements
+        return []
 
-    def _assistant_count(self, page: Page) -> int:
-        locator = self._assistant_locator(page)
-        try:
-            return locator.count()
-        except Exception:
-            return 0
+    def _assistant_count(self, driver: WebDriver) -> int:
+        return len(self._assistant_elements(driver))
 
-    def _wait_for_last_assistant_message(self, page: Page, *, previous_count: int) -> str:
+    def _wait_for_last_assistant_message(self, driver: WebDriver, *, previous_count: int) -> str:
         deadline = time.monotonic() + self.config.chatgpt_timeout_s
         last_text = ""
         stable_polls = 0
         while time.monotonic() < deadline:
-            locator = self._assistant_locator(page)
-            count = locator.count()
-            if count > previous_count:
-                current = locator.nth(count - 1).inner_text().strip()
-                if current and current == last_text and not self._has_stop_button(page):
+            elements = self._assistant_elements(driver)
+            if len(elements) > previous_count:
+                current = elements[-1].text.strip()
+                if current and current == last_text and not self._has_stop_button(driver):
                     stable_polls += 1
                     if stable_polls >= 3:
                         return current
                 else:
                     last_text = current
                     stable_polls = 0
-            page.wait_for_timeout(2_000)
+            time.sleep(2)
         raise RuntimeError("Timed out waiting for ChatGPT response.")
 
-    def _has_stop_button(self, page: Page) -> bool:
-        for selector in STOP_BUTTON_SELECTORS:
+    def _has_stop_button(self, driver: WebDriver) -> bool:
+        for by, selector in STOP_BUTTON_SELECTORS:
             try:
-                if page.locator(selector).first.is_visible(timeout=500):  # type: ignore[call-arg]
+                elements = driver.find_elements(by, selector)
+                if any(element.is_displayed() for element in elements):
                     return True
             except Exception:
                 continue

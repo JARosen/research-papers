@@ -35,6 +35,7 @@ class ThruWireExperimentRunner:
         load_environment()
 
     async def run_task(self, task: ResearchTask, repeats: int) -> dict[str, Any]:
+        print("[thruwire] authenticating ...")
         access_token = await firebase_login()
         service_config = ServiceConfig.from_env()
         client = ThruWireClient(
@@ -43,15 +44,32 @@ class ThruWireExperimentRunner:
             model_provider=self.config.thruwire_model_provider,
             timeout_s=90.0,
         )
+        print("[thruwire] creating project ...")
         project = await client.create_project(make_name(f"paper-experiment-{task.task_id}"))
         try:
+            print(f"[thruwire] created project {project.id}")
+            print("[thruwire] creating initial workflow ...")
             version_id = await self._create_workflow(client, project.id, task)
+            print(f"[thruwire] compiled initial workflow version {version_id}")
             initial_results = []
-            for _ in range(repeats):
-                initial_results.append(await self._run_brief(client, project.id, version_id))
+            for index in range(repeats):
+                print(f"[thruwire] starting repeated run {index + 1}/{repeats}")
+                result = await self._run_brief(client, project.id, version_id)
+                initial_results.append(result)
+                print(
+                    f"[thruwire] completed repeated run {index + 1}/{repeats} "
+                    f"in {result.duration_s:.2f}s with {len(result.executed_steps)} executed steps"
+                )
 
+            print("[thruwire] applying upstream source update ...")
             updated_version_id = await self._update_sources(client, project.id, task)
+            print(f"[thruwire] compiled updated workflow version {updated_version_id}")
+            print("[thruwire] starting updated run")
             updated_result = await self._run_brief(client, project.id, updated_version_id)
+            print(
+                f"[thruwire] completed updated run in {updated_result.duration_s:.2f}s "
+                f"with {len(updated_result.executed_steps)} executed steps"
+            )
 
             return {
                 "project_id": project.id,
@@ -62,6 +80,7 @@ class ThruWireExperimentRunner:
             }
         finally:
             if not self.config.keep_thruwire_project:
+                print(f"[thruwire] deleting project {project.id}")
                 await client.delete_project(project.id)
             await client.close()
 

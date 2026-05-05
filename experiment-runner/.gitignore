@@ -1,5 +1,6 @@
 .env
 .auth/
+.chrome-user-data/
 .venv/
 results/
 __pycache__/
