@@ -8,6 +8,7 @@ dependencies = [
   "playwright>=1.52.0",
   "python-dotenv>=1.0.1",
   "selenium>=4.31.0",
+  "openai>=1.99.0",
 ]
 
 [build-system]

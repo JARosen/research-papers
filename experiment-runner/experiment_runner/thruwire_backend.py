@@ -21,12 +21,14 @@ from verification.payload_checks import extract_final_text  # type: ignore[impor
 
 @dataclass
 class ThruWireRunResult:
+    mode: str
     version_id: str
     final_text: str
     duration_s: float
     executed_steps: list[tuple[str, str]]
     run_execution_identity: Optional[str]
     project_id: str
+    execution_sources_by_step: dict[str, dict[str, Any]]
 
 
 class ThruWireExperimentRunner:
@@ -51,21 +53,31 @@ class ThruWireExperimentRunner:
             print("[thruwire] creating initial workflow ...")
             version_id = await self._create_workflow(client, project.id, task)
             print(f"[thruwire] compiled initial workflow version {version_id}")
-            initial_results = []
+            replay_results = []
             for index in range(repeats):
-                print(f"[thruwire] starting repeated run {index + 1}/{repeats}")
-                result = await self._run_brief(client, project.id, version_id)
-                initial_results.append(result)
+                print(f"[thruwire] starting replay-enabled repeated run {index + 1}/{repeats}")
+                result = await self._run_brief(client, project.id, version_id, mode="replay_enabled", cache_mode=None)
+                replay_results.append(result)
                 print(
-                    f"[thruwire] completed repeated run {index + 1}/{repeats} "
+                    f"[thruwire] completed replay-enabled repeated run {index + 1}/{repeats} "
+                    f"in {result.duration_s:.2f}s with {len(result.executed_steps)} executed steps"
+                )
+
+            fresh_results = []
+            for index in range(repeats):
+                print(f"[thruwire] starting fresh-recompute repeated run {index + 1}/{repeats}")
+                result = await self._run_brief(client, project.id, version_id, mode="fresh_recompute", cache_mode="disabled")
+                fresh_results.append(result)
+                print(
+                    f"[thruwire] completed fresh-recompute repeated run {index + 1}/{repeats} "
                     f"in {result.duration_s:.2f}s with {len(result.executed_steps)} executed steps"
                 )
 
             print("[thruwire] applying upstream source update ...")
             updated_version_id = await self._update_sources(client, project.id, task)
             print(f"[thruwire] compiled updated workflow version {updated_version_id}")
-            print("[thruwire] starting updated run")
-            updated_result = await self._run_brief(client, project.id, updated_version_id)
+            print("[thruwire] starting updated run (replay-enabled)")
+            updated_result = await self._run_brief(client, project.id, updated_version_id, mode="updated_replay_enabled", cache_mode=None)
             print(
                 f"[thruwire] completed updated run in {updated_result.duration_s:.2f}s "
                 f"with {len(updated_result.executed_steps)} executed steps"
@@ -75,7 +87,8 @@ class ThruWireExperimentRunner:
                 "project_id": project.id,
                 "initial_version_id": version_id,
                 "updated_version_id": updated_version_id,
-                "repeats": [self._serialize_result(item) for item in initial_results],
+                "replay_repeats": [self._serialize_result(item) for item in replay_results],
+                "fresh_repeats": [self._serialize_result(item) for item in fresh_results],
                 "updated": self._serialize_result(updated_result),
             }
         finally:
@@ -90,9 +103,20 @@ class ThruWireExperimentRunner:
         schema_ref, fields = choose_notebook_schema(schemas)
 
         source_block_id = normalize_block_path("sources")
+        framing_block_id = normalize_block_path("framing")
         analysis_block_id = normalize_block_path("analysis")
         brief_block_id = normalize_block_path("brief")
 
+        framing_block = build_block(
+            "Framing",
+            schema_ref,
+            fields,
+            context=f"Topic: {task.topic}",
+            goals=["Establish a stable evaluation framing and output outline for the brief."],
+            steps=[
+                "Produce a concise framing note that defines the output structure, evaluation lens, and section headings for the final brief."
+            ],
+        )
         source_block = build_block(
             "Sources",
             schema_ref,
@@ -109,7 +133,7 @@ class ThruWireExperimentRunner:
             fields,
             goals=[f"Analyze the evidence for topic: {task.topic}"],
             steps=[
-                f"Using ${{{source_block_id}}}, identify key claims, strongest supporting evidence, tensions, and open questions."
+                f"Using ${{{source_block_id}}} and ${{{framing_block_id}}}, identify key claims, strongest supporting evidence, tensions, and open questions."
             ],
         )
         brief_block = build_block(
@@ -118,10 +142,11 @@ class ThruWireExperimentRunner:
             fields,
             goals=[task.instructions],
             steps=[
-                f"Using ${{{analysis_block_id}}}, write a one-page brief with sections for overview, major claims, evidence, and unresolved questions."
+                f"Using ${{{analysis_block_id}}} and ${{{framing_block_id}}}, write a one-page brief with sections for overview, major claims, evidence, and unresolved questions."
             ],
         )
 
+        await client.create_notebook(project, framing_block_id, framing_block)
         await client.create_notebook(project, source_block_id, source_block)
         await client.create_notebook(project, analysis_block_id, analysis_block)
         await client.create_notebook(project, brief_block_id, brief_block)
@@ -148,24 +173,35 @@ class ThruWireExperimentRunner:
         events = await client.run_compile(project_id)
         return extract_compile_version_id(events)
 
-    async def _run_brief(self, client: ThruWireClient, project_id: str, version_id: str) -> ThruWireRunResult:
+    async def _run_brief(
+        self,
+        client: ThruWireClient,
+        project_id: str,
+        version_id: str,
+        *,
+        mode: str,
+        cache_mode: Optional[str],
+    ) -> ThruWireRunResult:
         brief_block_id = normalize_block_path("brief")
         start = time.perf_counter()
-        trace = await client.run_notebook(project_id, brief_block_id, version_id=version_id)
+        trace = await client.run_notebook(project_id, brief_block_id, version_id=version_id, cache_mode=cache_mode)
         duration_s = time.perf_counter() - start
         final_text = self._normalize_final_text(extract_final_text(trace))
         return ThruWireRunResult(
+            mode=mode,
             version_id=version_id,
             final_text=final_text,
             duration_s=duration_s,
             executed_steps=list(trace.executed_steps),
             run_execution_identity=trace.run_execution_identity,
             project_id=project_id,
+            execution_sources_by_step=self._extract_execution_sources(trace),
         )
 
     @staticmethod
     def _serialize_result(result: ThruWireRunResult) -> dict[str, Any]:
         return {
+            "mode": result.mode,
             "version_id": result.version_id,
             "final_text": result.final_text,
             "duration_s": result.duration_s,
@@ -173,6 +209,7 @@ class ThruWireExperimentRunner:
             "executed_step_count": len(result.executed_steps),
             "run_execution_identity": result.run_execution_identity,
             "project_id": result.project_id,
+            "execution_sources_by_step": result.execution_sources_by_step,
         }
 
     @staticmethod
@@ -204,3 +241,23 @@ class ThruWireExperimentRunner:
             if contents:
                 return "\n\n".join(contents)
         return raw
+
+    @staticmethod
+    def _extract_execution_sources(trace: Any) -> dict[str, dict[str, Any]]:
+        sources: dict[str, dict[str, Any]] = {}
+        for event in getattr(trace, "events", []):
+            if getattr(event, "kind", None) != "step_schedule_started":
+                continue
+            raw = event.raw if isinstance(event.raw, dict) else {}
+            data = raw.get("data") if isinstance(raw.get("data"), dict) else {}
+            step_info = data.get("step_info") if isinstance(data.get("step_info"), dict) else {}
+            block_id = getattr(event, "block_id", None)
+            step_id = getattr(event, "step_id", None)
+            if not block_id or not step_id:
+                continue
+            key = f"{block_id}:{step_id}"
+            sources[key] = {
+                "execution_source": step_info.get("execution_source"),
+                "from_execution_cache": step_info.get("from_execution_cache"),
+            }
+        return sources

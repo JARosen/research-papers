@@ -37,14 +37,6 @@ NEW_CHAT_SELECTORS = [
     (By.XPATH, "//button[contains(., 'New chat')]"),
     (By.CSS_SELECTOR, "[data-testid='new-chat-button']"),
 ]
-TEMPORARY_SELECTORS = [
-    (By.XPATH, "//button[contains(., 'Temporary')]"),
-    (By.XPATH, "//*[contains(@aria-label, 'Temporary')]"),
-]
-TEMPORARY_ACTIVE_SELECTORS = [
-    (By.XPATH, "//*[contains(., 'Temporary Chat')]"),
-    (By.XPATH, "//*[contains(., 'Temporary')]"),
-]
 SEND_BUTTON_SELECTORS = [
     (By.CSS_SELECTOR, "button[data-testid='send-button']"),
     (By.XPATH, "//button[contains(@aria-label, 'Send')]"),
@@ -90,8 +82,10 @@ class ChatGPTBaselineRunner:
             driver.get(self.config.chatgpt_url)
             for index, prompt in enumerate(prompts, start=1):
                 print(f"[chatgpt] starting repeated run {index}/{len(prompts)}")
-                self._start_new_chat(driver)
-                self._ensure_temporary_chat(driver)
+                manual_temporary = self._start_new_chat(driver)
+                if not manual_temporary:
+                    self._ensure_temporary_chat(driver)
+                self._wait_for_composer_ready(driver)
                 results.append(self._submit_prompt(driver, prompt))
                 print(
                     f"[chatgpt] completed repeated run {index}/{len(prompts)} "
@@ -107,8 +101,10 @@ class ChatGPTBaselineRunner:
             print(f"Opening ChatGPT at {self.config.chatgpt_url} ...")
             driver.get(self.config.chatgpt_url)
             print("[chatgpt] starting initial run for update scenario")
-            self._start_new_chat(driver)
-            self._ensure_temporary_chat(driver)
+            manual_temporary = self._start_new_chat(driver)
+            if not manual_temporary:
+                self._ensure_temporary_chat(driver)
+            self._wait_for_composer_ready(driver)
             initial = self._submit_prompt(driver, initial_prompt)
             print(f"[chatgpt] completed initial run for update scenario in {initial.duration_s:.2f}s")
             print("[chatgpt] submitting upstream update prompt")
@@ -130,7 +126,7 @@ class ChatGPTBaselineRunner:
         except Exception:
             pass
 
-    def _start_new_chat(self, driver: WebDriver) -> None:
+    def _start_new_chat(self, driver: WebDriver) -> bool:
         print("[chatgpt] opening a new chat")
         for by, selector in NEW_CHAT_SELECTORS:
             try:
@@ -138,44 +134,22 @@ class ChatGPTBaselineRunner:
                 element.click()
                 time.sleep(1.5)
                 print(f"[chatgpt] clicked new chat via selector {selector!r}")
-                return
+                return False
             except Exception:
                 continue
         print("[chatgpt] could not find explicit new chat button")
-        input("[chatgpt] Open a new chat manually in Chrome, then press Enter here to continue...")
+        input("[chatgpt] Open a new Temporary chat manually in Chrome, then press Enter here to continue...")
         time.sleep(1.0)
+        return True
 
     def _ensure_temporary_chat(self, driver: WebDriver) -> None:
-        if self._is_temporary_chat_active(driver):
-            print("[chatgpt] temporary chat already active")
-            return
-        print("[chatgpt] enabling temporary chat")
-        for by, selector in TEMPORARY_SELECTORS:
-            try:
-                element = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((by, selector)))
-                element.click()
-                time.sleep(1.5)
-                if self._is_temporary_chat_active(driver):
-                    print(f"[chatgpt] temporary chat enabled via selector {selector!r}")
-                    return
-            except Exception:
-                continue
-        input("[chatgpt] Could not enable Temporary automatically. Click the Temporary pill manually, then press Enter here...")
+        input("[chatgpt] Enable Temporary manually in Chrome, then press Enter here to continue...")
         time.sleep(1.0)
-        if self._is_temporary_chat_active(driver):
-            print("[chatgpt] temporary chat confirmed after manual enable")
-            return
-        raise RuntimeError("Temporary Chat still does not appear active after manual confirmation.")
 
-    def _is_temporary_chat_active(self, driver: WebDriver) -> bool:
-        for by, selector in TEMPORARY_ACTIVE_SELECTORS:
-            try:
-                elements = driver.find_elements(by, selector)
-                if any(element.is_displayed() for element in elements):
-                    return True
-            except Exception:
-                continue
-        return False
+    def _wait_for_composer_ready(self, driver: WebDriver) -> None:
+        composer = self._find_composer(driver)
+        WebDriverWait(driver, 10).until(lambda _: composer.is_displayed() and composer.is_enabled())
+        time.sleep(0.5)
 
     def _submit_prompt(self, driver: WebDriver, prompt: str) -> ChatRunResult:
         previous_count = self._assistant_count(driver)

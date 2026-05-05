@@ -8,7 +8,21 @@ from typing import Optional
 from dotenv import load_dotenv
 
 
-REPO_DIR = Path(__file__).resolve().parents[1]
+def _discover_repo_dir() -> Path:
+    module_repo_dir = Path(__file__).resolve().parents[1]
+    if (module_repo_dir / "pyproject.toml").exists() and (module_repo_dir / "experiment_runner").exists():
+        return module_repo_dir
+
+    cwd = Path.cwd().resolve()
+    search_roots = [cwd, *cwd.parents]
+    for candidate in search_roots:
+        if (candidate / "pyproject.toml").exists() and (candidate / "experiment_runner").exists():
+            return candidate
+
+    return module_repo_dir
+
+
+REPO_DIR = _discover_repo_dir()
 PAPER_REPO_DIR = REPO_DIR.parent
 GITHUB_DIR = PAPER_REPO_DIR.parent
 VERIFICATION_REPO_DIR = GITHUB_DIR / "verification"
@@ -40,6 +54,8 @@ class RunnerConfig:
     keep_thruwire_project: bool
     chatgpt_browser_channel: str
     chatgpt_cdp_url: str
+    openai_eval_model: str
+    run_openai_evaluation: bool
 
     @classmethod
     def from_env(cls) -> "RunnerConfig":
@@ -59,4 +75,6 @@ class RunnerConfig:
             keep_thruwire_project=os.getenv("THRUWIRE_KEEP_PROJECT", "").lower() in {"1", "true", "yes"},
             chatgpt_browser_channel=os.getenv("CHATGPT_BROWSER_CHANNEL", "chrome"),
             chatgpt_cdp_url=os.getenv("CHATGPT_CDP_URL", "http://127.0.0.1:9222"),
+            openai_eval_model=os.getenv("OPENAI_EVAL_MODEL", "gpt-5-mini"),
+            run_openai_evaluation=os.getenv("RUN_OPENAI_EVALUATION", "1").lower() in {"1", "true", "yes"},
         )

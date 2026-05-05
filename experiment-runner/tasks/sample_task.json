@@ -1,22 +1,22 @@
 {
-  "task_id": "sample-competitive-brief",
-  "topic": "AI agent harnesses for multi-step research workflows",
-  "instructions": "Using the provided sources, produce a one-page brief that summarizes the competitive landscape, the strongest evidence for each major claim, and two unresolved questions that require further investigation.",
+  "task_id": "sample-policy-brief",
+  "topic": "Telehealth adoption and reimbursement constraints",
+  "instructions": "Using the provided sources, produce a one-page policy brief that summarizes current telehealth adoption trends, the main reimbursement or regulatory constraints, the strongest evidence supporting each major claim, and two unresolved questions that require further investigation.",
   "sources": [
     {
       "title": "Source 1",
       "url": "https://example.com/source-1",
-      "content": "ThruWire-style graph execution systems make dependencies explicit, preserve intermediate state, and support selective recomputation after upstream changes."
+      "content": "Health systems report that telehealth use remains above pre-2020 baselines because follow-up visits, behavioral health, and rural access programs continue to rely on virtual care. Patients value reduced travel time and faster appointment availability, but providers note that adoption varies by specialty and patient broadband access."
     },
     {
       "title": "Source 2",
       "url": "https://example.com/source-2",
-      "content": "Traditional chat harnesses preserve work through transcript memory and iterative prompting, which is flexible but makes structured reuse and replay difficult."
+      "content": "Several payers have narrowed reimbursement for telehealth after emergency waivers expired. Clinics report that uncertainty around payment parity, cross-state licensing, and documentation rules makes it difficult to treat telehealth capacity as a stable long-term service line."
     },
     {
       "title": "Source 3",
       "url": "https://example.com/source-3",
-      "content": "Recent agent research emphasizes planning, memory, and reflection, but many systems still reconstruct intermediate state through prompts rather than explicit execution graphs."
+      "content": "Policy analysts argue that telehealth works best when paired with clear triage rules: routine monitoring and low-acuity follow-ups can shift online efficiently, while physical examinations, imaging, and complex diagnostics still require in-person care. They caution that utilization gains do not automatically imply lower system-wide costs."
     }
   ],
   "upstream_edit": {
@@ -24,7 +24,7 @@
     "source": {
       "title": "Source 2 (revised)",
       "url": "https://example.com/source-2-revised",
-      "content": "A revised source argues that memory-rich chat interfaces can preserve local continuity effectively for short workflows, but their update behavior degrades as dependencies become more interlinked."
+      "content": "A revised payer survey finds that some large insurers and state Medicaid programs have extended reimbursement parity for selected telehealth services through multi-year policy updates. Clinics still report friction from licensing and compliance rules, but payment uncertainty is less severe than earlier reporting suggested."
     }
   }
 }

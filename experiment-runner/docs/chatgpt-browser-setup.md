@@ -83,3 +83,5 @@ For future runs:
 - If Selenium cannot find `New chat` or `Temporary`, the runner pauses and
   asks you to do that step manually in the browser, then continues.
 - If ChatGPT logs out inside the cloned profile, log back in manually in that cloned browser and reuse it.
+- After the raw run completes, the runner can perform a final OpenAI evaluation
+  pass over the full bundle if `OPENAI_API_KEY` is available in `experiment-runner/.env`.

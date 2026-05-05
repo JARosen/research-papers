@@ -9,10 +9,13 @@ comparison between:
 ## What it does
 
 - Runs repeated baseline trials against ChatGPT by attaching to an already running Chrome session
-- Runs repeated graph trials against ThruWire via the sibling `verification` repo
+- Runs repeated fresh-chat baseline trials against ChatGPT
+- Runs replay-enabled graph trials against ThruWire via the sibling `verification` repo
+- Runs fresh-recompute graph trials against ThruWire with cache disabled
 - Applies one controlled upstream edit
 - Re-runs both conditions
-- Saves raw outputs and a small derived metrics summary
+- Saves raw outputs and a derived metrics summary
+- Runs a final OpenAI evaluation pass over the full result bundle when `OPENAI_API_KEY` is available
 
 ## Setup
 
@@ -27,7 +30,21 @@ pip install .
 
 This runner is designed to reuse the same env values as the sibling
 `verification` repo. If the local `.env` is missing, the code also falls back to
-`../verification/.env`.
+`../verification/.env`. The local `.env` should contain `OPENAI_API_KEY` for the
+final evaluation step.
+
+## Experiment Structure
+
+The runner is organized around the three experiments used in the paper:
+
+1. `Experiment 1: Fresh repeated runs`
+   Measures variance under fixed inputs.
+
+2. `Experiment 2: Replay-enabled repeated runs`
+   Measures replay stability and latency.
+
+3. `Experiment 3: Upstream edit`
+   Measures incremental update cost and traceability.
 
 ## ChatGPT authentication
 
@@ -64,6 +81,34 @@ python -m experiment_runner.cli run \
   --arms both
 ```
 
+## Outputs
+
+The runner writes:
+
+- `chatgpt_results.json`
+- `thruwire_results.json`
+- `summary.json`
+- `openai_evaluation.json` when OpenAI evaluation succeeds
+- `openai_evaluation_error.json` if the OpenAI evaluation step fails
+
+The ThruWire bundle now includes:
+
+- `replay_repeats`
+- `fresh_repeats`
+- `updated`
+
+The ChatGPT bundle now includes:
+
+- `repeated_fresh_runs`
+- `upstream_edit.initial`
+- `upstream_edit.updated`
+
+This supports the paper's three main measurement areas:
+
+- repeated-run variance
+- replay-enabled determinism
+- upstream-edit propagation
+
 ## Notes
 
 - The ChatGPT side is intentionally brittle and UI-dependent.
@@ -71,5 +116,7 @@ python -m experiment_runner.cli run \
   and asks you to perform that step manually before continuing.
 - The ThruWire side uses the API patterns already present in the sibling
   `verification` harness.
+- The final OpenAI evaluation step uses `OPENAI_API_KEY` from the environment or
+  `experiment-runner/.env`.
 - This runner is meant for collecting paper data, not for producing a stable
   test suite.
