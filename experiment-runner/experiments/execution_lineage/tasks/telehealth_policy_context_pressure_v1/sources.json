@@ -16,7 +16,7 @@
       "status": "superseded",
       "active_in_initial": true,
       "active_after_edit": false,
-      "excerpt": "An earlier payer landscape brief reported narrowing reimbursement support after emergency waivers expired and warned that parity had weakened across many major payer categories, making long-term telehealth capacity planning uncertain."
+      "excerpt": "An earlier payer landscape brief reported parity retrenchment across several major payer categories and warned that reimbursement for follow-up telehealth had become too unstable to justify broad service-line expansion. The brief recommended keeping behavioral-health and chronic-care telehealth growth in limited pilot mode until payment support stabilized."
     },
     {
       "id": "S2_current",
@@ -25,7 +25,7 @@
       "status": "current",
       "active_in_initial": false,
       "active_after_edit": true,
-      "excerpt": "A revised payer landscape brief finds that several large commercial plans and state Medicaid programs extended payment parity for selected behavioral-health and chronic-care telehealth services through multiyear updates. Payment uncertainty remains service-specific rather than uniformly severe."
+      "excerpt": "A revised payer landscape brief finds that several large commercial plans and state Medicaid programs extended payment parity for selected behavioral-health and chronic-care telehealth follow-up services through multiyear updates. For those targeted services, reimbursement support is now stable enough to justify selective expansion with payer-by-payer validation, even though parity is not universal outside the targeted lines."
     },
     {
       "id": "S3",

@@ -12,7 +12,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--task-dir", type=Path, required=True)
     parser.add_argument("--results-file", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--mode", choices=["output_only", "traceability"], default="output_only")
+    parser.add_argument("--mode", choices=["output_only", "traceability"], default="traceability")
     parser.add_argument("--conditions", nargs="*", help="Optional explicit conditions to include.")
     parser.add_argument("--seed", type=int, default=7)
     return parser.parse_args()

@@ -14,12 +14,14 @@ from experiment_runner.tasks import ContextDisciplineTask
 
 
 STAGE_SPECS = [
-    {"name": "source_set", "prompt": "loop_source_set.md", "deps": []},
-    {"name": "evidence_digest", "prompt": "loop_evidence_digest.md", "deps": ["source_set"]},
-    {"name": "claim_matrix", "prompt": "loop_claim_matrix.md", "deps": ["evidence_digest"]},
-    {"name": "tension_analysis", "prompt": "loop_tension_analysis.md", "deps": ["claim_matrix"]},
+    {"name": "utilization_context", "prompt": "loop_utilization_context.md", "deps": []},
+    {"name": "reimbursement_context", "prompt": "loop_reimbursement_context.md", "deps": []},
+    {"name": "operations_context", "prompt": "loop_operations_context.md", "deps": []},
+    {"name": "access_cost_context", "prompt": "loop_access_cost_context.md", "deps": []},
+    {"name": "claim_matrix", "prompt": "loop_claim_matrix.md", "deps": ["utilization_context", "reimbursement_context", "operations_context"]},
+    {"name": "tension_analysis", "prompt": "loop_tension_analysis.md", "deps": ["access_cost_context"]},
     {"name": "recommendation_criteria", "prompt": "loop_recommendation_criteria.md", "deps": ["claim_matrix", "tension_analysis"]},
-    {"name": "final_memo", "prompt": "loop_final_memo.md", "deps": ["evidence_digest", "claim_matrix", "tension_analysis", "recommendation_criteria"]},
+    {"name": "final_memo", "prompt": "loop_final_memo.md", "deps": ["claim_matrix", "tension_analysis", "recommendation_criteria"]},
 ]
 
 
@@ -39,21 +41,30 @@ class SimpleDAGHarnessRunner:
         self.model_client = OpenAITextModelClient(config)
         self.cache: dict[str, CachedArtifact] = {}
 
-    def run_all(self, task: ContextDisciplineTask, repeats: int) -> dict[str, HarnessRunResult]:
+    def run_all(
+        self,
+        task: ContextDisciplineTask,
+        *,
+        replay_repeats: int,
+        fresh_repeats: int,
+        include_update: bool,
+    ) -> dict[str, HarnessRunResult]:
         replay_runs = []
-        for index in range(repeats):
-            print(f"[dag] replay-capable run {index + 1}/{repeats}")
+        for index in range(replay_repeats):
+            print(f"[dag] replay-capable run {index + 1}/{replay_repeats}")
             replay_runs.append(self._run_graph(task, updated=False, allow_replay=True))
         fresh_runs = []
-        for index in range(repeats):
-            print(f"[dag] fresh recompute run {index + 1}/{repeats}")
+        for index in range(fresh_repeats):
+            print(f"[dag] fresh recompute run {index + 1}/{fresh_repeats}")
             fresh_runs.append(self._run_graph(task, updated=False, allow_replay=False))
-        print("[dag] update run with selective recompute")
-        updated_run = self._run_graph(task, updated=True, allow_replay=True)
+        updated_run = None
+        if include_update:
+            print("[dag] update run with selective recompute")
+            updated_run = self._run_graph(task, updated=True, allow_replay=True)
 
         preserved = []
         recomputed = []
-        if replay_runs:
+        if replay_runs and updated_run is not None:
             before = replay_runs[0]["artifact_hashes"]
             after = updated_run["artifact_hashes"]
             all_keys = sorted(set(before) | set(after))
@@ -74,15 +85,19 @@ class SimpleDAGHarnessRunner:
                     "condition_id": "C6",
                     "condition_name": "simple_dag_replay_selective_recompute",
                     "runs": replay_runs,
-                    "updated_run": {
-                        **updated_run,
-                        "preserved_artifacts": preserved,
-                        "recomputed_stages": recomputed,
-                        "artifacts_preserved_percent": len(preserved) / (len(preserved) + len(recomputed)) if preserved or recomputed else 0.0,
-                        "stages_recomputed_percent": len(recomputed) / (len(preserved) + len(recomputed)) if preserved or recomputed else 0.0,
-                        "unrelated_churn_rate": 0.0,
-                    },
-                    "final_output": updated_run["final_output"],
+                    "updated_run": (
+                        {
+                            **updated_run,
+                            "preserved_artifacts": preserved,
+                            "recomputed_stages": recomputed,
+                            "artifacts_preserved_percent": len(preserved) / (len(preserved) + len(recomputed)) if preserved or recomputed else 0.0,
+                            "stages_recomputed_percent": len(recomputed) / (len(preserved) + len(recomputed)) if preserved or recomputed else 0.0,
+                            "unrelated_churn_rate": 0.0,
+                        }
+                        if updated_run is not None
+                        else None
+                    ),
+                    "final_output": updated_run["final_output"] if updated_run is not None else (replay_runs[-1]["final_output"] if replay_runs else ""),
                 }
             ),
         }
@@ -91,7 +106,6 @@ class SimpleDAGHarnessRunner:
         transcript = Transcript()
         started_at = utc_now()
         run_start = time.perf_counter()
-        source_text = task.render_sources(updated=updated)
         edit = task.primary_edit if updated else None
         instructions = "You are operating a DAG-scoped workflow. Use only the declared dependency artifacts and current inputs for the current stage."
 
@@ -109,7 +123,7 @@ class SimpleDAGHarnessRunner:
                 task=task,
                 stage_name=spec["name"],
                 prompt_name=spec["prompt"],
-                source_text=source_text,
+                source_text=task.render_sources_for_stage(updated=updated, stage_name=spec["name"]),
                 dependency_artifacts=dependency_artifacts,
                 updated=updated,
             )
@@ -126,7 +140,7 @@ class SimpleDAGHarnessRunner:
                     task=task,
                     stage_name=spec["name"],
                     prompt_name=spec["prompt"],
-                    source_text=source_text,
+                    source_text=task.render_sources_for_stage(updated=updated, stage_name=spec["name"]),
                     dependency_artifacts=dependency_artifacts,
                     edit=edit,
                 )
@@ -267,12 +281,12 @@ class SimpleDAGHarnessRunner:
             "stage_name": stage_name,
             "prompt_name": prompt_name,
             "prompt_text": load_prompt(prompt_name),
-            "source_hash": sha256_text(source_text),
             "dependency_ids": [item.identity for item in dependency_artifacts],
-            "updated": updated,
             "model": self.config.model_name,
             "provider": self.config.model_provider,
         }
+        if stage_name in {"utilization_context", "reimbursement_context", "operations_context", "access_cost_context"}:
+            payload["source_hash"] = sha256_text(source_text)
         return sha256_text(json.dumps(payload, sort_keys=True))
 
     def _build_stage_prompt(
@@ -290,7 +304,7 @@ class SimpleDAGHarnessRunner:
             f"Task: {task.title}",
             f"Instruction:\n{task.instruction}",
         ]
-        if stage_name == "source_set":
+        if stage_name in {"utilization_context", "reimbursement_context", "operations_context", "access_cost_context"}:
             parts.append(f"Current source bundle:\n{source_text}")
         else:
             rendered = []

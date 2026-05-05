@@ -113,12 +113,15 @@ python experiments/execution_lineage/scripts/build_judge_bundle.py \
   --task-dir experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1 \
   --results-file results/execution-lineage-run/results.json \
   --output-dir results/execution-lineage-run/judge \
-  --mode output_only
+  --mode traceability
+python experiments/execution_lineage/scripts/run_judge_bundle.py \
+  --bundle-file results/execution-lineage-run/judge/judge_bundle_traceability.json \
+  --output-file results/execution-lineage-run/judge/judge_output.json
 python experiments/execution_lineage/scripts/score_judge_output.py \
   --task-dir experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1 \
   --results-file results/execution-lineage-run/results.json \
   --judge-output results/execution-lineage-run/judge/judge_output.json \
-  --mapping-file results/execution-lineage-run/judge/system_mapping_output_only.json \
+  --mapping-file results/execution-lineage-run/judge/system_mapping_traceability.json \
   --output-file results/execution-lineage-run/rq_metrics.json
 ```
 

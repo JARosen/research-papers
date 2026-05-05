@@ -1,7 +1,11 @@
 # Workflow Recipe
 
-Use the current source set only. Ignore superseded source versions. Build
-evidence digest before claim matrix, claim matrix before tension analysis,
-tension analysis before recommendation criteria, and recommendation criteria
-before final memo. Preserve evidence tensions. When a source changes, update
-downstream affected claims and preserve unrelated claims.
+Working habit from earlier successful passes:
+
+- Start from the current source bundle, not from memory.
+- Treat remembered notes as heuristics and reminders, not as authoritative state.
+- Keep the recommendation narrow when the evidence is mixed.
+- Preserve unresolved tradeoffs instead of forcing a single clean story.
+- If a source revision changes one part of the argument, update downstream claims
+  that depend on that issue but do not rewrite unrelated sections just because
+  they are nearby in the memo.

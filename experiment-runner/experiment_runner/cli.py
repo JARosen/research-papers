@@ -23,7 +23,17 @@ def _parse_args() -> argparse.Namespace:
 
     run = subparsers.add_parser("run", help="Run configured experiment conditions")
     run.add_argument("--task-file", type=Path, required=True)
-    run.add_argument("--repeats", type=int, default=3)
+    run.add_argument(
+        "--rq1-repeats",
+        type=int,
+        default=3,
+        help="Repeat count for RQ1 fresh/replay stability runs only.",
+    )
+    run.add_argument(
+        "--repeats",
+        type=int,
+        help="Deprecated alias for --rq1-repeats.",
+    )
     run.add_argument("--output-dir", type=Path, required=True)
     run.add_argument(
         "--conditions",
@@ -129,7 +139,7 @@ def _build_summary(results: dict[str, Any]) -> dict[str, Any]:
             },
         }
     summary["RQ3"] = {
-        "judge_modes": ["output_only", "traceability"],
+        "judge_modes": ["traceability"],
         "judge_bundle_builder": "experiments/execution_lineage/scripts/build_judge_bundle.py",
     }
     summary["paired_comparisons"] = _build_paired_comparisons(results)
@@ -140,7 +150,7 @@ async def _run_conditions(
     task: ContextDisciplineTask,
     config: RunnerConfig,
     conditions: list[str],
-    repeats: int,
+    rq1_repeats: int,
 ) -> dict[str, Any]:
     results: dict[str, Any] = {}
     loop_runner = LoopCentricHarnessRunner(config)
@@ -156,7 +166,8 @@ async def _run_conditions(
             "loop_centric_with_procedural_memory",
         ]
     ):
-        loop_fresh_result = loop_runner.run_fresh(task, repeats=repeats)
+        loop_repeats = rq1_repeats if "loop_centric_fresh" in conditions else 1
+        loop_fresh_result = loop_runner.run_fresh(task, repeats=loop_repeats)
     if "loop_centric_fresh" in conditions and loop_fresh_result is not None:
         payload = dict(loop_fresh_result.payload)
         payload["condition_id"] = "C1"
@@ -191,7 +202,12 @@ async def _run_conditions(
         memory_payload["updated_run"] = memory_update.payload
         results["loop_centric_with_procedural_memory"] = memory_payload
     if "simple_dag_fresh_recompute" in conditions or "simple_dag_replay_selective_recompute" in conditions:
-        simple_dag_results = simple_dag_runner.run_all(task, repeats=repeats)
+        simple_dag_results = simple_dag_runner.run_all(
+            task,
+            replay_repeats=rq1_repeats if "simple_dag_replay_selective_recompute" in conditions else 1,
+            fresh_repeats=rq1_repeats if "simple_dag_fresh_recompute" in conditions else 0,
+            include_update="simple_dag_replay_selective_recompute" in conditions,
+        )
         for name, result in simple_dag_results.items():
             if name in conditions:
                 results[name] = result.payload
@@ -222,9 +238,10 @@ def main() -> None:
 
     task = load_task(args.task_file)
     selected_conditions = _condition_order(config, args.conditions, args.include_optional)
+    rq1_repeats = args.repeats if args.repeats is not None else args.rq1_repeats
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    condition_results = asyncio.run(_run_conditions(task, config, selected_conditions, args.repeats))
+    condition_results = asyncio.run(_run_conditions(task, config, selected_conditions, rq1_repeats))
     bundle = {
         "schema_version": "execution_lineage.result.v2",
         "task_id": task.task_id,

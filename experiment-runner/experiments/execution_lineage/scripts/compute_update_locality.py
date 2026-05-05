@@ -5,19 +5,48 @@ import json
 from pathlib import Path
 from typing import Any
 
-from metric_lib import claim_ids, read_json
+from metric_lib import claim_ids, normalize_text, read_json, similarity
+
+
+def _claim_overlap_score(claim: dict[str, Any], expected: dict[str, Any]) -> float:
+    score = similarity(normalize_text(str(claim.get("claim_text") or "")), normalize_text(str(expected.get("text") or "")))
+    supporting_sources = set(str(item) for item in claim.get("supporting_sources", []))
+    expected_sources = set(str(item) for item in expected.get("supported_by", []))
+    if supporting_sources and expected_sources:
+        intersection = len(supporting_sources & expected_sources)
+        union = len(supporting_sources | expected_sources)
+        score += intersection / union if union else 0.0
+    return score
+
+
+def _match_claim_id(claim: dict[str, Any], expected_claims: list[dict[str, Any]]) -> str:
+    explicit = claim.get("claim_id")
+    if explicit:
+        return str(explicit)
+    if not expected_claims:
+        return str(claim.get("claim_text") or "")
+    ranked = sorted(
+        ((expected, _claim_overlap_score(claim, expected)) for expected in expected_claims),
+        key=lambda item: item[1],
+        reverse=True,
+    )
+    best_expected, best_score = ranked[0]
+    if best_score < 0.35:
+        return str(claim.get("claim_text") or "")
+    return str(best_expected.get("id"))
 
 
 def changed_claim_metrics(claims: list[dict[str, Any]], ground_truth: dict[str, Any]) -> tuple[float, float, float]:
     affected = claim_ids(ground_truth, affected=True)
     unaffected = claim_ids(ground_truth, affected=False)
+    expected_claims = list(ground_truth.get("expected_claims", []))
     predicted_changed = {
-        str(item.get("claim_id") or item.get("claim_text") or "")
+        _match_claim_id(item, expected_claims)
         for item in claims
         if item.get("affected_by_upstream_edit") is True or item.get("changed_appropriately") is True
     }
     regressed = {
-        str(item.get("claim_id") or item.get("claim_text") or "")
+        _match_claim_id(item, expected_claims)
         for item in claims
         if item.get("unaffected_regression") is True
     }

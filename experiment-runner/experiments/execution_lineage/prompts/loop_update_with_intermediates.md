@@ -2,6 +2,7 @@ Update the prior final output after an upstream source change using manually bun
 
 Requirements:
 - treat prior intermediate notes as visible prompt context, not authoritative truth
+- assume those prior notes may contain stale recommendation logic from the earlier reimbursement state
 - update only affected claims
 - preserve unaffected claims where possible
 - use current sources over prior notes when they conflict

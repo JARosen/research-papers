@@ -5,6 +5,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+STAGE_SOURCE_IDS: dict[str, tuple[str, ...]] = {
+    "utilization_context": ("S1",),
+    "reimbursement_context": ("S2_old", "S2_current"),
+    "operations_context": ("S3", "S6", "S7"),
+    "access_cost_context": ("S4", "S5"),
+}
+
 
 @dataclass(frozen=True)
 class SourceExcerpt:
@@ -66,6 +73,27 @@ class ContextDisciplineTask:
         selected = self.active_sources_updated if updated else self.active_sources_initial
         lines: list[str] = []
         for item in selected:
+            lines.extend(
+                [
+                    f"[{item.id}] {item.title}",
+                    f"Kind: {item.kind}",
+                    f"Status: {item.status}",
+                    item.excerpt.strip(),
+                    "",
+                ]
+            )
+        return "\n".join(lines).strip()
+
+    def render_sources_for_stage(self, *, updated: bool, stage_name: str) -> str:
+        selected = self.active_sources_updated if updated else self.active_sources_initial
+        allowed_ids = STAGE_SOURCE_IDS.get(stage_name)
+        if allowed_ids is None:
+            return self.render_sources(updated=updated)
+        allowed = set(allowed_ids)
+        lines: list[str] = []
+        for item in selected:
+            if item.id not in allowed:
+                continue
             lines.extend(
                 [
                     f"[{item.id}] {item.title}",

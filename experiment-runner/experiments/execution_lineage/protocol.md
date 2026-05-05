@@ -147,12 +147,11 @@ while preserving the stronger challenge baselines.
 ## Workflow Graph
 
 ```text
-Source Set
-  -> Evidence Digest
-  -> Claim Matrix
-  -> Tension / Risk Analysis
-  -> Recommendation Criteria
-  -> Final Memo
+Utilization Context ----\
+Reimbursement Context ---+--> Claim Matrix -----------\
+Operations Context ------/                           |
+                                                    +--> Recommendation Criteria --> Final Memo
+Access vs Cost Context --> Tension / Risk Analysis -/
 ```
 
 The final memo should depend only on declared current artifacts, especially:
@@ -160,7 +159,6 @@ The final memo should depend only on declared current artifacts, especially:
 - `claim_matrix.current`
 - `tension_analysis.current`
 - `recommendation_criteria.current`
-- `evidence_digest.selected`
 
 It should not receive the full raw transcript or all raw sources unless the
 condition explicitly tests that behavior.

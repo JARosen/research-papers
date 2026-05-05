@@ -74,9 +74,21 @@
     },
     {
       "id": "C2",
-      "text": "Reimbursement uncertainty narrows for selected telehealth services after parity extensions, but it is not uniformly resolved.",
+      "text": "Reimbursement conditions improved enough for selected behavioral-health and chronic-care telehealth follow-up services to support selective expansion, though parity is not universal.",
       "supported_by": [
         "S2_current"
+      ],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C5",
+      "text": "The recommendation should shift from pilot-only caution to selective expansion for the targeted follow-up service lines because the reimbursement premise changed.",
+      "supported_by": [
+        "S2_current",
+        "S3",
+        "S6"
       ],
       "should_appear": true,
       "affected_by_edit": true,
@@ -109,7 +121,7 @@
   "excluded_claims": [
     {
       "id": "X1",
-      "text": "Reimbursement remains uniformly unstable across major payers.",
+      "text": "Expansion should remain in pilot mode because reimbursement is still broadly too unstable to support targeted service-line growth.",
       "reason": "stale",
       "contradicted_by": [
         "S2_current"

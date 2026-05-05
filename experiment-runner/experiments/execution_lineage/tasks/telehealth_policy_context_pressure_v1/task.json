@@ -17,19 +17,35 @@
   },
   "workflow_stages": [
     {
-      "id": "source_set",
-      "label": "Source Set",
-      "purpose": "Provide active current sources for this run.",
+      "id": "utilization_context",
+      "label": "Utilization Context",
+      "purpose": "Summarize current utilization and adoption evidence.",
       "allowed_inputs": [
         "active_sources"
       ]
     },
     {
-      "id": "evidence_digest",
-      "label": "Evidence Digest",
-      "purpose": "Digest relevant evidence items and explicitly exclude decoys.",
+      "id": "reimbursement_context",
+      "label": "Reimbursement Context",
+      "purpose": "Summarize current reimbursement and supersession state.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "operations_context",
+      "label": "Operations Context",
+      "purpose": "Summarize current compliance, workflow, and adoption constraints.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "access_cost_context",
+      "label": "Access vs Cost Context",
+      "purpose": "Summarize access benefits, continuity gains, and cost uncertainty.",
       "depends_on": [
-        "source_set"
+        "active_sources"
       ]
     },
     {
@@ -37,7 +53,9 @@
       "label": "Claim Matrix",
       "purpose": "Map candidate claims to current supporting sources and mark changed vs unaffected claims.",
       "depends_on": [
-        "evidence_digest"
+        "utilization_context",
+        "reimbursement_context",
+        "operations_context"
       ]
     },
     {
@@ -45,7 +63,7 @@
       "label": "Tension / Risk Analysis",
       "purpose": "Preserve conflicts and unresolved uncertainties rather than flattening them.",
       "depends_on": [
-        "claim_matrix"
+        "access_cost_context"
       ]
     },
     {
@@ -62,7 +80,6 @@
       "label": "Final Memo",
       "purpose": "Write the final memo using only declared current artifacts.",
       "depends_on": [
-        "evidence_digest",
         "claim_matrix",
         "tension_analysis",
         "recommendation_criteria"
@@ -76,13 +93,13 @@
   "manual_intermediates": {
     "evidence_digest_selected": [
       "S1 indicates telehealth usage remains above pre-2020 baseline in behavioral health, rural follow-ups, and chronic-care monitoring.",
-      "S2_old should be treated as superseded after the controlled edit; reimbursement uncertainty is not uniformly severe in the updated state.",
+      "S2_old indicates reimbursement instability remains a central blocker and that follow-up telehealth expansion should stay in pilot mode rather than move into broad operational rollout.",
       "S4 and S5 jointly imply a required tension: access gains are real, but system-wide cost savings remain uncertain and may even reverse under overutilization.",
       "D1 and D2 are adjacent but out of scope for the requested recommendation."
     ],
     "claim_matrix_current": [
       "C1 usage remains above baseline for selected visit types.",
-      "C2 reimbursement uncertainty narrows for selected services after parity extensions.",
+      "C2 reimbursement instability remains a major barrier and argues against moving beyond tightly limited pilots.",
       "C3 licensing, documentation, and broadband constraints still limit expansion.",
       "C4 access improvement does not prove system-wide savings."
     ],
@@ -91,7 +108,7 @@
       "Do not collapse payer heterogeneity into a uniform reimbursement story."
     ],
     "recommendation_criteria_current": [
-      "Expand only for service lines with current reimbursement support, remote-workflow fit, and acceptable compliance burden.",
+      "Do not move beyond pilot-scale telehealth expansion until reimbursement stability is stronger and more predictable.",
       "Avoid claiming broad system-wide savings without stronger evidence."
     ],
     "unrelated_branch_note": "Provider recruiting constraints were analyzed separately but should not change the final telehealth recommendation."

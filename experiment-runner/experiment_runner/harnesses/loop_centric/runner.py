@@ -16,8 +16,10 @@ from experiment_runner.tasks import ContextDisciplineTask, UpstreamEdit
 
 
 STEP_SEQUENCE = [
-    ("source_set", "loop_source_set.md"),
-    ("evidence_digest", "loop_evidence_digest.md"),
+    ("utilization_context", "loop_utilization_context.md"),
+    ("reimbursement_context", "loop_reimbursement_context.md"),
+    ("operations_context", "loop_operations_context.md"),
+    ("access_cost_context", "loop_access_cost_context.md"),
     ("claim_matrix", "loop_claim_matrix.md"),
     ("tension_analysis", "loop_tension_analysis.md"),
     ("recommendation_criteria", "loop_recommendation_criteria.md"),
@@ -44,7 +46,7 @@ MEMORY_TOOLS = [
     {
         "type": "function",
         "name": "memory_list",
-        "description": "List available memory artifact ids and return the memory index.",
+        "description": "List available compressed memory-note ids and return the advisory memory index.",
         "parameters": {
             "type": "object",
             "properties": {},
@@ -54,13 +56,13 @@ MEMORY_TOOLS = [
     {
         "type": "function",
         "name": "memory_get",
-        "description": "Fetch one memory artifact by id.",
+        "description": "Fetch one compressed memory note by id. Memories may be partial, lossy, stale, or blended summaries rather than exact workflow artifacts.",
         "parameters": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string",
-                    "description": "The exact memory artifact id to fetch.",
+                    "description": "The exact memory note id to fetch.",
                 }
             },
             "required": ["id"],
@@ -218,7 +220,7 @@ class LoopCentricHarnessRunner:
 
             user_content = self._build_step_user_message(
                 task_bundle=task_bundle,
-                source_text=source_text,
+                source_text=task_bundle.render_sources_for_stage(updated=edit is not None, stage_name=step_name),
                 step_prompt=load_prompt(prompt_file),
                 prior_final_output=prior_final_output,
                 prior_intermediates=prior_intermediates,

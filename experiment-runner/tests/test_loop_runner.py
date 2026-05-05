@@ -174,7 +174,7 @@ class LoopRunnerTests(unittest.TestCase):
     def test_execute_loop_runs_without_network(self) -> None:
         responses = [
             {"text": f"result {idx}", "output_items": [assistant_output_item(f"result {idx}", item_id=f"msg_{idx}")]}
-            for idx in range(6)
+            for idx in range(8)
         ]
         runner = self._make_runner(responses)
         task = load_task(TASK_FILE)
@@ -189,10 +189,10 @@ class LoopRunnerTests(unittest.TestCase):
             instructions="system instructions",
         )
 
-        self.assertEqual(result["final_output"], "result 5")
-        self.assertEqual(len(result["intermediate_outputs"]), 6)
-        self.assertEqual(len(result["prompt_response_log"]), 6)
-        self.assertEqual(result["model_usage"]["model_calls"], 6)
+        self.assertEqual(result["final_output"], "result 7")
+        self.assertEqual(len(result["intermediate_outputs"]), 8)
+        self.assertEqual(len(result["prompt_response_log"]), 8)
+        self.assertEqual(result["model_usage"]["model_calls"], 8)
 
 
 if __name__ == "__main__":
