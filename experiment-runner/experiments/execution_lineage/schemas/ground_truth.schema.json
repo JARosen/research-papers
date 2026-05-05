@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context Discipline Ground Truth",
+  "type": "object",
+  "required": [
+    "task_id",
+    "task_family",
+    "sources",
+    "expected_claims",
+    "excluded_claims",
+    "required_tensions",
+    "workflow_dependencies"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "task_family": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "object"
+    },
+    "expected_claims": {
+      "type": "array"
+    },
+    "excluded_claims": {
+      "type": "array"
+    },
+    "required_tensions": {
+      "type": "array"
+    },
+    "workflow_dependencies": {
+      "type": "object"
+    }
+  }
+}

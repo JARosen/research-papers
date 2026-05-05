@@ -1,122 +1,126 @@
 # Experiment Runner
 
-This subdirectory contains a lightweight experiment runner for the paper's
-comparison between:
+This runner now targets the ThruWire execution-lineage experiment rather than a
+generic prose-comparison study.
 
-- a traditional chat-style harness with product-level memory behavior
-- ThruWire's explicit execution graph runtime
+The paper source remains out of scope. Experiment assets live under
+[`experiment-runner/experiments/execution_lineage`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage).
 
-## What it does
+## Research Questions
 
-- Runs repeated baseline trials against ChatGPT by attaching to an already running Chrome session
-- Runs repeated fresh-chat baseline trials against ChatGPT
-- Runs replay-enabled graph trials against ThruWire via the sibling `verification` repo
-- Runs fresh-recompute graph trials against ThruWire with cache disabled
-- Applies one controlled upstream edit
-- Re-runs both conditions
-- Saves raw outputs and a derived metrics summary
-- Runs a final OpenAI evaluation pass over the full result bundle when `OPENAI_API_KEY` is available
+1. `RQ1: Replay Stability`
+   Under unchanged inputs and execution identities, does ThruWire replay prior
+   artifacts exactly while prompt-centric reruns exhibit fresh-generation
+   variation?
+2. `RQ2: Update Locality`
+   After a controlled upstream edit, does ThruWire localize recomputation,
+   preserve unaffected artifacts, and reduce unrelated churn relative to
+   prompt-centric update workflows?
+3. `RQ3: Context Discipline and Output Faithfulness`
+   When downstream generation depends on selected evolving intermediate
+   artifacts, does explicit DAG-curated context reduce stale-context usage,
+   irrelevant-context contamination, unsupported claim drift, and improve
+   claim-level traceability?
+
+`C6` replay is not equivalent to fresh generation and should never be analyzed
+as if it were interchangeable with `C1` loop-centric fresh execution.
+
+## Conditions
+
+- `C1` `loop_centric_fresh`
+- `C2` `loop_centric_update_final_only`
+- `C3` `loop_centric_update_with_intermediates`
+- `C4` `loop_centric_with_procedural_memory`
+- `C5` `thruwire_fresh_recompute`
+- `C6` `thruwire_replay_selective_recompute`
+- Optional `C7` `chatgpt_product_selenium`
+
+The Selenium-based ChatGPT product baseline is retained for future
+ecological/product-baseline experiments, but it is not the primary scientific
+baseline because ChatGPT product behavior includes hidden harness, memory,
+model-routing, and product-level context variables.
+
+The controlled loop-centric harness defaults to `gpt-5.2`, matching the
+ThruWire executor model configured in the sibling agent-framework repo
+(`openai/gpt-5.2`). The judge may use any suitable model, including a later
+one.
+
+## Assets
+
+- Protocol:
+  [`experiments/execution_lineage/protocol.md`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/protocol.md)
+- Experiment README:
+  [`experiments/execution_lineage/README.md`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/README.md)
+- Implemented task:
+  [`experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json)
+- Schemas:
+  [`experiments/execution_lineage/schemas`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/schemas)
+- Scoring:
+  [`experiments/execution_lineage/scripts`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/scripts)
 
 ## Setup
 
-1. Create and activate a virtual environment.
-2. Install dependencies:
-
 ```bash
+cd /Users/dev/Documents/GitHub/research-papers/experiment-runner
 pip install .
 ```
 
-3. Ensure `.env` exists in this directory.
+## Run Structure
 
-This runner is designed to reuse the same env values as the sibling
-`verification` repo. If the local `.env` is missing, the code also falls back to
-`../verification/.env`. The local `.env` should contain `OPENAI_API_KEY` for the
-final evaluation step.
+The Python runner now defaults to the controlled loop-centric harness plus the
+ThruWire execution-graph harness. The preserved Selenium path is optional.
 
-## Experiment Structure
-
-The runner is organized around the three experiments used in the paper:
-
-1. `Experiment 1: Fresh repeated runs`
-   Measures variance under fixed inputs.
-
-2. `Experiment 2: Replay-enabled repeated runs`
-   Measures replay stability and latency.
-
-3. `Experiment 3: Upstream edit`
-   Measures incremental update cost and traceability.
-
-## ChatGPT authentication
-
-Do not launch Chrome through Playwright directly for ChatGPT authentication.
-Instead, start a cloned Chrome profile with remote debugging enabled and let
-the runner attach to it.
-
-See:
-
-- [docs/chatgpt-browser-setup.md](/Users/dev/Documents/GitHub/research-papers/experiment-runner/docs/chatgpt-browser-setup.md)
-
-To verify the browser is attachable:
+Typical workflow:
 
 ```bash
-curl http://127.0.0.1:9222/json/version
+.venv/bin/python scripts/preflight_env.py
+./scripts/run_execution_lineage.sh
+python experiments/execution_lineage/scripts/build_judge_bundle.py \
+  --task-dir experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1 \
+  --results-file results/execution-lineage-run/results.json \
+  --output-dir results/execution-lineage-run/judge \
+  --mode output_only
+python experiments/execution_lineage/scripts/score_judge_output.py \
+  --task-dir experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1 \
+  --results-file results/execution-lineage-run/results.json \
+  --judge-output results/execution-lineage-run/judge/judge_output.json \
+  --mapping-file results/execution-lineage-run/judge/system_mapping_output_only.json \
+  --output-file results/execution-lineage-run/rq_metrics.json
 ```
 
-Optional sanity check before a full run:
+## Output Expectations
+
+Result bundles should capture, at minimum:
+
+- condition id
+- task id
+- final output text
+- intermediate artifacts when available
+- artifact ids and hashes
+- execution source per step
+- cache/replay status
+- recomputed vs preserved stages after edits
+- timing and token metadata when available
+- transcripts and prompt/response logs for loop-centric runs
+- memory retrieval logs for the procedural-memory baseline
+
+Fresh-run variation under `RQ1` is diagnostic. The primary `RQ1` criterion is
+exact replay under unchanged execution identity.
+
+## Reproducible Run
+
+Use the checked-in wrapper:
 
 ```bash
-python -m experiment_runner.cli bootstrap-chatgpt
+cd /Users/dev/Documents/GitHub/research-papers/experiment-runner
+chmod +x scripts/run_execution_lineage.sh
+./scripts/run_execution_lineage.sh
 ```
 
-This attaches to the already-running Chrome session and opens ChatGPT so you can
-confirm the logged-in state manually.
+Defaults:
 
-## Run the experiment
-
-```bash
-python -m experiment_runner.cli run \
-  --task-file tasks/sample_task.json \
-  --repeats 5 \
-  --output-dir results/sample-run \
-  --arms both
-```
-
-## Outputs
-
-The runner writes:
-
-- `chatgpt_results.json`
-- `thruwire_results.json`
-- `summary.json`
-- `openai_evaluation.json` when OpenAI evaluation succeeds
-- `openai_evaluation_error.json` if the OpenAI evaluation step fails
-
-The ThruWire bundle now includes:
-
-- `replay_repeats`
-- `fresh_repeats`
-- `updated`
-
-The ChatGPT bundle now includes:
-
-- `repeated_fresh_runs`
-- `upstream_edit.initial`
-- `upstream_edit.updated`
-
-This supports the paper's three main measurement areas:
-
-- repeated-run variance
-- replay-enabled determinism
-- upstream-edit propagation
-
-## Notes
-
-- The ChatGPT side is intentionally brittle and UI-dependent.
-- If Selenium cannot find `New chat` or the `Temporary` pill, the runner pauses
-  and asks you to perform that step manually before continuing.
-- The ThruWire side uses the API patterns already present in the sibling
-  `verification` harness.
-- The final OpenAI evaluation step uses `OPENAI_API_KEY` from the environment or
-  `experiment-runner/.env`.
-- This runner is meant for collecting paper data, not for producing a stable
-  test suite.
+- venv: `.venv`
+- model: `gpt-5.2`
+- repeats: `3`
+- output dir: `results/execution-lineage-run`
+- `RUN_OPENAI_EVALUATION=0` unless you override it

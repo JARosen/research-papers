@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Execution Lineage Task",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "task_family",
+    "title",
+    "instruction",
+    "requested_output_format",
+    "workflow_stages",
+    "source_file",
+    "ground_truth_file",
+    "edits_file",
+    "memory_file"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "task_family": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "instruction": {
+      "type": "string"
+    },
+    "requested_output_format": {
+      "type": "object"
+    },
+    "workflow_stages": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "purpose"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_file": {
+      "type": "string"
+    },
+    "ground_truth_file": {
+      "type": "string"
+    },
+    "edits_file": {
+      "type": "string"
+    },
+    "memory_file": {
+      "type": "string"
+    },
+    "manual_intermediates": {
+      "type": "object"
+    }
+  }
+}

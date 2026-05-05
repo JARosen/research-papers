@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Judge Output",
+  "type": "object",
+  "required": [
+    "systems"
+  ],
+  "properties": {
+    "systems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "anonymous_id",
+          "claims",
+          "required_tensions",
+          "summary_scores"
+        ],
+        "properties": {
+          "anonymous_id": {
+            "type": "string"
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "claim_text",
+                "supported",
+                "supporting_sources",
+                "uses_irrelevant_context",
+                "irrelevant_source_ids",
+                "uses_stale_context",
+                "stale_source_or_artifact_ids",
+                "affected_by_upstream_edit",
+                "changed_appropriately",
+                "unaffected_regression",
+                "earliest_intermediate_artifact",
+                "producing_step_identifiable",
+                "reused_vs_recomputed_identifiable"
+              ],
+              "properties": {
+                "claim_text": {
+                  "type": "string"
+                },
+                "supported": {
+                  "type": "boolean"
+                },
+                "supporting_sources": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "unsupported_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "uses_irrelevant_context": {
+                  "type": "boolean"
+                },
+                "irrelevant_source_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "uses_stale_context": {
+                  "type": "boolean"
+                },
+                "stale_source_or_artifact_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "affected_by_upstream_edit": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "changed_appropriately": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "unaffected_regression": {
+                  "type": "boolean"
+                },
+                "earliest_intermediate_artifact": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "producing_step_identifiable": {
+                  "type": "boolean"
+                },
+                "reused_vs_recomputed_identifiable": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "required_tensions": {
+            "type": "array"
+          },
+          "summary_scores": {
+            "type": "object",
+            "properties": {
+              "unsupported_claim_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "irrelevant_context_contamination_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "stale_context_usage_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "evidence_recall_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "tension_preservation_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "dependency_compliance_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "traceability_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "context_discipline_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "output_faithfulness_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "memory_entries_retrieved_count": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "stale_memory_retrieval_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "irrelevant_memory_retrieval_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "current_state_precision": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "invalid_downstream_reuse_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

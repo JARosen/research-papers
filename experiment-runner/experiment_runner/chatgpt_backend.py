@@ -114,6 +114,30 @@ class ChatGPTBaselineRunner:
         finally:
             self._detach_driver(driver)
 
+    def run_initial_and_dynamic_update(
+        self,
+        initial_prompt: str,
+        update_prompt_builder,
+    ) -> tuple[ChatRunResult, ChatRunResult]:
+        driver = self._connect_driver()
+        try:
+            print(f"Opening ChatGPT at {self.config.chatgpt_url} ...")
+            driver.get(self.config.chatgpt_url)
+            print("[chatgpt] starting initial run for update scenario")
+            manual_temporary = self._start_new_chat(driver)
+            if not manual_temporary:
+                self._ensure_temporary_chat(driver)
+            self._wait_for_composer_ready(driver)
+            initial = self._submit_prompt(driver, initial_prompt)
+            print(f"[chatgpt] completed initial run for update scenario in {initial.duration_s:.2f}s")
+            update_prompt = update_prompt_builder(initial.final_text)
+            print("[chatgpt] submitting upstream update prompt")
+            updated = self._submit_prompt(driver, update_prompt)
+            print(f"[chatgpt] completed updated run in {updated.duration_s:.2f}s")
+            return initial, updated
+        finally:
+            self._detach_driver(driver)
+
     def _connect_driver(self) -> WebDriver:
         print("Attaching Selenium to existing Chrome at 127.0.0.1:9222 ...")
         options = ChromeOptions()

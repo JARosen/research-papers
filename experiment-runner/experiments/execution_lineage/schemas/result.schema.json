@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Execution Lineage Result Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "conditions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "default_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "optional_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary_by_rq": {
+      "type": "object"
+    }
+  }
+}

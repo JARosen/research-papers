@@ -1,0 +1,99 @@
+{
+  "schema_version": "execution_lineage.task.v1",
+  "task_id": "telehealth_policy_context_pressure_v1",
+  "task_family": "policy_synthesis",
+  "title": "Telehealth policy brief under context pressure",
+  "instruction": "Produce a policy memo recommending whether a multistate health system should expand telehealth service lines for follow-up behavioral-health and chronic-care visits over the next 24 months. The memo must synthesize current evidence, distinguish current from superseded reimbursement context, preserve unresolved tensions, and avoid adjacent but out-of-scope considerations.",
+  "requested_output_format": {
+    "deliverable": "final_memo",
+    "sections": [
+      "Recommendation",
+      "Current Evidence",
+      "Risks and Tensions",
+      "Operational Implications",
+      "Open Questions"
+    ],
+    "length_guidance": "700-1000 words"
+  },
+  "workflow_stages": [
+    {
+      "id": "source_set",
+      "label": "Source Set",
+      "purpose": "Provide active current sources for this run.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "evidence_digest",
+      "label": "Evidence Digest",
+      "purpose": "Digest relevant evidence items and explicitly exclude decoys.",
+      "depends_on": [
+        "source_set"
+      ]
+    },
+    {
+      "id": "claim_matrix",
+      "label": "Claim Matrix",
+      "purpose": "Map candidate claims to current supporting sources and mark changed vs unaffected claims.",
+      "depends_on": [
+        "evidence_digest"
+      ]
+    },
+    {
+      "id": "tension_analysis",
+      "label": "Tension / Risk Analysis",
+      "purpose": "Preserve conflicts and unresolved uncertainties rather than flattening them.",
+      "depends_on": [
+        "claim_matrix"
+      ]
+    },
+    {
+      "id": "recommendation_criteria",
+      "label": "Recommendation Criteria",
+      "purpose": "Define decision criteria grounded in current claims and tensions.",
+      "depends_on": [
+        "claim_matrix",
+        "tension_analysis"
+      ]
+    },
+    {
+      "id": "final_memo",
+      "label": "Final Memo",
+      "purpose": "Write the final memo using only declared current artifacts.",
+      "depends_on": [
+        "evidence_digest",
+        "claim_matrix",
+        "tension_analysis",
+        "recommendation_criteria"
+      ]
+    }
+  ],
+  "source_file": "sources.json",
+  "ground_truth_file": "ground_truth.json",
+  "edits_file": "edits.json",
+  "memory_file": "memory.json",
+  "manual_intermediates": {
+    "evidence_digest_selected": [
+      "S1 indicates telehealth usage remains above pre-2020 baseline in behavioral health, rural follow-ups, and chronic-care monitoring.",
+      "S2_old should be treated as superseded after the controlled edit; reimbursement uncertainty is not uniformly severe in the updated state.",
+      "S4 and S5 jointly imply a required tension: access gains are real, but system-wide cost savings remain uncertain and may even reverse under overutilization.",
+      "D1 and D2 are adjacent but out of scope for the requested recommendation."
+    ],
+    "claim_matrix_current": [
+      "C1 usage remains above baseline for selected visit types.",
+      "C2 reimbursement uncertainty narrows for selected services after parity extensions.",
+      "C3 licensing, documentation, and broadband constraints still limit expansion.",
+      "C4 access improvement does not prove system-wide savings."
+    ],
+    "tension_analysis_current": [
+      "T_access_vs_cost must be preserved: expanded access and patient convenience coexist with uncertain aggregate spending effects.",
+      "Do not collapse payer heterogeneity into a uniform reimbursement story."
+    ],
+    "recommendation_criteria_current": [
+      "Expand only for service lines with current reimbursement support, remote-workflow fit, and acceptable compliance burden.",
+      "Avoid claiming broad system-wide savings without stronger evidence."
+    ],
+    "unrelated_branch_note": "Provider recruiting constraints were analyzed separately but should not change the final telehealth recommendation."
+  }
+}

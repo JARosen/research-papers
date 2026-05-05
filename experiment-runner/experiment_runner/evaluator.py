@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import RunnerConfig, load_environment
-from .tasks import ResearchTask
+from .tasks import ContextDisciplineTask
 
 try:
     from openai import OpenAI
@@ -121,7 +121,7 @@ class OpenAIEvaluator:
     def evaluate(
         self,
         *,
-        task: ResearchTask,
+        task: ContextDisciplineTask,
         chatgpt_results: dict[str, Any] | None,
         thruwire_results: dict[str, Any] | None,
         summary: dict[str, Any],
@@ -152,7 +152,7 @@ class OpenAIEvaluator:
 
     def _build_prompt(
         self,
-        task: ResearchTask,
+        task: ContextDisciplineTask,
         chatgpt_results: dict[str, Any] | None,
         thruwire_results: dict[str, Any] | None,
         summary: dict[str, Any],
@@ -160,19 +160,17 @@ class OpenAIEvaluator:
         bundle = {
             "task": {
                 "task_id": task.task_id,
-                "topic": task.topic,
-                "instructions": task.instructions,
+                "topic": task.title,
+                "instructions": task.instruction,
                 "sources": [
-                    {"title": s.title, "url": s.url, "content": s.content}
+                    {"id": s.id, "title": s.title, "kind": s.kind, "status": s.status, "content": s.excerpt}
                     for s in task.sources
                 ],
                 "upstream_edit": {
-                    "replace_index": task.upstream_edit.replace_index,
-                    "source": {
-                        "title": task.upstream_edit.source.title,
-                        "url": task.upstream_edit.source.url,
-                        "content": task.upstream_edit.source.content,
-                    },
+                    "edit_id": task.primary_edit.edit_id,
+                    "description": task.primary_edit.description,
+                    "old_source_id": task.primary_edit.old_source_id,
+                    "new_source_id": task.primary_edit.new_source_id,
                 },
             },
             "chatgpt_results": chatgpt_results,

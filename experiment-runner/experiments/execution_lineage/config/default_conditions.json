@@ -1,0 +1,20 @@
+{
+  "default_conditions": [
+    "loop_centric_fresh",
+    "loop_centric_update_final_only",
+    "loop_centric_update_with_intermediates",
+    "loop_centric_with_procedural_memory",
+    "thruwire_fresh_recompute",
+    "thruwire_replay_selective_recompute"
+  ],
+  "optional_conditions": [
+    "chatgpt_product_selenium"
+  ],
+  "context_strategy": "full_transcript",
+  "model": {
+    "provider": "openai",
+    "name": "${EXPERIMENT_MODEL:-gpt-5.2}",
+    "temperature": 0.7,
+    "seed": null
+  }
+}

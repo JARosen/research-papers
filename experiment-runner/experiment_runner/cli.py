@@ -4,35 +4,36 @@ import argparse
 import asyncio
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from .config import REPO_DIR, RunnerConfig, load_environment
-from .evaluator import OpenAIEvaluator
+from .config import RunnerConfig, load_environment
+from .harnesses.chatgpt_selenium.runner import ChatGPTProductSeleniumRunner
+from .harnesses.loop_centric.runner import LoopCentricHarnessRunner
+from .harnesses.thruwire.runner import ThruWireHarnessRunner
 from .metrics import summarize_texts
-from .tasks import ResearchTask, load_task
+from .tasks import ContextDisciplineTask, load_task
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Research paper experiment runner")
+    parser = argparse.ArgumentParser(description="Context-discipline experiment runner")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("bootstrap-chatgpt", help="Open a persistent ChatGPT browser profile for manual login")
 
-    run = subparsers.add_parser("run", help="Run both experiment arms and write results")
+    run = subparsers.add_parser("run", help="Run configured experiment conditions")
     run.add_argument("--task-file", type=Path, required=True)
-    run.add_argument("--repeats", type=int, default=5)
+    run.add_argument("--repeats", type=int, default=3)
     run.add_argument("--output-dir", type=Path, required=True)
     run.add_argument(
-        "--arms",
-        choices=["both", "chatgpt", "thruwire"],
-        default="both",
-        help="Select which experiment arm(s) to run",
+        "--conditions",
+        nargs="*",
+        help="Optional explicit condition list. Defaults to experiment config defaults.",
     )
-
-    evaluate = subparsers.add_parser("evaluate", help="Run only the OpenAI evaluation on an existing result bundle")
-    evaluate.add_argument("--task-file", type=Path, required=True)
-    evaluate.add_argument("--input-dir", type=Path, required=True)
-
+    run.add_argument(
+        "--include-optional",
+        action="store_true",
+        help="Include optional conditions such as chatgpt_product_selenium.",
+    )
     return parser.parse_args()
 
 
@@ -41,122 +42,116 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2))
 
 
-def _read_json(path: Path) -> Any:
-    return json.loads(path.read_text())
+def _condition_order(config: RunnerConfig, requested: list[str] | None, include_optional: bool) -> list[str]:
+    if requested:
+        return requested
+    conditions = list(config.default_conditions)
+    if include_optional:
+        conditions.extend(config.optional_conditions)
+    return conditions
 
 
-def _build_summary(chatgpt: Optional[dict[str, Any]], thruwire: Optional[dict[str, Any]]) -> dict[str, Any]:
+def _build_summary(results: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
-    if chatgpt is not None and thruwire is not None:
-        chatgpt_texts = [item["final_text"] for item in chatgpt["repeated_fresh_runs"]]
-        replay_texts = [item["final_text"] for item in thruwire["replay_repeats"]]
-        fresh_texts = [item["final_text"] for item in thruwire["fresh_repeats"]]
-        summary = {
-            "experiment_1_fresh_repeated_runs": {
-                "chatgpt": {
-                    "stability": summarize_texts(chatgpt_texts),
-                    "mean_duration_s": sum(item["duration_s"] for item in chatgpt["repeated_fresh_runs"]) / len(chatgpt["repeated_fresh_runs"]),
-                },
-                "thruwire_fresh_recompute": {
-                    "stability": summarize_texts(fresh_texts),
-                    "mean_duration_s": sum(item["duration_s"] for item in thruwire["fresh_repeats"]) / len(thruwire["fresh_repeats"]),
-                    "mean_executed_step_count": sum(item["executed_step_count"] for item in thruwire["fresh_repeats"]) / len(thruwire["fresh_repeats"]),
-                },
-            },
-            "experiment_2_replay_enabled_repeated_runs": {
-                "thruwire_replay_enabled": {
-                    "stability": summarize_texts(replay_texts),
-                    "mean_duration_s": sum(item["duration_s"] for item in thruwire["replay_repeats"]) / len(thruwire["replay_repeats"]),
-                    "mean_executed_step_count": sum(item["executed_step_count"] for item in thruwire["replay_repeats"]) / len(thruwire["replay_repeats"]),
-                    "execution_sources_by_run": [
-                        item.get("execution_sources_by_step", {}) for item in thruwire["replay_repeats"]
-                    ],
-                }
-            },
-            "experiment_3_upstream_edit": {
-                "chatgpt": {
-                    "initial_duration_s": chatgpt["upstream_edit"]["initial"]["duration_s"],
-                    "updated_duration_s": chatgpt["upstream_edit"]["updated"]["duration_s"],
-                },
-                "thruwire": {
-                    "updated_duration_s": thruwire["updated"]["duration_s"],
-                    "updated_executed_step_count": thruwire["updated"]["executed_step_count"],
-                    "updated_execution_sources_by_step": thruwire["updated"].get("execution_sources_by_step", {}),
-                },
+    loop_fresh = results.get("loop_centric_fresh")
+    thru_fresh = results.get("thruwire_fresh_recompute")
+    thru_replay = results.get("thruwire_replay_selective_recompute")
+    if loop_fresh and thru_fresh and thru_replay:
+        loop_texts = [item["final_output"] for item in loop_fresh.get("runs", [])]
+        thru_fresh_texts = [item["final_output"] for item in thru_fresh.get("runs", [])]
+        thru_replay_texts = [item["final_output"] for item in thru_replay.get("runs", [])]
+        summary["RQ1"] = {
+            "loop_centric_fresh_variation": summarize_texts(loop_texts),
+            "thruwire_fresh_variation": summarize_texts(thru_fresh_texts),
+            "thruwire_replay_stability": summarize_texts(thru_replay_texts),
+            "primary_success_criterion": "exact replay under unchanged execution identity",
+        }
+    update_result = results.get("thruwire_replay_selective_recompute", {}).get("updated_run")
+    if update_result:
+        summary["RQ2"] = {
+            "stages_recomputed_percent": update_result.get("stages_recomputed_percent"),
+            "artifacts_preserved_percent": update_result.get("artifacts_preserved_percent"),
+            "manual_context_reconstruction_actions": {
+                "loop_centric_update_final_only": results.get("loop_centric_update_final_only", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
+                "loop_centric_update_with_intermediates": results.get("loop_centric_update_with_intermediates", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
             },
         }
+    summary["RQ3"] = {
+        "judge_modes": ["output_only", "traceability"],
+        "judge_bundle_builder": "experiments/execution_lineage/scripts/build_judge_bundle.py",
+    }
     return summary
 
 
-def _run_chatgpt(task: ResearchTask, output_dir: Path, config: RunnerConfig, repeats: int) -> dict[str, Any]:
-    from .chatgpt_backend import ChatGPTBaselineRunner
+async def _run_conditions(
+    task: ContextDisciplineTask,
+    config: RunnerConfig,
+    conditions: list[str],
+    repeats: int,
+) -> dict[str, Any]:
+    results: dict[str, Any] = {}
+    loop_runner = LoopCentricHarnessRunner(config)
 
-    runner = ChatGPTBaselineRunner(config)
-    repeated = runner.run_repeated_trials([task.baseline_prompt() for _ in range(repeats)])
-    initial_for_update, updated = runner.run_initial_and_update(task.baseline_prompt(), task.update_prompt())
-    payload = {
-        "repeated_fresh_runs": [
-            {
-                "prompt": item.prompt,
-                "final_text": item.final_text,
-                "duration_s": item.duration_s,
-                "conversation_url": item.conversation_url,
-            }
-            for item in repeated
-        ],
-        "upstream_edit": {
-            "initial": {
-                "prompt": initial_for_update.prompt,
-                "final_text": initial_for_update.final_text,
-                "duration_s": initial_for_update.duration_s,
-                "conversation_url": initial_for_update.conversation_url,
-            },
-            "updated": {
-                "prompt": updated.prompt,
-                "final_text": updated.final_text,
-                "duration_s": updated.duration_s,
-                "conversation_url": updated.conversation_url,
-            },
-        },
-    }
-    _write_json(output_dir / "chatgpt_results.json", payload)
-    return payload
-
-
-async def _run_thruwire(task: ResearchTask, output_dir: Path, config: RunnerConfig, repeats: int) -> dict[str, Any]:
-    from .thruwire_backend import ThruWireExperimentRunner
-
-    runner = ThruWireExperimentRunner(config)
-    payload = await runner.run_task(task, repeats)
-    _write_json(output_dir / "thruwire_results.json", payload)
-    return payload
-
-
-def _run_evaluation(task: ResearchTask, output_dir: Path, config: RunnerConfig) -> dict[str, Any]:
-    chatgpt_path = output_dir / "chatgpt_results.json"
-    thruwire_path = output_dir / "thruwire_results.json"
-    if not chatgpt_path.exists():
-        raise RuntimeError(f"Missing required results file: {chatgpt_path}")
-    if not thruwire_path.exists():
-        raise RuntimeError(f"Missing required results file: {thruwire_path}")
-
-    chatgpt = _read_json(chatgpt_path)
-    thruwire = _read_json(thruwire_path)
-    summary_path = output_dir / "summary.json"
-    if summary_path.exists():
-        summary = _read_json(summary_path)
-    else:
-        summary = _build_summary(chatgpt, thruwire)
-        _write_json(summary_path, summary)
-
-    payload = OpenAIEvaluator(config).evaluate(
-        task=task,
-        chatgpt_results=chatgpt,
-        thruwire_results=thruwire,
-        summary=summary,
-        output_dir=output_dir,
-    )
-    return payload
+    loop_fresh_result = None
+    if any(
+        item in conditions
+        for item in [
+            "loop_centric_fresh",
+            "loop_centric_update_final_only",
+            "loop_centric_update_with_intermediates",
+            "loop_centric_with_procedural_memory",
+        ]
+    ):
+        loop_fresh_result = loop_runner.run_fresh(task, repeats=repeats)
+    if "loop_centric_fresh" in conditions and loop_fresh_result is not None:
+        payload = dict(loop_fresh_result.payload)
+        payload["condition_id"] = "C1"
+        payload["condition_name"] = "loop_centric_fresh"
+        results["loop_centric_fresh"] = payload
+    if "loop_centric_update_final_only" in conditions and loop_fresh_result is not None:
+        update = loop_runner.run_update(task, loop_fresh_result, task.primary_edit)
+        payload = dict(update.payload)
+        payload["condition_id"] = "C2"
+        payload["condition_name"] = "loop_centric_update_final_only"
+        payload["condition"] = "loop_centric_update_final_only"
+        results["loop_centric_update_final_only"] = payload
+    if "loop_centric_update_with_intermediates" in conditions and loop_fresh_result is not None:
+        update = loop_runner.run_update(task, loop_fresh_result, task.primary_edit, include_intermediates=True)
+        payload = dict(update.payload)
+        payload["condition_id"] = "C3"
+        payload["condition_name"] = "loop_centric_update_with_intermediates"
+        payload["condition"] = "loop_centric_update_with_intermediates"
+        results["loop_centric_update_with_intermediates"] = payload
+    if "loop_centric_with_procedural_memory" in conditions:
+        memory_fresh_result = loop_runner.run_fresh_with_procedural_memory(task, repeats=1)
+        memory_payload = dict(memory_fresh_result.payload)
+        memory_payload["condition_id"] = "C4"
+        memory_payload["condition_name"] = "loop_centric_with_procedural_memory"
+        memory_update = loop_runner.run_update(
+            task,
+            memory_fresh_result,
+            task.primary_edit,
+            include_intermediates=True,
+            use_procedural_memory=True,
+        )
+        memory_payload["updated_run"] = memory_update.payload
+        results["loop_centric_with_procedural_memory"] = memory_payload
+    if "thruwire_fresh_recompute" in conditions or "thruwire_replay_selective_recompute" in conditions:
+        thruwire_results = await ThruWireHarnessRunner(config).run_all(task, repeats=repeats)
+        for name, result in thruwire_results.items():
+            if name in conditions:
+                results[name] = result.payload
+    if "chatgpt_product_selenium" in conditions:
+        selenium = ChatGPTProductSeleniumRunner(config).run_fresh(task, repeats=1)
+        payload = dict(selenium.payload)
+        payload["condition_id"] = "C7"
+        payload["condition_name"] = "chatgpt_product_selenium"
+        results["chatgpt_product_selenium"] = payload
+    return results
 
 
 def main() -> None:
@@ -170,44 +165,21 @@ def main() -> None:
         ChatGPTBaselineRunner(config).bootstrap_login()
         return
 
-    if args.command == "run":
-        task = load_task(args.task_file)
-        output_dir = args.output_dir
-        output_dir.mkdir(parents=True, exist_ok=True)
-        chatgpt = None
-        thruwire = None
-        if args.arms in {"both", "chatgpt"}:
-            chatgpt = _run_chatgpt(task, output_dir, config, args.repeats)
-        if args.arms in {"both", "thruwire"}:
-            thruwire = asyncio.run(_run_thruwire(task, output_dir, config, args.repeats))
-        summary = _build_summary(chatgpt, thruwire)
-        _write_json(output_dir / "summary.json", summary)
-        if config.run_openai_evaluation and chatgpt is not None and thruwire is not None:
-            try:
-                OpenAIEvaluator(config).evaluate(
-                    task=task,
-                    chatgpt_results=chatgpt,
-                    thruwire_results=thruwire,
-                    summary=summary,
-                    output_dir=output_dir,
-                )
-            except Exception as exc:
-                _write_json(output_dir / "openai_evaluation_error.json", {"error": str(exc)})
-                print(f"[evaluation] failed: {exc}")
-        print(json.dumps(summary, indent=2))
-        return
-
-    if args.command == "evaluate":
-        task = load_task(args.task_file)
-        output_dir = args.input_dir
-        try:
-            payload = _run_evaluation(task, output_dir, config)
-        except Exception as exc:
-            _write_json(output_dir / "openai_evaluation_error.json", {"error": str(exc)})
-            print(f"[evaluation] failed: {exc}")
-            raise
-        print(json.dumps(payload, indent=2))
-        return
+    task = load_task(args.task_file)
+    selected_conditions = _condition_order(config, args.conditions, args.include_optional)
+    output_dir = args.output_dir
+    output_dir.mkdir(parents=True, exist_ok=True)
+    condition_results = asyncio.run(_run_conditions(task, config, selected_conditions, args.repeats))
+    bundle = {
+        "schema_version": "execution_lineage.result.v2",
+        "task_id": task.task_id,
+        "default_conditions": list(config.default_conditions),
+        "optional_conditions": list(config.optional_conditions),
+        "conditions": condition_results,
+        "summary_by_rq": _build_summary(condition_results),
+    }
+    _write_json(output_dir / "results.json", bundle)
+    print(json.dumps(bundle["summary_by_rq"], indent=2))
 
 
 if __name__ == "__main__":
