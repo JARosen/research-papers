@@ -1,0 +1,811 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning}
+
+\title{From Agent Loops to Deterministic Graphs:\\
+Execution Lineage for Reproducible AI-Native Work}
+
+\author{
+  Josh Rosen \\
+  ThruWire, Inc.
+  \And
+  Seth Rosen \\
+  ThruWire, Inc.
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large language model (LLM) systems are increasingly deployed as agentic workflows that interleave reasoning, tool use, and iterative refinement. While effective for task completion, these systems rely on implicit conversational state and stochastic control loops, limiting reproducibility, inspectability, and incremental recomputation.
+
+We introduce an execution model that replaces agent loops with explicit directed acyclic graphs (DAGs) of computation, where nodes produce structured intermediate artifacts and declare dependencies. We define execution lineage as the explicit representation of computation structure, contrasting with prompt lineage in existing systems. Under fixed inputs and configurations, execution proceeds deterministically as a forward pass, enabling replay, partial recomputation, and consistent propagation of changes.
+
+We formalize the model, situate it within prior work on agent systems and workflow engines, and present an empirical comparison showing reduced variance (6.2x), lower recomputation cost (3.8x), and improved traceability relative to loop-based approaches. Our central claim is that the bottleneck in many AI-native systems is no longer model capability alone, but the absence of durable computational structure outside the model. We argue that execution lineage is a necessary abstraction for scaling AI systems beyond ephemeral task completion toward persistent, collaborative workflows in which humans and agents iteratively build on shared intermediate state.
+\end{abstract}
+
+\section{Introduction}
+
+Agent-based LLM systems have emerged as a dominant paradigm for applying large language models to complex tasks. Approaches such as ReAct \cite{yao2023react} combine reasoning and action within iterative loops, enabling dynamic tool usage and adaptive planning.
+
+This paradigm has been productive because it matches the interface of current language models: a prompt is assembled, the model responds, tools may be invoked, and the loop repeats until an answer appears satisfactory. In short-horizon tasks this is often sufficient. A user can tolerate some variance, intermediate reasoning can remain transient, and restarting the loop is usually cheaper than building explicit structure.
+
+In practice, such systems rarely expose the raw model alone. They run inside an \emph{agent harness}: a surrounding control layer that assembles prompts, manages tools and memory, and decides when execution should continue, branch, or terminate. Recent research has started to formalize the harness itself as an object of study rather than a hidden implementation detail \cite{pan2026nlah,zhang2025harness}. This shift is important because many system behaviors traditionally attributed to the model are in fact produced by the harness.
+
+The problem changes once the work becomes multi-step, stateful, and long-lived. In those settings, the system is no longer producing a single answer in one conversational thread. It is generating intermediate research, analyses, transformations, and reports that may be revised later by humans or reused by other agents. What matters is not only whether the final answer is plausible, but whether the system can explain what it depended on, selectively recompute what changed, and preserve stable boundaries between stages of work.
+
+Despite their flexibility, these systems exhibit systemic limitations:
+
+\begin{itemize}
+\item \textbf{Non-deterministic execution}: identical inputs may produce different outputs.
+\item \textbf{Implicit dependencies}: execution structure is embedded in conversational history.
+\item \textbf{Limited reproducibility}: intermediate reasoning is not preserved in structured form.
+\item \textbf{Global recomputation}: small changes require full re-execution.
+\end{itemize}
+
+These properties are acceptable for single-task workflows but break down for long-lived systems where consistency and incremental updates are required.
+
+We propose a shift from \textbf{prompt lineage}---where state is encoded in evolving prompts---to \textbf{execution lineage}, where computation is represented explicitly as a graph.
+
+The distinction is architectural. Prompt lineage records how prompts and transcripts evolved over time, but it does not provide a stable substrate on which downstream computation can depend. Execution lineage instead externalizes the structure of the work itself: each unit of work declares its inputs, its dependencies, its output contract, and its execution identity. Under this model, intermediate artifacts are first-class objects rather than incidental text inside a prompt window.
+
+Our research is motivated by a practical observation: many failures attributed to ``LLM unreliability'' are in fact failures of system structure. If upstream results are passed around as ad hoc context, then reuse is heuristic, inspection is manual, and re-running a workflow means reconstructing state through prompts. If the same work is represented as a graph of explicit execution units with stable intermediate boundaries, then replay, observability, and partial recomputation become system properties rather than prompt engineering tricks.
+
+This paper makes three contributions. First, we articulate execution lineage as a computational abstraction for AI-native workflows. Second, we formalize a deterministic DAG-based execution model that separates authored structure from model-time generation. Third, we provide an empirical comparison against a loop-based baseline on a representative analysis workflow, showing lower variance, cheaper recomputation, and materially better traceability. More broadly, we argue that the trajectory of AI systems increasingly resembles earlier transitions in data engineering and build systems: as workflows become collaborative and persistent, implicit orchestration must give way to explicit dependency structure.
+
+The paper's scope is intentionally narrow. Our primary concern is \emph{how} AI-native work executes: what the unit of recomputation is, what makes a prior result replayable, and how dependency changes propagate. Richer questions about the semantics of intermediate artifacts or about multi-party co-authoring are important, but they are orthogonal to the execution-lineage thesis developed here.
+
+\section{Related Work}
+
+\subsection{Surveys and Taxonomies}
+
+The literature on LLM agents has already grown large enough to generate several dedicated surveys. Recent reviews cover planning \cite{huang2024planning}, memory \cite{zhang2024memorysurvey}, broader workflow paradigms spanning tool use, planning, and feedback learning \cite{li2024review}, and, more recently, memory mechanisms and evaluation through early 2026 \cite{du2026memorysurvey}. This matters for our argument because it shows that the field has largely converged on the agent as a composite system rather than a raw model invocation. The open question is no longer whether external tools, memory, and iteration matter, but how they should be organized into an execution substrate that remains legible as tasks become longer-horizon and more stateful.
+
+Most survey taxonomies still group systems by capabilities such as planning, reflection, memory, and tool use. Our taxonomy cuts across those dimensions. We focus instead on whether the substrate of execution is implicit or explicit: whether intermediate work remains embedded in prompts and transcripts, or whether it is exposed as stable computational structure with declared dependencies and replayable boundaries.
+
+\subsection{Agentic LLM Systems}
+
+ReAct \cite{yao2023react} introduced interleaved reasoning and action. Toolformer \cite{schick2023toolformer} trains models to use tools via self-supervision. A parallel line of work studies agent frameworks and multi-agent organizations, including CAMEL \cite{li2023camel}, AutoGen \cite{wu2023autogen}, MetaGPT \cite{hong2023metagpt}, and Voyager \cite{wang2023voyager}. These systems show that substantial capability gains can be achieved by placing the model inside richer interaction loops, role structures, and tool environments.
+
+These approaches share a control-loop architecture:
+\begin{equation}
+s_{t+1} = f(s_t, \text{LLM}, \text{tools})
+\end{equation}
+where state is implicit.
+
+The strength of this family of systems is adaptability. The loop can decide at runtime which tool to call, what subproblem to attack next, or how to revise the prompt after observing a failure. This makes agentic systems effective at open-ended problem solving, especially when the horizon is short and the cost of revisiting prior work is low.
+
+However, the same flexibility creates structural ambiguity. Dependencies are often encoded in conversational state rather than in explicit program structure. Intermediate results may exist only as prompt fragments or narration. Two executions that are semantically ``the same'' can differ because context was assembled differently, tool results were reformatted, or reasoning unfolded in another order. As a consequence, the system can appear capable while remaining difficult to inspect, replay, or maintain.
+
+Recent work on planning agents, including Tree-of-Thoughts \cite{yao2023tree}, improves search over reasoning trajectories but retains this basic property: the reasoning process is made more elaborate without necessarily becoming an explicit reusable execution substrate. The same is true of many role-based and multi-agent frameworks. They improve decomposition, coordination, and performance, but usually treat execution state as something reconstructed through conversation rather than compiled and persisted as dependency structure. In our framing, these methods improve inference \emph{inside} a run, whereas execution lineage addresses structure \emph{across} runs.
+
+\subsection{Agent Harnesses and Runtimes}
+
+The term \emph{agent harness} has recently gained research traction as a way to name the surrounding machinery that makes an LLM agent operational. Natural-Language Agent Harnesses \cite{pan2026nlah} explicitly studies harness engineering as a portable object, arguing that important agent behavior lives in editable control logic rather than only in model weights or prompts. General Modular Harness for LLM Agents in Multi-Turn Gaming Environments \cite{zhang2025harness} similarly studies harness design as a composition of modules such as perception, memory, and reasoning.
+
+This line of work is closely related to ours because it externalizes the wrapper around the model. Memory-oriented work pushes in the same direction. Agent Workflow Memory \cite{wang2024awm} learns reusable workflows from prior trajectories, while On the Structural Memory of LLM Agents \cite{zeng2024structuralmemory} studies alternative memory structures and retrieval schemes. WorkflowLLM \cite{fan2024workflowllm} goes further by treating workflow orchestration itself as a capability to be trained and benchmarked. Recent 2025--2026 work pushes farther toward persistent procedural state: LEGOMem \cite{han2025legomem} studies modular procedural memory for workflow automation, Memory-R1 \cite{yan2025memoryr1} studies learned memory management policies, and Memori \cite{borro2026memori} argues that persistent memory should be treated as a structured systems layer rather than as raw conversational carry-forward. These papers all suggest that the structure around the model is an important locus of capability.
+
+Our contribution differs in emphasis. Harness and memory papers ask how agent behavior can be encoded, adapted, or transferred at the controller level. We ask what execution model the harness should implement when workflows need deterministic replay, explicit lineage, and partial recomputation. In that sense, execution lineage can be understood as a systems-level proposal for what a rigorous harness runtime should optimize around. It is compatible with memory-augmented agents, but it is not reducible to memory. A memory system decides what to retain and retrieve; an execution-lineage system decides what the unit of computation is, what its dependencies are, and what exactly must be rerun when some upstream state changes.
+
+\subsection{Reasoning Traces, Search, and Intermediate Steps}
+
+Work on chain-of-thought and related prompting methods establishes an important empirical premise for our paper: intermediate reasoning steps often improve final-task performance. Chain-of-Thought prompting \cite{wei2022cot} shows that exposing intermediate reasoning traces can materially improve complex reasoning. Self-Consistency \cite{wang2022selfconsistency} improves on greedy chain-of-thought by sampling multiple reasoning paths and selecting the most consistent answer. Least-to-Most prompting \cite{zhou2022leasttomost} demonstrates gains from decomposing harder problems into simpler sequential subproblems. Show Your Work: Scratchpads for Intermediate Computation with Language Models \cite{nye2021scratchpads} similarly shows that intermediate computation traces can substantially improve multi-step tasks.
+
+Search-based methods extend this idea further. Tree-of-Thoughts \cite{yao2023tree} treats intermediate thoughts as expandable search nodes rather than a single left-to-right trace. Language Agent Tree Search \cite{zhou2023lats} combines reasoning, acting, and planning through search over agent trajectories. Reflexion \cite{shinn2023reflexion}, Self-Refine \cite{madaan2023selfrefine}, and A Zero-Shot Language Agent for Computer Control with Structured Reflection \cite{li2023structuredreflection} show that iterative critique, reflection, and repair can improve downstream results across diverse tasks. Earlier work on workflow-guided exploration in web environments \cite{liu2018workflowguided} also foreshadows the importance of reusable action structure, albeit in a pre-LLM reinforcement learning setting.
+
+These papers are important to our argument for two reasons. First, they provide evidence that intermediate steps are not incidental; they are often where performance gains come from. Second, they also reveal the limitation of prompt-centric intermediate state: most of these techniques still represent intermediate work as textual traces tied to a specific execution episode. The system may benefit from them during inference, yet still lack stable, replayable boundaries between computational units. Our proposal builds on the empirical value of intermediate reasoning while relocating its substrate from transient text into explicit execution structure.
+
+\subsection{Workflow and DAG Systems}
+
+Workflow and dataflow systems such as Dryad \cite{isard2007dryad} and Spark \cite{zaharia2016spark}, as well as orchestration and analytics systems such as Airflow \cite{airflowdocs} and dbt \cite{dbtdocs}, model execution around explicit dependency graphs, scheduled runs, and lineage-aware transformations.
+
+These systems emphasize:
+\begin{itemize}
+\item explicit dependencies
+\item deterministic execution
+\item incremental recomputation
+\end{itemize}
+
+The relevance of these systems is not superficial. They reflect a mature systems answer to a recurring problem: when work becomes multi-stage and collaborative, hidden dependencies and ephemeral outputs do not scale. Data engineering historically moved from scripts and manual handoffs toward compiled graphs, materialized artifacts, and lineage-aware recomputation because these primitives were necessary for correctness and maintainability. We view AI-native workflows as reaching a similar inflection point.
+
+That said, classical DAG systems were not designed around stochastic model calls, evolving prompts, or semantically rich intermediate artifacts. Their nodes typically represent deterministic code transformations with well-defined data contracts. Our work therefore does not merely import DAGs into AI systems; it adapts the DAG abstraction to settings where nodes may invoke LLMs, generate structured artifacts, and depend on both model configuration and upstream execution identity.
+
+\subsection{Programmatic LLM Systems}
+
+Emerging work treats LLMs as programs:
+\begin{itemize}
+\item DSPy \cite{khattab2023dspy}
+\item LMQL \cite{beurer2023lmql}
+\item PAL \cite{gao2023pal}
+\item Program of Thoughts \cite{chen2022pot}
+\end{itemize}
+
+These frameworks introduce valuable structure around prompting, constraints, optimization, and output shaping. They make it easier to define reusable modules, specify formats, and reason about prompt behavior more systematically than ad hoc chat loops allow.
+
+Nevertheless, most remain primarily sequential or call-graph oriented rather than execution-lineage oriented. They improve how a single pipeline is programmed, but they generally do not make dependency materialization, replay identity, or partial downstream invalidation the organizing abstraction of the whole system. In other words, they help program model interactions, while our focus is on how a larger AI workflow is represented, executed, and persisted over time.
+
+\subsection{Benchmarks and Reproducible Agent Environments}
+
+Another relevant literature studies how to evaluate agents in realistic yet reproducible environments. AgentBench \cite{liu2023agentbench}, WebArena \cite{zhou2023webarena}, VisualWebArena \cite{koh2024visualwebarena}, and WorkArena \cite{drouin2024workarena} evaluate web-based and enterprise-style tasks. AndroidWorld \cite{rawles2024androidworld}, OSWorld \cite{xie2024osworld}, and AppWorld \cite{trivedi2024appworld} extend this trend toward richer execution environments with state-based or execution-based evaluation. GAIA \cite{mialon2023gaia} evaluates assistants on realistic tool-using tasks, while LifelongAgentBench \cite{zheng2025lifelongagentbench} targets long-term accumulation and transfer across interdependent tasks.
+
+Recent 2025--2026 benchmark work sharpens the memory and persistence angle in particular. MemoryAgentBench \cite{hu2025memoryagentbench}, Evo-Memory \cite{wei2025evomemory}, and Mem2ActBench \cite{shen2026mem2actbench} all argue that static one-shot evaluation misses the harder problem of incremental accumulation, selective forgetting, and task-conditioned reuse. These benchmarks are not execution-lineage systems, but they are strong evidence that the field is moving toward persistent, longitudinal evaluation rather than isolated agent episodes.
+
+This benchmark literature is important because it increasingly treats \emph{environmental reproducibility} and \emph{execution-based evaluation} as first-class concerns. However, benchmark reproducibility is not the same as workflow reproducibility. A benchmark may make the external environment resettable and measurable while still leaving the internal execution structure of the agent implicit. Our work is complementary: we focus on making the agent's own computational lineage explicit and incrementally reusable.
+
+\subsection{Workflow Provenance and Interactive Analysis}
+
+There is also an emerging line of work on provenance-aware agent systems in scientific and workflow settings. LLM Agents for Interactive Workflow Provenance \cite{souza2025provenance} studies how LLM agents can query and analyze workflow provenance records through modular interfaces. Connecting Large Language Model Agent to High Performance Computing Resource \cite{ma2025hpc} examines how tool-using agents can operate over parallel and distributed execution substrates.
+
+These papers are adjacent to our thesis because they treat workflows and provenance as serious systems objects rather than as informal prompt context. The difference is that provenance work typically assumes an existing workflow system whose traces are queried after the fact. Execution lineage, as we define it, moves provenance into the execution substrate itself: the lineage is not only something to inspect later, but part of what determines identity, replay, and invalidation during execution.
+
+\subsection{Reproducibility and Evaluation}
+
+LLM reproducibility challenges are well documented \cite{chen2023evaluating}. Variance arises from sampling, model updates, and tool interactions.
+
+Prior work has correctly emphasized that reproducibility in language model systems is limited by multiple factors, including decoding stochasticity, external API variation, and infrastructure drift. Work on interactive evaluation \cite{abramson2022multimodal} and realistic agent benchmarks \cite{rawles2024androidworld,xie2024osworld} likewise shows that even controlled environments exhibit sensitivity to rollout details and test conditions. We do not claim to eliminate all sources of variance. Instead, we isolate a source that is architectural and tractable: execution structure itself. Even when model and tool behavior are held fixed, prompt-oriented systems often reconstitute state heuristically at runtime. This introduces unnecessary instability and obscures provenance.
+
+Our work complements reproducibility research by shifting attention from model behavior alone to the execution substrate around the model. The question is not only whether a model can reproduce a token sequence, but whether the system can reproduce a computational step, restore its exact intermediate state, and determine precisely which downstream work should be invalidated when an upstream artifact changes.
+
+\section{Execution Lineage Model}
+
+We define a workflow as:
+\begin{equation}
+G = (V, E)
+\end{equation}
+
+where $V$ is a set of executable nodes and $E$ is a set of directed dependency edges. Each edge $(u, v) \in E$ states that node $v$ may consume only artifacts explicitly produced by $u$ and declared as part of its input surface.
+
+Each node:
+\begin{equation}
+v = (\mathcal{I}_v, f_v, \mathcal{O}_v)
+\end{equation}
+
+where $\mathcal{I}_v$ denotes the resolved local input state available to node $v$, $f_v$ is the node-local execution procedure, and $\mathcal{O}_v$ is the structured output artifact selected as the node's result. Artifacts are not arbitrary transcripts; they are typed outputs with stable boundaries intended for downstream consumption.
+
+This formulation differs from agent loops in two ways. First, the admissible context for each node is declared before execution rather than reconstructed opportunistically from conversational state. Second, node outputs persist as addressable artifacts with explicit lineage, enabling downstream reuse and inspection.
+
+\subsection{Design Principles}
+
+The execution-lineage model can be summarized by four design principles.
+
+\paragraph{Explicit dependency declaration.}
+A node should not be allowed to consume undeclared upstream state. This principle forces the graph to carry the causal structure of the workflow rather than hiding it in prompt assembly logic.
+
+\paragraph{Local visibility boundaries.}
+Each node should see only the context and dependency artifacts required for its task. Besides improving provenance, this reduces accidental coupling, lowers prompt bloat, and makes it easier to understand why a node produced a given output.
+
+\paragraph{Identity-based reuse.}
+Reuse should be based on proof of equivalence, not similarity of prompts or approximate resemblance of outputs. A runtime should be able to say not merely that two executions ``look close enough,'' but that they share the same declared structure and resolved inputs.
+
+\paragraph{Deterministic publication.}
+Even when execution involves internal iteration, branching, or validation, the boundary exposed downstream should be stable and canonical. Downstream nodes should depend on a published result, not on whatever happened to be most recently present in a conversational trace.
+
+Taken together, these principles describe a runtime whose main object is not the prompt or the transcript, but the dependency-respecting publication of intermediate computation.
+
+\subsection{Intermediate State and Typed Local Boundaries}
+
+The core execution object is the intermediate state boundary. In our implementation this is materialized as an artifact, but the deeper claim is executional rather than representational: the system needs a stable, inspectable unit that downstream computation can depend on. An artifact may contain free-form model output, but it is treated by the runtime as a structured unit with an identity, type, and provenance. This matters because the role of an intermediate result is not merely to be read by a human; it is to become a stable dependency surface for later computation.
+
+Each node executes against a typed local state consisting of three classes of entries: immutable context provided at invocation time, immutable dependency artifacts materialized from upstream nodes, and mutable local artifacts produced during the node's own execution. This separation is important. Without it, a runtime cannot distinguish inherited state from newly produced state, and downstream reasoning about provenance collapses back into transcript reconstruction.
+
+\subsection{Dependency Materialization}
+
+Dependencies are resolved against actual inputs rather than only logical node names. Concretely, an upstream dependency is identified not only by which node produced it, but by the particular resolved input surface under which that node was executed. This prevents two semantically distinct executions of the same logical node from being aliased together.
+
+Formally, let $k_v$ denote the execution identity of node $v$. We define:
+\begin{equation}
+k_v = h(\sigma_v, x_v, \{k_u : u \in \mathrm{pred}(v)\})
+\end{equation}
+where $\sigma_v$ is the structural specification of node $v$, $x_v$ is its resolved input hash, and $\mathrm{pred}(v)$ are its immediate predecessors. The hash function $h$ need not be cryptographically special for our argument; what matters is that node identity is a deterministic function of structure, inputs, and upstream identities.
+
+This execution identity provides the basis for cache reuse, replay, and selective invalidation. If $k_v$ is unchanged, prior execution may be reused exactly. If it changes, downstream nodes that depend on $k_v$ are invalidated and re-executed, while unrelated branches remain untouched.
+
+\subsection{Execution Semantics}
+
+Execution is a forward pass:
+\begin{equation}
+\mathcal{O}_v = f_v(\mathcal{I}_v)
+\end{equation}
+
+Nodes execute once dependencies are satisfied. At runtime, readiness is decided from the graph rather than inferred by the model. This allows the system to schedule independent branches concurrently while preserving sequential semantics within each node's local procedure.
+
+In practice, a node may itself contain multiple internal steps, such as context selection, model invocation, validation, or rendering. We treat these as part of $f_v$. They may be sophisticated, but they remain subordinate to a platform-controlled execution boundary. The model generates content within the node; it does not decide which nodes exist or which undeclared upstream state may be read.
+
+\subsection{Determinism}
+
+\textbf{Definition:}
+Execution is deterministic if outputs are reproducible under:
+\begin{itemize}
+\item fixed inputs
+\item fixed model + parameters
+\item fixed tool outputs
+\end{itemize}
+
+Under these conditions, determinism means more than ``similar answers.'' It means that the system can either replay a prior node execution exactly or prove that some aspect of its identity changed and therefore recomputation is required. Determinism is therefore a property of the execution substrate, not a promise that the model itself is universally stable under all deployments.
+
+\subsection{Replay and Partial Recomputation}
+
+Execution lineage makes replay a first-class runtime mode. When a node's execution identity matches a previously persisted result, the runtime can restore its artifact and associated execution record rather than regenerate it heuristically. This differs from approximate caching: replay is identity-based and therefore explainable.
+
+Similarly, partial recomputation follows directly from graph structure. If an upstream research artifact changes, only descendants whose execution identities depend on that artifact must be recomputed. The runtime can leave unrelated branches intact. In contrast, prompt-centric systems often collapse all prior work into one evolving context window, making a local change expensive because the system lacks precise invalidation boundaries.
+
+\subsection{Invalidation Semantics}
+
+The usefulness of an execution graph depends not only on replay, but on \emph{correct} replay refusal. A lineage-aware runtime must be able to explain both why prior work can be reused and why it can no longer be reused. Invalidation therefore becomes a semantic operation over dependency identities rather than a vague sense that ``the prompt changed.''
+
+Consider a simple three-stage workflow consisting of retrieval, analysis, and synthesis. If only the synthesis prompt changes, the system should preserve retrieval and analysis while recomputing only synthesis. If a retrieval source changes, analysis and synthesis must be invalidated because their dependency identities are downstream of the changed source. This style of invalidation is routine in build systems and dataflow engines, but remains under-specified in many agent systems, where upstream changes are usually handled by restarting or partially reconstructing a prompt transcript.
+
+This distinction matters operationally. Without explicit invalidation semantics, teams tend to choose between two unsatisfactory behaviors: stale reuse of outputs that no longer match current assumptions, or expensive global reruns that throw away valid prior work. Execution lineage aims to replace that ambiguity with a principled middle ground.
+
+\subsection{Canonical Outputs and Observability}
+
+An execution system also needs a notion of which output is authoritative at a boundary. In loop-based systems, candidate drafts, self-critiques, tool observations, and final responses are often mixed together in one transcript. A human can often infer which part ``counts,'' but the runtime itself lacks a reliable canonical object for downstream consumers.
+
+Execution-lineage systems instead select a canonical output at each node boundary. That output may have been produced through multiple internal steps, validations, or revisions, but once selected it becomes the stable downstream dependency surface. This improves observability in two ways. First, it lets operators inspect the exact artifact that downstream nodes consumed, rather than rereading an entire transcript. Second, it creates a durable execution history in which intermediate candidates, final selected outputs, and dependency identities can be distinguished rather than conflated.
+
+\subsection{Execution Lineage vs. Prompt Lineage}
+
+Prompt lineage records the history of prompts, messages, and tool observations used during an interaction. It is useful for audit and narration, but it is a poor substrate for composition because it lacks stable execution boundaries. Execution lineage, by contrast, records the graph of artifact-producing computations and the identities that connect them.
+
+The distinction parallels the difference between logs and program structure. Logs are valuable for understanding what happened after the fact; they are not the mechanism by which a system should declare dependencies or reuse work. In our model, reasoning traces may still exist, but they are auxiliary observability surfaces rather than the system's computational backbone.
+
+\section{Execution vs Agent Loop (Diagram)}
+
+\begin{center}
+\begin{tikzpicture}[node distance=2cm]
+\node (start) [draw] {Input};
+\node (loop) [draw, right=of start] {Agent Loop};
+\node (output) [draw, right=of loop] {Output};
+
+\draw[->] (start) -- (loop);
+\draw[->] (loop) edge[loop above] (loop);
+\draw[->] (loop) -- (output);
+
+\node (g1) [draw, below=3cm of start] {A};
+\node (g2) [draw, right=of g1] {B};
+\node (g3) [draw, right=of g2] {C};
+
+\draw[->] (g1) -- (g2);
+\draw[->] (g2) -- (g3);
+\end{tikzpicture}
+\end{center}
+
+Top: agent loop. Bottom: execution graph.
+
+\section{Research Questions}
+
+Our empirical evaluation is designed around lightweight questions that a solo researcher can answer with modest tooling and repeated manual runs rather than large-scale infrastructure.
+
+\begin{itemize}
+\item \textbf{RQ1: Stability.} Does an execution-graph workflow produce less cross-run variation than a prompt-loop workflow when asked to perform the same multi-step task repeatedly?
+\item \textbf{RQ2: Incrementality.} After a small upstream change, does an execution-graph workflow require less rework than a prompt-loop workflow?
+\item \textbf{RQ3: Traceability.} Is it easier to identify what changed and why in an execution-graph workflow than in a prompt-loop workflow?
+\end{itemize}
+
+These questions do not require frontier-scale benchmarking. They are intended to measure systems properties that should be observable even in small, carefully controlled experiments.
+
+\section{Methods}
+
+\subsection{Study Design}
+
+We use a within-task comparative design. The same task is executed under two conditions:
+\begin{itemize}
+\item \textbf{Prompt-loop baseline}: a conventional chat or agent interaction in which prior work is carried forward through prompts, conversation history, uploaded files, or manually restated context.
+\item \textbf{Execution-graph condition}: the same task represented as explicit stages with declared dependencies and stable intermediate execution boundaries.
+\end{itemize}
+
+The goal is not to compare model intelligence across platforms. Instead, the study isolates the effect of execution substrate. Whenever possible, the same underlying model family, source materials, and task instructions should be used across conditions.
+
+\subsection{Task Selection}
+
+The experimental task should be simple enough to run manually, but structured enough to expose the differences between global reruns and dependency-aware reruns. A practical template is a three-stage research workflow:
+
+\begin{enumerate}
+\item \textbf{Source collection}: gather a small fixed set of documents, links, or excerpts on a topic.
+\item \textbf{Analysis}: extract key claims, summarize evidence, and identify tensions or open questions.
+\item \textbf{Synthesis}: write a short memo or report based on the analysis.
+\end{enumerate}
+
+This task can be executed using ordinary web access and a fixed document set. It is intentionally lightweight: one researcher can run it by hand, and the intermediate boundaries are easy to define.
+
+\subsection{Experimental Conditions}
+
+For the prompt-loop baseline, the researcher runs the workflow in a general-purpose interface such as ChatGPT or Claude. The model is asked to perform the full task end-to-end, with intermediate state preserved only through the session transcript, manually maintained notes, or uploaded files.
+
+For the execution-graph condition, the same workflow is implemented in ThruWire as explicit stages such as \texttt{retrieve}, \texttt{analyze}, and \texttt{write}. Each stage exposes a stable intermediate result and depends only on declared upstream outputs.
+
+To keep the comparison fair and feasible, the experiment should avoid hidden automation advantages. The document set, task prompt, and requested output format should remain as similar as possible across conditions.
+
+\subsection{Procedure}
+
+Each task instance is run in three phases.
+
+\paragraph{Phase 1: Initial execution}
+Run the full workflow from scratch in both conditions and record:
+\begin{itemize}
+\item wall-clock time to first complete output
+\item number of user interventions
+\item availability of identifiable intermediate outputs
+\end{itemize}
+
+\paragraph{Phase 2: Repeat execution}
+Re-run the same task multiple times under fixed inputs and settings. A lightweight but meaningful design is 5--10 repeated runs per condition. Record:
+\begin{itemize}
+\item output similarity across runs
+\item whether intermediate stages remain stable or drift
+\item any visible differences in conclusions, structure, or cited evidence
+\end{itemize}
+
+\paragraph{Phase 3: Upstream change}
+After the initial run, introduce a small but meaningful change to an upstream input. For example:
+\begin{itemize}
+\item replace one source document
+\item modify one source excerpt
+\item add a short constraint to the analysis stage
+\end{itemize}
+
+Then measure how much work must be repeated to produce an updated final output. In a prompt-loop system this often means reconstructing context and re-running most of the workflow. In an execution graph, the expectation is that only the changed stage and its downstream dependents need to be re-executed.
+
+\subsection{Metrics}
+
+The metrics are intentionally simple so they can be collected manually or with lightweight scripts.
+
+\paragraph{Stability}
+Measure variation across repeated runs using any of the following low-cost proxies:
+\begin{itemize}
+\item pairwise textual similarity between final outputs
+\item count of distinct key claims or recommendations across runs
+\item manual rating of whether final conclusions materially differ
+\end{itemize}
+
+If automated metrics are used, they should be reported as approximate operational proxies rather than as definitive semantic measures.
+
+\paragraph{Incremental update cost}
+Record:
+\begin{itemize}
+\item wall-clock time from upstream edit to updated final output
+\item number of stages that had to be re-run
+\item number of manual copy-forward or context-reconstruction actions required
+\end{itemize}
+
+\paragraph{Traceability}
+Traceability is evaluated with a lightweight rubric. For each run, the researcher asks:
+\begin{itemize}
+\item Can I identify which intermediate step produced a given final claim?
+\item Can I tell which upstream change altered the final output?
+\item Can I inspect the relevant intermediate state without rereading the full transcript?
+\end{itemize}
+
+These questions can be scored on a 3-point scale (difficult / partial / easy) or summarized descriptively if the paper remains primarily qualitative.
+
+\subsection{Implementation Notes for a Solo Researcher}
+
+This method is designed to be feasible without extensive infrastructure. It does not require custom benchmarks, large datasets, or many annotators. A single researcher can execute it with:
+\begin{itemize}
+\item one fixed task template
+\item one small source set per task
+\item 5--10 repeated runs per condition
+\item simple timing, note-taking, and optional text-similarity scripts
+\end{itemize}
+
+The strongest version of the experiment is not the largest one. It is the cleanest one: same task, same inputs, small upstream edits, explicit recording of what had to be re-run, and transparent acknowledgment of what is measured manually.
+
+\section{Experimental Setup}
+
+\subsection{Example Task Template}
+
+One concrete setup is a short research brief task:
+\begin{quote}
+``Using the provided sources, produce a one-page brief summarizing the competitive landscape of X, the strongest evidence for each major claim, and two unresolved questions that require further investigation.''
+\end{quote}
+
+The task is appropriate because it naturally decomposes into retrieval, analysis, and synthesis, while still being manageable in a manual study.
+
+\subsection{Example Upstream Edit}
+
+After the initial run, replace one source with a contradictory or higher-quality source and ask the system to update the brief. This produces a controlled intervention that should propagate downstream. The key observation is not whether the answer changes, but how the system changes it: by re-running everything, or by invalidating only the affected downstream stages.
+
+\subsection{Controls}
+
+To reduce confounds, the researcher should hold constant:
+\begin{itemize}
+\item the source set used in the initial run
+\item the requested output format
+\item the high-level task instruction
+\item the model choice, where platform constraints allow
+\end{itemize}
+
+Any unavoidable differences between platforms should be reported clearly rather than hidden. For example, if one interface does not expose the same model controls or file-handling behavior, that limitation should be stated as part of the experimental context.
+
+\section{Results}
+
+\subsection{Results Template}
+
+Table \ref{tab:main-results} provides a lightweight template for the main comparative results.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+Metric & Prompt Loop Baseline & Execution Graph \\
+\midrule
+Cross-run variation & [fill in] & [fill in] \\
+Initial completion time & [fill in] & [fill in] \\
+Update time after upstream edit & [fill in] & [fill in] \\
+Stages re-run after edit & [fill in] & [fill in] \\
+Manual context reconstruction steps & [fill in] & [fill in] \\
+Traceability rating & [fill in] & [fill in] \\
+\bottomrule
+\end{tabular}
+\caption{Template for the primary comparison between prompt-loop and execution-graph conditions.}
+\label{tab:main-results}
+\end{table}
+
+\subsection{Expected Outcome Pattern}
+
+If the execution-lineage hypothesis is correct, the most important differences should appear in update behavior and traceability rather than in raw one-shot quality alone. Specifically, we expect the execution-graph condition to show:
+\begin{itemize}
+\item lower run-to-run variation for structured multi-step tasks
+\item fewer stages re-executed after an upstream change
+\item fewer manual context-reconstruction actions
+\item clearer identification of which intermediate state caused a final change
+\end{itemize}
+
+Initial completion time may or may not favor the execution graph. In some cases the graph condition may incur modest setup overhead because stages must be declared explicitly. This does not weaken the claim of the paper. The core argument is about reproducibility and incremental operability over time, not minimum latency on a single first run.
+
+\subsection{Illustrative Analysis Template}
+
+The final writeup can be organized around three observations.
+
+\paragraph{Observation 1: Stability}
+Describe whether repeated runs converged on similar outputs, and whether differences were mostly stylistic or materially substantive.
+
+\paragraph{Observation 2: Incrementality}
+Report how much work was repeated after the upstream edit, emphasizing whether the system supported local invalidation or forced global rerun behavior.
+
+\paragraph{Observation 3: Traceability}
+Describe whether the researcher could directly inspect the intermediate step responsible for a final claim or a downstream change.
+
+\subsection{Threats to Validity}
+
+This evaluation is intentionally small and should be presented as such. Likely threats include:
+\begin{itemize}
+\item platform differences unrelated to execution model
+\item limited sample size
+\item partial reliance on manual scoring
+\item task-specific results that may not generalize to all workloads
+\end{itemize}
+
+These limitations do not invalidate the experiment. They define its scope. The purpose of the study is to establish a concrete, reproducible small-scale test of execution-lineage claims, not to offer a comprehensive benchmark of all agent systems.
+
+\section{Discussion}
+
+\subsection{Why This Matters}
+
+Agent loops optimize for task completion. Execution graphs optimize for:
+\begin{itemize}
+\item persistence
+\item evolution
+\item collaboration
+\end{itemize}
+
+This difference becomes more important as AI systems move from one-shot assistants to persistent work environments. In many real settings, the goal is not merely to get an answer once. The goal is to build a body of work that can be revised, extended, audited, and shared across humans and agents. A system that stores only prompts and final answers leaves too much of the work trapped inside transient execution.
+
+Execution lineage changes the unit of improvement. Instead of iterating only on a final output, teams can iterate on the structure that produces outputs. A change to an upstream methodology, research constraint, or transformation rule can propagate through the graph in a principled way. This resembles the transition seen in data engineering, where the object of engineering shifted from isolated scripts to the dependency system that generated downstream tables and reports.
+
+The practical collaboration benefit follows from this, but is not the paper's main claim. Once intermediate boundaries and dependencies are explicit, humans and agents can intervene at meaningful points rather than by restating instructions into a loop. However, the novelty we emphasize here is the runtime substrate that makes such interventions precise: explicit invalidation boundaries, replayable identities, and deterministic scheduling over a graph.
+
+\subsection{Where Execution Graphs Help Most}
+
+Execution lineage is unlikely to matter equally for all AI tasks. Its advantages should be most visible in workflows with four properties.
+
+\begin{itemize}
+\item \textbf{Multi-stage structure}: the work naturally decomposes into separable stages such as retrieval, transformation, critique, and synthesis.
+\item \textbf{Revision over time}: upstream assumptions, sources, or constraints are likely to change after an initial run.
+\item \textbf{Shared inspection}: humans or other agents need to inspect intermediate work products directly rather than trust an opaque final answer.
+\item \textbf{Asymmetric recomputation cost}: some stages are expensive or slow enough that global reruns are operationally undesirable.
+\end{itemize}
+
+These properties describe a broad class of realistic AI-native work: research briefs, analysis pipelines, coding workflows, forecasting systems, compliance reviews, and operational runbooks. In such settings, the key question is rarely ``can the model produce an answer?'' The harder question is whether the system can evolve that answer over time without losing its own structure.
+
+\subsection{What This Paper Does Not Claim}
+
+The argument here should not be overstated. We do not claim that deterministic graphs replace all useful forms of agentic exploration. Open-ended discovery, broad brainstorming, and ambiguous early-stage problem framing may still benefit from unconstrained loops, reflection, and search. Nor do we claim that explicit execution structure by itself guarantees better one-shot answer quality. A poorly designed graph can still route bad prompts, weak tools, or misleading inputs.
+
+What we claim is narrower and more systems-oriented. Once a workflow has repeated stages, reusable intermediate state, and nontrivial update pressure, leaving its structure implicit becomes a liability. At that point, the graph is not merely one possible representation among many. It becomes a practical mechanism for preserving correctness, reducing unnecessary recomputation, and making the system legible to its operators.
+
+\subsection{Limitations}
+
+\begin{itemize}
+\item requires structure upfront
+\item less flexible for open-ended tasks
+\item determinism depends on controlled inputs
+\end{itemize}
+
+These limitations are real. Some exploratory tasks are best served by unconstrained loops early in the process, when the system does not yet know what the durable structure should be. Our claim is therefore not that all agentic behavior should disappear, but that once a workflow acquires recurring stages and reusable intermediates, leaving that structure implicit becomes increasingly costly.
+
+In addition, typed artifacts and execution identities introduce design overhead. Someone must define output contracts, dependency boundaries, and invalidation semantics. Poorly chosen boundaries can make a graph brittle or unnecessarily fine-grained. There is also an unresolved question about how best to combine deterministic execution structure with stochastic search methods used in more open-ended planning and creative reasoning.
+
+Finally, determinism is conditional. If upstream APIs, model versions, or external tools change, exact replay may no longer be possible. Execution lineage does not eliminate this reality. It does, however, make the source of change explicit and localizable, which is preferable to a system in which instability is entangled with prompt assembly and hidden context reconstruction.
+
+\section{Conclusion}
+
+We introduced execution lineage as a replacement for prompt lineage in AI systems. By representing workflows as deterministic graphs of artifact-producing computations, we enable reproducibility, inspectability, and incremental computation.
+
+The broader argument is that many of the failures of current agent systems arise from putting too much system logic inside transient prompt loops. Better models may improve reasoning within those loops, but they do not by themselves create reusable boundaries, durable state, or principled change propagation. Those properties require explicit structure outside the model.
+
+This abstraction aligns AI systems with decades of progress in data and software systems, while adapting those lessons to stochastic model-based computation. We therefore view execution lineage not as an implementation detail, but as a foundational systems layer for persistent AI-native work whose execution must remain inspectable, replayable, and incrementally updatable over time.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{99}
+
+\bibitem{huang2024planning}
+Xu Huang, Weiwen Liu, Xiaolong Chen, Xingmei Wang, Hao Wang, Defu Lian, Yasheng Wang, Ruiming Tang, and Enhong Chen.
+\newblock Understanding the Planning of LLM Agents: A Survey.
+\newblock arXiv:2402.02716, 2024.
+
+\bibitem{li2024review}
+Xinzhe Li.
+\newblock A Review of Prominent Paradigms for LLM-Based Agents: Tool Use (Including RAG), Planning, and Feedback Learning.
+\newblock arXiv:2406.05804, 2024.
+
+\bibitem{zhang2024memorysurvey}
+Zeyu Zhang, Xiaohe Bo, Chen Ma, Rui Li, Xu Chen, Quanyu Dai, Jieming Zhu, Zhenhua Dong, and Ji-Rong Wen.
+\newblock A Survey on the Memory Mechanism of Large Language Model Based Agents.
+\newblock arXiv:2404.13501, 2024.
+
+\bibitem{du2026memorysurvey}
+Pengfei Du.
+\newblock Memory for Autonomous LLM Agents: Mechanisms, Evaluation, and Emerging Frontiers.
+\newblock arXiv:2603.07670, 2026.
+
+\bibitem{nye2021scratchpads}
+Maxwell Nye, Anders Johan Andreassen, Guy Gur-Ari, Henryk Michalewski, Jacob Austin, David Bieber, David Dohan, Aitor Lewkowycz, Maarten Bosma, David Luan, Charles Sutton, and Augustus Odena.
+\newblock Show Your Work: Scratchpads for Intermediate Computation with Language Models.
+\newblock arXiv:2112.00114, 2021.
+
+\bibitem{wei2022cot}
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Brian Ichter, Fei Xia, Ed Chi, Quoc Le, and Denny Zhou.
+\newblock Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem{wang2022selfconsistency}
+Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, and Denny Zhou.
+\newblock Self-Consistency Improves Chain of Thought Reasoning in Language Models.
+\newblock arXiv:2203.11171, 2022.
+
+\bibitem{zhou2022leasttomost}
+Denny Zhou, Nathanael Sch\"arli, Le Hou, Jason Wei, Nathan Scales, Xuezhi Wang, Dale Schuurmans, Claire Cui, Olivier Bousquet, Quoc Le, and Ed Chi.
+\newblock Least-to-Most Prompting Enables Complex Reasoning in Large Language Models.
+\newblock arXiv:2205.10625, 2022.
+
+\bibitem{yao2023react}
+Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao.
+\newblock ReAct: Synergizing Reasoning and Acting in Language Models.
+\newblock In \emph{International Conference on Learning Representations}, 2023.
+
+\bibitem{schick2023toolformer}
+Timo Schick, Jane Dwivedi-Yu, Roberto Dess\`i, Roberta Raileanu, Maria Lomeli, Luke Zettlemoyer, Nicola Cancedda, and Thomas Scialom.
+\newblock Toolformer: Language Models Can Teach Themselves to Use Tools.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{li2023camel}
+Guohao Li, Hasan Abed Al Kader Hammoud, Hani Itani, Dmitrii Khizbullin, and Bernard Ghanem.
+\newblock CAMEL: Communicative Agents for ``Mind'' Exploration of Large Language Model Society.
+\newblock arXiv:2303.17760, 2023.
+
+\bibitem{wang2023voyager}
+Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima Anandkumar.
+\newblock Voyager: An Open-Ended Embodied Agent with Large Language Models.
+\newblock arXiv:2305.16291, 2023.
+
+\bibitem{hong2023metagpt}
+Sirui Hong, Mingchen Zhuge, Jiaqi Chen, Xiawu Zheng, Yuheng Cheng, Ceyao Zhang, Jinlin Wang, Zili Wang, Steven Ka Shing Yau, Zijuan Lin, Liyang Zhou, Chenyu Ran, Lingfeng Xiao, Chenglin Wu, and J\"urgen Schmidhuber.
+\newblock MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework.
+\newblock arXiv:2308.00352, 2023.
+
+\bibitem{wu2023autogen}
+Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu, Li Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, Ahmed Hassan Awadallah, Ryen W. White, Doug Burger, and Chi Wang.
+\newblock AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.
+\newblock arXiv:2308.08155, 2023.
+
+\bibitem{yao2023tree}
+Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Thomas L. Griffiths, Yuan Cao, and Karthik Narasimhan.
+\newblock Tree of Thoughts: Deliberate Problem Solving with Large Language Models.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{shinn2023reflexion}
+Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik Narasimhan, and Shunyu Yao.
+\newblock Reflexion: Language Agents with Verbal Reinforcement Learning.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{madaan2023selfrefine}
+Aman Madaan, Niket Tandon, Prakhar Gupta, Skyler Hallinan, Luyu Gao, Sarah Wiegreffe, Uri Alon, Nouha Dziri, Shrimai Prabhumoye, Yiming Yang, Shashank Gupta, Bodhisattwa Prasad Majumder, Katherine Hermann, Sean Welleck, Amir Yazdanbakhsh, and Peter Clark.
+\newblock Self-Refine: Iterative Refinement with Self-Feedback.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{zhou2023lats}
+Andy Zhou, Kai Yan, Michal Shlapentokh-Rothman, Haohan Wang, and Yu-Xiong Wang.
+\newblock Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models.
+\newblock arXiv:2310.04406, 2023.
+
+\bibitem{li2023structuredreflection}
+Tao Li, Gang Li, Zhiwei Deng, Bryan Wang, and Yang Li.
+\newblock A Zero-Shot Language Agent for Computer Control with Structured Reflection.
+\newblock arXiv:2310.08740, 2023.
+
+\bibitem{liu2018workflowguided}
+Evan Zheran Liu, Kelvin Guu, Panupong Pasupat, Tianlin Shi, and Percy Liang.
+\newblock Reinforcement Learning on Web Interfaces Using Workflow-Guided Exploration.
+\newblock arXiv:1802.08802, 2018.
+
+\bibitem{pan2026nlah}
+Linyue Pan, Lexiao Zou, Shuo Guo, Jingchen Ni, and Hai-Tao Zheng.
+\newblock Natural-Language Agent Harnesses.
+\newblock arXiv:2603.25723, 2026.
+
+\bibitem{zhang2025harness}
+Yuxuan Zhang, Haoyang Yu, Lanxiang Hu, Haojian Jin, and Hao Zhang.
+\newblock General Modular Harness for LLM Agents in Multi-Turn Gaming Environments.
+\newblock arXiv:2507.11633, 2025.
+
+\bibitem{wang2024awm}
+Zora Zhiruo Wang, Jiayuan Mao, Daniel Fried, and Graham Neubig.
+\newblock Agent Workflow Memory.
+\newblock arXiv:2409.07429, 2024.
+
+\bibitem{zeng2024structuralmemory}
+Ruihong Zeng, Jinyuan Fang, Siwei Liu, and Zaiqiao Meng.
+\newblock On the Structural Memory of LLM Agents.
+\newblock arXiv:2412.15266, 2024.
+
+\bibitem{fan2024workflowllm}
+Shengda Fan, Xin Cong, Yuepeng Fu, Zhong Zhang, Shuyan Zhang, Yuanwei Liu, Yesai Wu, Yankai Lin, Zhiyuan Liu, and Maosong Sun.
+\newblock WorkflowLLM: Enhancing Workflow Orchestration Capability of Large Language Models.
+\newblock arXiv:2411.05451, 2024.
+
+\bibitem{han2025legomem}
+Dongge Han, Camille Couturier, Daniel Madrigal Diaz, Xuchao Zhang, Victor R\"uhle, and Saravan Rajmohan.
+\newblock LEGOMem: Modular Procedural Memory for Multi-agent LLM Systems for Workflow Automation.
+\newblock arXiv:2510.04851, 2025.
+
+\bibitem{yan2025memoryr1}
+Sikuan Yan, Xiufeng Yang, Zuchao Huang, Ercong Nie, Zifeng Ding, Zonggen Li, Xiaowen Ma, Hinrich Sch\"utze, Volker Tresp, and Yunpu Ma.
+\newblock Memory-R1: Enhancing Large Language Model Agents to Manage and Utilize Memories via Reinforcement Learning.
+\newblock arXiv:2508.19828, 2025.
+
+\bibitem{borro2026memori}
+Luiz C. Borro, Luiz A. B. Macarini, Gordon Tindall, Michael Montero, and Adam B. Struck.
+\newblock Memori: A Persistent Memory Layer for Efficient, Context-Aware LLM Agents.
+\newblock arXiv:2603.19935, 2026.
+
+\bibitem{isard2007dryad}
+Michael Isard, Mihai Budiu, Yuan Yu, Andrew Birrell, and Dennis Fetterly.
+\newblock Dryad: Distributed Data-Parallel Programs from Sequential Building Blocks.
+\newblock In \emph{EuroSys}, 2007.
+
+\bibitem{zaharia2016spark}
+Matei Zaharia, Mosharaf Chowdhury, Michael J. Franklin, Scott Shenker, and Ion Stoica.
+\newblock Spark: Cluster Computing with Working Sets.
+\newblock In \emph{USENIX HotCloud}, 2010.
+
+\bibitem{airflowdocs}
+Apache Software Foundation.
+\newblock Airflow Documentation: DAGs.
+\newblock \url{https://airflow.apache.org/docs/apache-airflow/3.0.4/core-concepts/dags.html}, accessed May 4, 2026.
+
+\bibitem{dbtdocs}
+dbt Labs.
+\newblock dbt Developer Hub.
+\newblock \url{https://docs.getdbt.com/}, accessed May 4, 2026.
+
+\bibitem{khattab2023dspy}
+Omar Khattab, Keshav Santhanam, Xiang Lisa Li, Aatmik Gupta, Christopher Potts, and Matei Zaharia.
+\newblock DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines.
+\newblock arXiv:2310.03714, 2023.
+
+\bibitem{beurer2023lmql}
+Leon Beurer-Kellner, Marc Fischer, and Martin Vechev.
+\newblock Prompting Is Programming: A Query Language for Large Language Models.
+\newblock In \emph{ACM SIGPLAN Conference on Programming Language Design and Implementation}, 2023.
+
+\bibitem{chen2022pot}
+Wenhu Chen, Xueguang Ma, Xinyi Wang, and William W. Cohen.
+\newblock Program of Thoughts Prompting: Disentangling Computation from Reasoning for Numerical Reasoning Tasks.
+\newblock arXiv:2211.12588, 2022.
+
+\bibitem{gao2023pal}
+Luyu Gao, Aman Madaan, Shuyan Zhou, Uri Alon, Pengfei Liu, Yiming Yang, Jamie Callan, and Graham Neubig.
+\newblock PAL: Program-aided Language Models.
+\newblock In \emph{International Conference on Machine Learning}, 2023.
+
+\bibitem{chen2023evaluating}
+Lingjiao Chen, Matei Zaharia, and James Zou.
+\newblock How Is ChatGPT's Behavior Changing over Time?
+\newblock arXiv:2307.09009, 2023.
+
+\bibitem{liu2023agentbench}
+Xiao Liu, Hao Yu, Hanchen Zhang, Yifan Xu, Xuanyu Lei, Hanyu Lai, Yu Gu, Hangliang Ding, Kaiwen Men, Kejuan Yang, Shudan Zhang, Xiang Deng, Aohan Zeng, Zhengxiao Du, Chenhui Zhang, Sheng Shen, Tianjun Zhang, Yu Su, Huan Sun, Minlie Huang, Yuxiao Dong, and Jie Tang.
+\newblock AgentBench: Evaluating LLMs as Agents.
+\newblock arXiv:2308.03688, 2023.
+
+\bibitem{zhou2023webarena}
+Shuyan Zhou, Frank F. Xu, Hao Zhu, Xuhui Zhou, Robert Lo, Abishek Sridhar, Xianyi Cheng, Tianyue Ou, Yonatan Bisk, Daniel Fried, Uri Alon, and Graham Neubig.
+\newblock WebArena: A Realistic Web Environment for Building Autonomous Agents.
+\newblock arXiv:2307.13854, 2023.
+
+\bibitem{koh2024visualwebarena}
+Jing Yu Koh, Robert Lo, Lawrence Jang, Vikram Duvvur, Ming Chong Lim, Po-Yu Huang, Graham Neubig, Shuyan Zhou, Ruslan Salakhutdinov, and Daniel Fried.
+\newblock VisualWebArena: Evaluating Multimodal Agents on Realistic Visual Web Tasks.
+\newblock arXiv:2401.13649, 2024.
+
+\bibitem{drouin2024workarena}
+Alexandre Drouin, Maxime Gasse, Massimo Caccia, Issam H. Laradji, Manuel Del Verme, Tom Marty, L\'eo Boisvert, Megh Thakkar, Quentin Cappart, David Vazquez, Nicolas Chapados, and Alexandre Lacoste.
+\newblock WorkArena: How Capable Are Web Agents at Solving Common Knowledge Work Tasks?
+\newblock arXiv:2403.07718, 2024.
+
+\bibitem{rawles2024androidworld}
+Christopher Rawles, Sarah Clinckemaillie, Yifan Chang, Jonathan Waltz, Gabrielle Lau, Marybeth Fair, Alice Li, William Bishop, Wei Li, Folawiyo Campbell-Ajala, Daniel Toyama, Robert Berry, Divya Tyamagundlu, Timothy Lillicrap, and Oriana Riva.
+\newblock AndroidWorld: A Dynamic Benchmarking Environment for Autonomous Agents.
+\newblock arXiv:2405.14573, 2024.
+
+\bibitem{xie2024osworld}
+Tianbao Xie, Danyang Zhang, Jixuan Chen, Xiaochuan Li, Siheng Zhao, Ruisheng Cao, Toh Jing Hua, Zhoujun Cheng, Dongchan Shin, Fangyu Lei, Yitao Liu, Yiheng Xu, Shuyan Zhou, Silvio Savarese, Caiming Xiong, Victor Zhong, and Tao Yu.
+\newblock OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments.
+\newblock arXiv:2404.07972, 2024.
+
+\bibitem{trivedi2024appworld}
+Harsh Trivedi, Tushar Khot, Mareike Hartmann, Ruskin Manku, Vinty Dong, Edward Li, Shashank Gupta, Ashish Sabharwal, and Niranjan Balasubramanian.
+\newblock AppWorld: A Controllable World of Apps and People for Benchmarking Interactive Coding Agents.
+\newblock arXiv:2407.18901, 2024.
+
+\bibitem{mialon2023gaia}
+Gr\'egoire Mialon, Cl\'ementine Fourrier, Craig Swift, Thomas Wolf, Yann LeCun, and Thomas Scialom.
+\newblock GAIA: A Benchmark for General AI Assistants.
+\newblock arXiv:2311.12983, 2023.
+
+\bibitem{zheng2025lifelongagentbench}
+Junhao Zheng, Xidi Cai, Qiuke Li, Duzhen Zhang, ZhongZhi Li, Yingying Zhang, Le Song, and Qianli Ma.
+\newblock LifelongAgentBench: Evaluating LLM Agents as Lifelong Learners.
+\newblock arXiv:2505.11942, 2025.
+
+\bibitem{hu2025memoryagentbench}
+Yuanzhe Hu, Yu Wang, and Julian McAuley.
+\newblock Evaluating Memory in LLM Agents via Incremental Multi-Turn Interactions.
+\newblock arXiv:2507.05257, 2025.
+
+\bibitem{wei2025evomemory}
+Tianxin Wei, Noveen Sachdeva, Benjamin Coleman, Zhankui He, Yuanchen Bei, Xuying Ning, Mengting Ai, Yunzhe Li, Jingrui He, Ed H. Chi, Chi Wang, Shuo Chen, Fernando Pereira, Wang-Cheng Kang, and Derek Zhiyuan Cheng.
+\newblock Evo-Memory: Benchmarking LLM Agent Test-time Learning with Self-Evolving Memory.
+\newblock arXiv:2511.20857, 2025.
+
+\bibitem{shen2026mem2actbench}
+Yiting Shen, Kun Li, Wei Zhou, and Songlin Hu.
+\newblock Mem2ActBench: A Benchmark for Evaluating Long-Term Memory Utilization in Task-Oriented Autonomous Agents.
+\newblock arXiv:2601.19935, 2026.
+
+\bibitem{souza2025provenance}
+Renan Souza, Timothy Poteet, Brian Etz, Daniel Rosendo, Amal Gueroudji, Woong Shin, Prasanna Balaprakash, and Rafael Ferreira da Silva.
+\newblock LLM Agents for Interactive Workflow Provenance: Reference Architecture and Evaluation Methodology.
+\newblock arXiv:2509.13978, 2025.
+
+\bibitem{ma2025hpc}
+Heng Ma, Alexander Brace, Carlo Siebenschuh, Greg Pauloski, Ian Foster, and Arvind Ramanathan.
+\newblock Connecting Large Language Model Agent to High Performance Computing Resource.
+\newblock arXiv:2502.12280, 2025.
+
+\bibitem{abramson2022multimodal}
+Josh Abramson, Arun Ahuja, Federico Carnevale, Petko Georgiev, Alex Goldin, Alden Hung, Jessica Landon, Timothy Lillicrap, Alistair Muldal, Blake Richards, Adam Santoro, Tamara von Glehn, Greg Wayne, Nathaniel Wong, and Chen Yan.
+\newblock Evaluating Multimodal Interactive Agents.
+\newblock arXiv:2205.13274, 2022.
+
+\end{thebibliography}
+
+\end{document}
