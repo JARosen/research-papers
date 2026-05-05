@@ -11,8 +11,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compute replay-stability metrics.")
     parser.add_argument("--results-file", type=Path, required=True)
     parser.add_argument("--fresh-condition", default="loop_centric_fresh")
-    parser.add_argument("--replay-condition", default="thruwire_replay_selective_recompute")
-    parser.add_argument("--fresh-graph-condition", default="thruwire_fresh_recompute")
+    parser.add_argument("--replay-condition", default="simple_dag_replay_selective_recompute")
+    parser.add_argument("--fresh-graph-condition", default="simple_dag_fresh_recompute")
     return parser.parse_args()
 
 

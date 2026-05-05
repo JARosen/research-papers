@@ -83,14 +83,14 @@ class ThruWireExperimentRunner:
 
             return {
                 "thruwire_fresh_recompute": {
-                    "condition_id": "C5",
+                    "condition_id": "C7",
                     "condition_name": "thruwire_fresh_recompute",
                     "version_id": version_id,
                     "runs": [self._serialize(item) for item in c4_fresh],
                     "final_output": c4_fresh[-1].final_output if c4_fresh else "",
                 },
                 "thruwire_replay_selective_recompute": {
-                    "condition_id": "C6",
+                    "condition_id": "C8",
                     "condition_name": "thruwire_replay_selective_recompute",
                     "initial_version_id": version_id,
                     "updated_version_id": updated_version_id,

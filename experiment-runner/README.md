@@ -31,19 +31,51 @@ as if it were interchangeable with `C1` loop-centric fresh execution.
 - `C2` `loop_centric_update_final_only`
 - `C3` `loop_centric_update_with_intermediates`
 - `C4` `loop_centric_with_procedural_memory`
-- `C5` `thruwire_fresh_recompute`
-- `C6` `thruwire_replay_selective_recompute`
-- Optional `C7` `chatgpt_product_selenium`
+- `C5` `simple_dag_fresh_recompute`
+- `C6` `simple_dag_replay_selective_recompute`
+- Optional `C9` `chatgpt_product_selenium`
+- Disabled for first pass: `C7` `thruwire_fresh_recompute`
+- Disabled for first pass: `C8` `thruwire_replay_selective_recompute`
 
 The Selenium-based ChatGPT product baseline is retained for future
 ecological/product-baseline experiments, but it is not the primary scientific
 baseline because ChatGPT product behavior includes hidden harness, memory,
 model-routing, and product-level context variables.
 
-The controlled loop-centric harness defaults to `gpt-5.2`, matching the
-ThruWire executor model configured in the sibling agent-framework repo
-(`openai/gpt-5.2`). The judge may use any suitable model, including a later
-one.
+The controlled loop-centric harness and the in-repo simple DAG harness both
+default to `gpt-5.2`, matching the ThruWire executor model configured in the
+sibling agent-framework repo (`openai/gpt-5.2`). The judge may use any
+suitable model, including a later one.
+
+## Runners
+
+The repo currently contains four harness runners:
+
+1. `LoopCentricHarnessRunner`
+   Path:
+   [`experiment_runner/harnesses/loop_centric/runner.py`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiment_runner/harnesses/loop_centric/runner.py)
+   Status: active in the default first-pass experiment.
+
+2. `SimpleDAGHarnessRunner`
+   Path:
+   [`experiment_runner/harnesses/simple_dag/runner.py`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiment_runner/harnesses/simple_dag/runner.py)
+   Status: active in the default first-pass experiment.
+
+3. `ThruWireHarnessRunner`
+   Path:
+   [`experiment_runner/harnesses/thruwire/runner.py`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiment_runner/harnesses/thruwire/runner.py)
+   Status: implemented, retained for secondary system-validation runs, disabled in the default first-pass config.
+
+4. `ChatGPTProductSeleniumRunner`
+   Path:
+   [`experiment_runner/harnesses/chatgpt_selenium/runner.py`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiment_runner/harnesses/chatgpt_selenium/runner.py)
+   Status: implemented, retained for future ecological/product comparisons, not part of the primary scientific baseline.
+
+So there are four runner types in code, but only two are currently active by
+default:
+
+- `loop_centric`
+- `simple_dag`
 
 ## Assets
 
@@ -67,8 +99,10 @@ pip install .
 
 ## Run Structure
 
-The Python runner now defaults to the controlled loop-centric harness plus the
-ThruWire execution-graph harness. The preserved Selenium path is optional.
+The Python runner now defaults to the controlled loop-centric harness plus a
+minimal in-repo execution-lineage DAG harness. ThruWire is retained in code but
+disabled for the first-pass experiment run. The preserved Selenium path is
+optional.
 
 Typical workflow:
 
@@ -103,6 +137,20 @@ Result bundles should capture, at minimum:
 - timing and token metadata when available
 - transcripts and prompt/response logs for loop-centric runs
 - memory retrieval logs for the procedural-memory baseline
+
+The primary scientific comparison is loop-centric execution versus the in-repo
+simple DAG harness. ThruWire remains available in code as a secondary
+confirmation path, but it is disabled in the default config for the first pass.
+It can still be invoked explicitly with:
+
+```bash
+cd /Users/dev/Documents/GitHub/research-papers/experiment-runner
+.venv/bin/python -m experiment_runner.cli run \
+  --task-file experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json \
+  --repeats 3 \
+  --output-dir results/execution-lineage-with-thruwire \
+  --conditions loop_centric_fresh loop_centric_update_final_only loop_centric_update_with_intermediates loop_centric_with_procedural_memory simple_dag_fresh_recompute simple_dag_replay_selective_recompute thruwire_fresh_recompute thruwire_replay_selective_recompute
+```
 
 Fresh-run variation under `RQ1` is diagnostic. The primary `RQ1` criterion is
 exact replay under unchanged execution identity.

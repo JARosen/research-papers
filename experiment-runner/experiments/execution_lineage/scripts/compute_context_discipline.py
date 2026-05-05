@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compute execution-lineage context and memory diagnostics.")
     parser.add_argument("--judge-output", type=Path, required=True)
     parser.add_argument("--mapping-file", type=Path, required=True)
-    parser.add_argument("--condition-id", default="thruwire_replay_selective_recompute")
+    parser.add_argument("--condition-id", default="simple_dag_replay_selective_recompute")
     return parser.parse_args()
 
 

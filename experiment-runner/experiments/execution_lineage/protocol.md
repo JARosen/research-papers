@@ -83,9 +83,11 @@ Measures:
 | `C2` | `loop_centric_update_final_only` | Ordinary prompt-centric update baseline |
 | `C3` | `loop_centric_update_with_intermediates` | Stronger prompt-centric update baseline |
 | `C4` | `loop_centric_with_procedural_memory` | Transparent memory/wiki baseline |
-| `C5` | `thruwire_fresh_recompute` | Fresh graph recomputation baseline |
-| `C6` | `thruwire_replay_selective_recompute` | Execution-lineage behavior under replay and update |
-| Optional `C7` | `chatgpt_product_selenium` | Preserved ecological/product baseline |
+| `C5` | `simple_dag_fresh_recompute` | Primary in-repo DAG recomputation baseline |
+| `C6` | `simple_dag_replay_selective_recompute` | Primary in-repo DAG replay/update baseline |
+| Disabled first pass `C7` | `thruwire_fresh_recompute` | Secondary ThruWire fresh recomputation validation |
+| Disabled first pass `C8` | `thruwire_replay_selective_recompute` | Secondary ThruWire replay/update validation |
+| Optional `C9` | `chatgpt_product_selenium` | Preserved ecological/product baseline |
 
 Rules:
 
@@ -98,16 +100,29 @@ Rules:
 The default scientific comparison is:
 
 - same provider/model family under a loop-centric harness
-- versus ThruWire under an execution-graph harness
+- versus a minimal in-repo execution-lineage DAG harness
 
 The loop-centric harness carries workflow state through prompt text,
 conversation history, and optional transparent memory retrieval. It does not
 use executable dependency edges, execution identities, replay, or automatic
 invalidation.
 
+The simple DAG harness uses the same model client and prompt assets as the
+loop-centric harness, but routes work through explicit stage dependencies,
+identity-based replay, and selective recomputation. This is the primary
+apples-to-apples substrate comparison.
+
+Harness inventory for the current implementation:
+
+- `loop_centric`: active by default
+- `simple_dag`: active by default
+- `thruwire`: implemented, disabled in the first-pass default config
+- `chatgpt_product_selenium`: implemented, retained for future product-baseline work
+
 The current default model alignment is:
 
 - loop-centric harness direct model: `gpt-5.2`
+- simple DAG harness direct model: `gpt-5.2`
 - ThruWire sibling executor config: `openai/gpt-5.2`
 
 Judge/evaluator models may differ and may be later.

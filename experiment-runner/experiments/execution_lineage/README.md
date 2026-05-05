@@ -28,23 +28,50 @@ This experiment is not a prose-polish bakeoff. It evaluates whether a workflow:
 - `C2` `loop_centric_update_final_only`
 - `C3` `loop_centric_update_with_intermediates`
 - `C4` `loop_centric_with_procedural_memory`
-- `C5` `thruwire_fresh_recompute`
-- `C6` `thruwire_replay_selective_recompute`
-- Optional `C7` `chatgpt_product_selenium`
+- `C5` `simple_dag_fresh_recompute`
+- `C6` `simple_dag_replay_selective_recompute`
+- Optional `C9` `chatgpt_product_selenium`
+- Disabled for first pass: `C7` `thruwire_fresh_recompute`
+- Disabled for first pass: `C8` `thruwire_replay_selective_recompute`
 
 The primary comparison is now:
 
 - loop-centric / prompt-centric execution
-- versus execution-graph lineage
+- versus a minimal execution-lineage DAG harness
 
+ThruWire is retained in code as a secondary system-validation comparison, but
+it is disabled in the default first-pass config.
 The optional Selenium harness is preserved only for future ecological/product
 comparisons.
 
 Default model alignment:
 
 - loop-centric harness: `gpt-5.2`
+- simple DAG harness: `gpt-5.2`
 - ThruWire sibling executor: `openai/gpt-5.2`
 - judge: may use any suitable later model
+
+## Runner Inventory
+
+There are four harness types in the codebase:
+
+1. `loop_centric`
+   Purpose: primary prompt/loop baseline.
+   Status: active by default.
+
+2. `simple_dag`
+   Purpose: primary apples-to-apples execution-lineage comparison.
+   Status: active by default.
+
+3. `thruwire`
+   Purpose: secondary validation against the real ThruWire runtime.
+   Status: implemented but disabled in the default first-pass config.
+
+4. `chatgpt_product_selenium`
+   Purpose: future ecological/product baseline.
+   Status: implemented but not part of the primary scientific baseline.
+
+Only the first two are active in the current default experiment.
 
 ## Directory Layout
 

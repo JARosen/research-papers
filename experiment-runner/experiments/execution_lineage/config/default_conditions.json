@@ -4,11 +4,15 @@
     "loop_centric_update_final_only",
     "loop_centric_update_with_intermediates",
     "loop_centric_with_procedural_memory",
-    "thruwire_fresh_recompute",
-    "thruwire_replay_selective_recompute"
+    "simple_dag_fresh_recompute",
+    "simple_dag_replay_selective_recompute"
   ],
   "optional_conditions": [
     "chatgpt_product_selenium"
+  ],
+  "disabled_conditions": [
+    "thruwire_fresh_recompute",
+    "thruwire_replay_selective_recompute"
   ],
   "context_strategy": "full_transcript",
   "model": {

@@ -26,15 +26,15 @@ def main() -> None:
     mapping = read_json(args.mapping_file)
 
     loop_fresh = results["conditions"]["loop_centric_fresh"]["runs"]
-    thru_fresh = results["conditions"]["thruwire_fresh_recompute"]["runs"]
-    thru_replay = results["conditions"]["thruwire_replay_selective_recompute"]["runs"]
-    replay_outputs = [item.get("final_output", "") for item in thru_replay]
-    artifact_sets = [tuple(sorted(item.get("artifact_hashes", {}).items())) for item in thru_replay]
+    graph_fresh = results["conditions"]["simple_dag_fresh_recompute"]["runs"]
+    graph_replay = results["conditions"]["simple_dag_replay_selective_recompute"]["runs"]
+    replay_outputs = [item.get("final_output", "") for item in graph_replay]
+    artifact_sets = [tuple(sorted(item.get("artifact_hashes", {}).items())) for item in graph_replay]
 
-    anonymous_id = next(key for key, value in mapping.items() if value == "thruwire_replay_selective_recompute")
+    anonymous_id = next(key for key, value in mapping.items() if value == "simple_dag_replay_selective_recompute")
     judged = next(item for item in judge_output["systems"] if item["anonymous_id"] == anonymous_id)
     precision, recall, regression = changed_claim_metrics(judged.get("claims", []), ground_truth)
-    updated = results["conditions"]["thruwire_replay_selective_recompute"].get("updated_run", {})
+    updated = results["conditions"]["simple_dag_replay_selective_recompute"].get("updated_run", {})
     claim_counts = _claim_counts(judged)
     tension_counts = _tension_counts(judged)
 
@@ -52,7 +52,7 @@ def main() -> None:
             ),
             "distinct_output_count": len(set(replay_outputs)),
             "fresh_run_surface_similarity": mean_similarity([item.get("final_output", "") for item in loop_fresh]),
-            "fresh_run_semantic_claim_overlap": mean_overlap([item.get("final_output", "") for item in thru_fresh]),
+            "fresh_run_semantic_claim_overlap": mean_overlap([item.get("final_output", "") for item in graph_fresh]),
         },
         "RQ2": {
             "stages_recomputed_count": len(updated.get("recomputed_stages", [])),

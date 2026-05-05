@@ -55,6 +55,7 @@ class RunnerConfig:
     model_seed: Optional[int]
     default_conditions: tuple[str, ...]
     optional_conditions: tuple[str, ...]
+    disabled_conditions: tuple[str, ...]
     loop_context_strategy: str
     chatgpt_url: str
     chatgpt_profile_dir: Path
@@ -88,6 +89,7 @@ class RunnerConfig:
             model_seed=seed if seed is None or isinstance(seed, int) else None,
             default_conditions=tuple(file_config.get("default_conditions", [])),
             optional_conditions=tuple(file_config.get("optional_conditions", [])),
+            disabled_conditions=tuple(file_config.get("disabled_conditions", [])),
             loop_context_strategy=os.getenv(
                 "EXPERIMENT_CONTEXT_STRATEGY",
                 str(file_config.get("context_strategy", "full_transcript")),
@@ -109,16 +111,22 @@ class RunnerConfig:
 def load_default_experiment_config() -> dict[str, Any]:
     if DEFAULT_CONFIG_PATH.exists():
         return json.loads(DEFAULT_CONFIG_PATH.read_text())
-    return {
-        "default_conditions": [
-            "loop_centric_fresh",
-            "loop_centric_update_final_only",
-            "loop_centric_update_with_intermediates",
-            "loop_centric_with_procedural_memory",
+        return {
+            "default_conditions": [
+                "loop_centric_fresh",
+                "loop_centric_update_final_only",
+                "loop_centric_update_with_intermediates",
+                "loop_centric_with_procedural_memory",
+                "simple_dag_fresh_recompute",
+                "simple_dag_replay_selective_recompute",
+            ],
+        "optional_conditions": [
+            "chatgpt_product_selenium",
+        ],
+        "disabled_conditions": [
             "thruwire_fresh_recompute",
             "thruwire_replay_selective_recompute",
         ],
-        "optional_conditions": ["chatgpt_product_selenium"],
         "context_strategy": "full_transcript",
         "model": {
             "provider": "openai",

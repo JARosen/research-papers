@@ -27,6 +27,12 @@
         "type": "string"
       }
     },
+    "disabled_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "conditions": {
       "type": "object",
       "additionalProperties": true

@@ -9,6 +9,7 @@ from typing import Any
 from .config import RunnerConfig, load_environment
 from .harnesses.chatgpt_selenium.runner import ChatGPTProductSeleniumRunner
 from .harnesses.loop_centric.runner import LoopCentricHarnessRunner
+from .harnesses.simple_dag.runner import SimpleDAGHarnessRunner
 from .harnesses.thruwire.runner import ThruWireHarnessRunner
 from .metrics import summarize_texts
 from .tasks import ContextDisciplineTask, load_task
@@ -51,22 +52,38 @@ def _condition_order(config: RunnerConfig, requested: list[str] | None, include_
     return conditions
 
 
+def _graph_condition_payload(results: dict[str, Any], fresh_key: str, replay_key: str) -> tuple[Any, Any]:
+    return results.get(fresh_key), results.get(replay_key)
+
+
 def _build_summary(results: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
     loop_fresh = results.get("loop_centric_fresh")
-    thru_fresh = results.get("thruwire_fresh_recompute")
-    thru_replay = results.get("thruwire_replay_selective_recompute")
-    if loop_fresh and thru_fresh and thru_replay:
+    graph_fresh, graph_replay = _graph_condition_payload(
+        results,
+        "simple_dag_fresh_recompute",
+        "simple_dag_replay_selective_recompute",
+    )
+    if not (graph_fresh and graph_replay):
+        graph_fresh, graph_replay = _graph_condition_payload(
+            results,
+            "thruwire_fresh_recompute",
+            "thruwire_replay_selective_recompute",
+        )
+    if loop_fresh and graph_fresh and graph_replay:
         loop_texts = [item["final_output"] for item in loop_fresh.get("runs", [])]
-        thru_fresh_texts = [item["final_output"] for item in thru_fresh.get("runs", [])]
-        thru_replay_texts = [item["final_output"] for item in thru_replay.get("runs", [])]
+        graph_fresh_texts = [item["final_output"] for item in graph_fresh.get("runs", [])]
+        graph_replay_texts = [item["final_output"] for item in graph_replay.get("runs", [])]
         summary["RQ1"] = {
             "loop_centric_fresh_variation": summarize_texts(loop_texts),
-            "thruwire_fresh_variation": summarize_texts(thru_fresh_texts),
-            "thruwire_replay_stability": summarize_texts(thru_replay_texts),
+            "graph_fresh_variation": summarize_texts(graph_fresh_texts),
+            "graph_replay_stability": summarize_texts(graph_replay_texts),
             "primary_success_criterion": "exact replay under unchanged execution identity",
         }
-    update_result = results.get("thruwire_replay_selective_recompute", {}).get("updated_run")
+    update_result = (
+        results.get("simple_dag_replay_selective_recompute", {}).get("updated_run")
+        or results.get("thruwire_replay_selective_recompute", {}).get("updated_run")
+    )
     if update_result:
         summary["RQ2"] = {
             "stages_recomputed_percent": update_result.get("stages_recomputed_percent"),
@@ -95,6 +112,7 @@ async def _run_conditions(
 ) -> dict[str, Any]:
     results: dict[str, Any] = {}
     loop_runner = LoopCentricHarnessRunner(config)
+    simple_dag_runner = SimpleDAGHarnessRunner(config)
 
     loop_fresh_result = None
     if any(
@@ -140,6 +158,11 @@ async def _run_conditions(
         )
         memory_payload["updated_run"] = memory_update.payload
         results["loop_centric_with_procedural_memory"] = memory_payload
+    if "simple_dag_fresh_recompute" in conditions or "simple_dag_replay_selective_recompute" in conditions:
+        simple_dag_results = simple_dag_runner.run_all(task, repeats=repeats)
+        for name, result in simple_dag_results.items():
+            if name in conditions:
+                results[name] = result.payload
     if "thruwire_fresh_recompute" in conditions or "thruwire_replay_selective_recompute" in conditions:
         thruwire_results = await ThruWireHarnessRunner(config).run_all(task, repeats=repeats)
         for name, result in thruwire_results.items():
@@ -148,7 +171,7 @@ async def _run_conditions(
     if "chatgpt_product_selenium" in conditions:
         selenium = ChatGPTProductSeleniumRunner(config).run_fresh(task, repeats=1)
         payload = dict(selenium.payload)
-        payload["condition_id"] = "C7"
+        payload["condition_id"] = "C9"
         payload["condition_name"] = "chatgpt_product_selenium"
         results["chatgpt_product_selenium"] = payload
     return results
@@ -175,6 +198,7 @@ def main() -> None:
         "task_id": task.task_id,
         "default_conditions": list(config.default_conditions),
         "optional_conditions": list(config.optional_conditions),
+        "disabled_conditions": list(config.disabled_conditions),
         "conditions": condition_results,
         "summary_by_rq": _build_summary(condition_results),
     }
