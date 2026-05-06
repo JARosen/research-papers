@@ -3,17 +3,19 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any
 
-from experiment_runner.config import REPO_DIR, load_environment
+from experiment_runner.config import REPO_DIR, RunnerConfig, load_environment
 
 from metric_lib import read_json, write_json
 
 try:
-    from openai import OpenAI
+    from openai import APIConnectionError, APITimeoutError, InternalServerError, OpenAI, RateLimitError
 except Exception:  # pragma: no cover
     OpenAI = None  # type: ignore[assignment]
+    APIConnectionError = APITimeoutError = InternalServerError = RateLimitError = Exception  # type: ignore[misc,assignment]
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,6 +47,32 @@ def load_client() -> OpenAI:
             "Run `.venv/bin/pip install -e .` from experiment-runner or `.venv/bin/pip install openai`."
         )
     return OpenAI(api_key=api_key)
+
+
+def create_with_retries(client: OpenAI, config: RunnerConfig, kwargs: dict[str, Any]) -> Any:
+    request_kwargs = dict(kwargs)
+    stripped_seed = False
+    last_error: Exception | None = None
+    max_retries = int(getattr(config, "openai_max_retries", 3))
+    retry_base_delay_ms = int(getattr(config, "openai_retry_base_delay_ms", 1000))
+    for attempt in range(max_retries + 1):
+        try:
+            return client.responses.create(**request_kwargs)
+        except TypeError:
+            if stripped_seed:
+                raise
+            request_kwargs.pop("seed", None)
+            stripped_seed = True
+        except (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError) as err:
+            last_error = err
+            if attempt >= max_retries:
+                break
+            sleep_s = (retry_base_delay_ms / 1000.0) * (2**attempt)
+            print(f"judge request failed ({err.__class__.__name__}); retrying in {sleep_s:.1f}s ...")
+            time.sleep(sleep_s)
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("OpenAI judge request failed without an exception")
 
 
 def build_prompt(prompt_template: str, bundle: dict[str, Any]) -> str:
@@ -106,22 +134,27 @@ def validate_output(bundle: dict[str, Any], payload: dict[str, Any]) -> None:
 
 def main() -> None:
     args = parse_args()
+    config = RunnerConfig.from_env()
     bundle = read_json(args.bundle_file)
     prompt_template = args.prompt_file.read_text()
     schema = normalize_schema(read_json(args.schema_file))
     client = load_client()
     prompt = build_prompt(prompt_template, bundle)
 
-    response = client.responses.create(
-        model=args.model,
-        input=prompt,
-        text={
-            "format": {
-                "type": "json_schema",
-                "name": "judge_output",
-                "schema": schema,
-                "strict": True,
-            }
+    response = create_with_retries(
+        client,
+        config,
+        {
+            "model": args.model,
+            "input": prompt,
+            "text": {
+                "format": {
+                    "type": "json_schema",
+                    "name": "judge_output",
+                    "schema": schema,
+                    "strict": True,
+                }
+            },
         },
     )
     output_text = getattr(response, "output_text", None)

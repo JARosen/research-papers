@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import RunnerConfig, load_environment
+from .harnesses.base import HarnessRunResult
 from .harnesses.chatgpt_selenium.runner import ChatGPTProductSeleniumRunner
 from .harnesses.loop_centric.runner import LoopCentricHarnessRunner
 from .harnesses.simple_dag.runner import SimpleDAGHarnessRunner
@@ -45,12 +46,46 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Include optional conditions such as chatgpt_product_selenium.",
     )
+    run.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from an existing output directory by skipping completed conditions.",
+    )
     return parser.parse_args()
 
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2))
+
+
+def _build_bundle(task: ContextDisciplineTask, config: RunnerConfig, results: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": "execution_lineage.result.v2",
+        "task_id": task.task_id,
+        "default_conditions": list(config.default_conditions),
+        "optional_conditions": list(config.optional_conditions),
+        "disabled_conditions": list(config.disabled_conditions),
+        "conditions": results,
+        "summary_by_rq": _build_summary(results),
+    }
+
+
+def _write_bundle(output_dir: Path, task: ContextDisciplineTask, config: RunnerConfig, results: dict[str, Any]) -> None:
+    _write_json(output_dir / "results.json", _build_bundle(task, config, results))
+
+
+def _load_existing_conditions(output_dir: Path, task_id: str) -> dict[str, Any]:
+    results_path = output_dir / "results.json"
+    if not results_path.exists():
+        return {}
+    payload = json.loads(results_path.read_text())
+    if payload.get("task_id") != task_id:
+        raise RuntimeError(
+            f"Existing results at {results_path} belong to task {payload.get('task_id')}, "
+            f"but the requested task is {task_id}."
+        )
+    return dict(payload.get("conditions", {}))
 
 
 def _condition_order(config: RunnerConfig, requested: list[str] | None, include_optional: bool) -> list[str]:
@@ -151,12 +186,16 @@ async def _run_conditions(
     config: RunnerConfig,
     conditions: list[str],
     rq1_repeats: int,
+    existing_results: dict[str, Any],
+    checkpoint: Any | None = None,
 ) -> dict[str, Any]:
-    results: dict[str, Any] = {}
+    results: dict[str, Any] = dict(existing_results)
     loop_runner = LoopCentricHarnessRunner(config)
     simple_dag_runner = SimpleDAGHarnessRunner(config)
 
     loop_fresh_result = None
+    if "loop_centric_fresh" in results:
+        loop_fresh_result = HarnessRunResult(payload=dict(results["loop_centric_fresh"]))
     if any(
         item in conditions
         for item in [
@@ -166,28 +205,34 @@ async def _run_conditions(
             "loop_centric_with_procedural_memory",
         ]
     ):
-        loop_repeats = rq1_repeats if "loop_centric_fresh" in conditions else 1
-        loop_fresh_result = loop_runner.run_fresh(task, repeats=loop_repeats)
-    if "loop_centric_fresh" in conditions and loop_fresh_result is not None:
-        payload = dict(loop_fresh_result.payload)
-        payload["condition_id"] = "C1"
-        payload["condition_name"] = "loop_centric_fresh"
-        results["loop_centric_fresh"] = payload
-    if "loop_centric_update_final_only" in conditions and loop_fresh_result is not None:
+        if loop_fresh_result is None:
+            loop_repeats = rq1_repeats if "loop_centric_fresh" in conditions else 1
+            loop_fresh_result = loop_runner.run_fresh(task, repeats=loop_repeats)
+            payload = dict(loop_fresh_result.payload)
+            payload["condition_id"] = "C1"
+            payload["condition_name"] = "loop_centric_fresh"
+            results["loop_centric_fresh"] = payload
+            if checkpoint is not None:
+                checkpoint(results)
+    if "loop_centric_update_final_only" in conditions and loop_fresh_result is not None and "loop_centric_update_final_only" not in results:
         update = loop_runner.run_update(task, loop_fresh_result, task.primary_edit)
         payload = dict(update.payload)
         payload["condition_id"] = "C2"
         payload["condition_name"] = "loop_centric_update_final_only"
         payload["condition"] = "loop_centric_update_final_only"
         results["loop_centric_update_final_only"] = payload
-    if "loop_centric_update_with_intermediates" in conditions and loop_fresh_result is not None:
+        if checkpoint is not None:
+            checkpoint(results)
+    if "loop_centric_update_with_intermediates" in conditions and loop_fresh_result is not None and "loop_centric_update_with_intermediates" not in results:
         update = loop_runner.run_update(task, loop_fresh_result, task.primary_edit, include_intermediates=True)
         payload = dict(update.payload)
         payload["condition_id"] = "C3"
         payload["condition_name"] = "loop_centric_update_with_intermediates"
         payload["condition"] = "loop_centric_update_with_intermediates"
         results["loop_centric_update_with_intermediates"] = payload
-    if "loop_centric_with_procedural_memory" in conditions:
+        if checkpoint is not None:
+            checkpoint(results)
+    if "loop_centric_with_procedural_memory" in conditions and "loop_centric_with_procedural_memory" not in results:
         memory_fresh_result = loop_runner.run_fresh_with_procedural_memory(task, repeats=1)
         memory_payload = dict(memory_fresh_result.payload)
         memory_payload["condition_id"] = "C4"
@@ -201,27 +246,51 @@ async def _run_conditions(
         )
         memory_payload["updated_run"] = memory_update.payload
         results["loop_centric_with_procedural_memory"] = memory_payload
-    if "simple_dag_fresh_recompute" in conditions or "simple_dag_replay_selective_recompute" in conditions:
+        if checkpoint is not None:
+            checkpoint(results)
+    if (
+        ("simple_dag_fresh_recompute" in conditions and "simple_dag_fresh_recompute" not in results)
+        or (
+            "simple_dag_replay_selective_recompute" in conditions
+            and "simple_dag_replay_selective_recompute" not in results
+        )
+    ):
         simple_dag_results = simple_dag_runner.run_all(
             task,
             replay_repeats=rq1_repeats if "simple_dag_replay_selective_recompute" in conditions else 1,
             fresh_repeats=rq1_repeats if "simple_dag_fresh_recompute" in conditions else 0,
             include_update="simple_dag_replay_selective_recompute" in conditions,
         )
+        changed = False
         for name, result in simple_dag_results.items():
             if name in conditions:
                 results[name] = result.payload
-    if "thruwire_fresh_recompute" in conditions or "thruwire_replay_selective_recompute" in conditions:
-        thruwire_results = await ThruWireHarnessRunner(config).run_all(task, repeats=repeats)
+                changed = True
+        if changed and checkpoint is not None:
+            checkpoint(results)
+    if (
+        ("thruwire_fresh_recompute" in conditions and "thruwire_fresh_recompute" not in results)
+        or (
+            "thruwire_replay_selective_recompute" in conditions
+            and "thruwire_replay_selective_recompute" not in results
+        )
+    ):
+        thruwire_results = await ThruWireHarnessRunner(config).run_all(task, repeats=rq1_repeats)
+        changed = False
         for name, result in thruwire_results.items():
             if name in conditions:
                 results[name] = result.payload
-    if "chatgpt_product_selenium" in conditions:
+                changed = True
+        if changed and checkpoint is not None:
+            checkpoint(results)
+    if "chatgpt_product_selenium" in conditions and "chatgpt_product_selenium" not in results:
         selenium = ChatGPTProductSeleniumRunner(config).run_fresh(task, repeats=1)
         payload = dict(selenium.payload)
         payload["condition_id"] = "C9"
         payload["condition_name"] = "chatgpt_product_selenium"
         results["chatgpt_product_selenium"] = payload
+        if checkpoint is not None:
+            checkpoint(results)
     return results
 
 
@@ -241,16 +310,18 @@ def main() -> None:
     rq1_repeats = args.repeats if args.repeats is not None else args.rq1_repeats
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    condition_results = asyncio.run(_run_conditions(task, config, selected_conditions, rq1_repeats))
-    bundle = {
-        "schema_version": "execution_lineage.result.v2",
-        "task_id": task.task_id,
-        "default_conditions": list(config.default_conditions),
-        "optional_conditions": list(config.optional_conditions),
-        "disabled_conditions": list(config.disabled_conditions),
-        "conditions": condition_results,
-        "summary_by_rq": _build_summary(condition_results),
-    }
+    existing_results = _load_existing_conditions(output_dir, task.task_id) if args.resume else {}
+    condition_results = asyncio.run(
+        _run_conditions(
+            task,
+            config,
+            selected_conditions,
+            rq1_repeats,
+            existing_results,
+            checkpoint=lambda current: _write_bundle(output_dir, task, config, current),
+        )
+    )
+    bundle = _build_bundle(task, config, condition_results)
     _write_json(output_dir / "results.json", bundle)
     print(json.dumps(bundle["summary_by_rq"], indent=2))
 
