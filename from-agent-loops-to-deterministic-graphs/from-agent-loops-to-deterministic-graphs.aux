@@ -18,7 +18,6 @@
 \citation{wang2023voyager}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Surveys and Taxonomies}{2}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Agentic LLM Systems}{2}{subsection.2.2}\protected@file@percent }
 \citation{yao2023tree}
 \citation{pan2026nlah}
 \citation{zhang2025harness}
@@ -42,6 +41,7 @@
 \citation{zaharia2016spark}
 \citation{airflowdocs}
 \citation{dbtdocs}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Agentic LLM Systems}{3}{subsection.2.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Agent Harnesses and Runtimes}{3}{subsection.2.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Reasoning Traces, Search, and Intermediate Steps}{3}{subsection.2.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Workflow and DAG Systems}{3}{subsection.2.5}\protected@file@percent }
@@ -64,24 +64,24 @@
 \citation{souza2025provenance}
 \citation{ma2025hpc}
 \citation{chen2023evaluating}
-\citation{abramson2022multimodal}
-\citation{rawles2024androidworld}
-\citation{xie2024osworld}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Programmatic LLM Systems}{4}{subsection.2.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Benchmarks and Reproducible Agent Environments}{4}{subsection.2.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Workflow Provenance and Interactive Analysis}{4}{subsection.2.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Reproducibility and Evaluation}{4}{subsection.2.9}\protected@file@percent }
+\citation{abramson2022multimodal}
+\citation{rawles2024androidworld}
+\citation{xie2024osworld}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Reproducibility and Evaluation}{5}{subsection.2.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Execution Lineage Model}{5}{section.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Design Principles}{5}{subsection.3.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Explicit dependency declaration.}{5}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Local visibility boundaries.}{5}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Identity-based reuse.}{5}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Deterministic publication.}{5}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Intermediate State and Typed Local Boundaries}{5}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Intermediate State and Typed Local Boundaries}{6}{subsection.3.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Dependency Materialization}{6}{subsection.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Execution Semantics}{6}{subsection.3.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Determinism}{6}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Replay and Partial Recomputation}{6}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Replay and Partial Recomputation}{7}{subsection.3.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Invalidation Semantics}{7}{subsection.3.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Canonical Outputs and Observability}{7}{subsection.3.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Execution Lineage vs. Prompt Lineage}{7}{subsection.3.9}\protected@file@percent }
@@ -110,13 +110,12 @@
 \newlabel{tab:info-boundaries}{{3}{12}{Information boundaries by condition. The comparison is system-level, not an equal-prompt comparison}{table.3}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {9}Discussion}{12}{section.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Why This Matters}{12}{subsection.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Deliverable Quality vs.\ Maintained-State Quality}{12}{subsection.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Controlled Propagation}{12}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Immediate Task Success vs.\ Maintained-State Quality}{12}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Controlled Propagation}{13}{subsection.9.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.4}When Not to Regenerate}{13}{subsection.9.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.5}Where Execution Graphs Help Most}{13}{subsection.9.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.6}What This Paper Does Not Claim}{13}{subsection.9.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.7}Limitations}{13}{subsection.9.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{13}{section.10}\protected@file@percent }
 \bibstyle{plain}
 \bibcite{huang2024planning}{1}
 \bibcite{li2024review}{2}
@@ -132,6 +131,7 @@
 \bibcite{wang2023voyager}{12}
 \bibcite{hong2023metagpt}{13}
 \bibcite{wu2023autogen}{14}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{14}{section.10}\protected@file@percent }
 \bibcite{yao2023tree}{15}
 \bibcite{shinn2023reflexion}{16}
 \bibcite{madaan2023selfrefine}{17}

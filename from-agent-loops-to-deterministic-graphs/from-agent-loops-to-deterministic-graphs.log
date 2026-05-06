@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  6 MAY 2026 13:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  6 MAY 2026 14:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -632,7 +632,7 @@ s/tikzlibrarypositioning.code.tex
 File: tikzlibrarypositioning.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 2
-4.
+8.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
@@ -644,24 +644,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 (./from-agent-loops-to-deterministic-graphs.aux)
 \openout1 = `from-agent-loops-to-deterministic-graphs.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 24.
-LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -751,31 +751,34 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 24.
+Package hyperref Info: Link coloring OFF on input line 28.
 
 (./from-agent-loops-to-deterministic-graphs.out)
 (./from-agent-loops-to-deterministic-graphs.out)
 \@outlinefile=\write4
 \openout4 = `from-agent-loops-to-deterministic-graphs.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 27.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 31.
 
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 27.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 31.
 
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
+)
+Underfull \vbox (badness 1831) has occurred while \output is active []
+
+ [1
 
 
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc}]
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
-1.
+5.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
@@ -831,9 +834,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-8.41992pt}.
 
 [7]
-LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 328.
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 22.41992pt, for example:
@@ -846,28 +846,31 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.329 \item \textbf
-                   {\texttt{loop\_real\_world\_with\_edit\_event}}. The same...
+l.333 \item \textbf
+                   {Loop + edit event} (\texttt{loop\_real\_world\_with\_edi...
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 345--346
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 340.
+
+Underfull \hbox (badness 10000) in paragraph at lines 349--350
 []\OT1/ptm/m/n/10 stable-artifact preser-va-tion and churn, in-clud-ing \OT1/cm
 tt/m/n/10 stable[]artifact[]hash[]preservation \OT1/ptm/m/n/10 and
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 347--348
+Underfull \hbox (badness 10000) in paragraph at lines 351--352
 []\OT1/ptm/m/n/10 semantic cor-rect-ness prox-ies, in-clud-ing \OT1/cmtt/m/n/10
  output[]faithfulness[]score \OT1/ptm/m/n/10 and
  []
 
 
-Underfull \hbox (badness 3019) in paragraph at lines 355--356
+Underfull \hbox (badness 3019) in paragraph at lines 359--360
 []\OT1/ptm/m/n/10 stable-artifact preser-va-tion and up-stream churn, in-clud-i
 ng \OT1/cmtt/m/n/10 stable[]artifact[]hash[]preservation\OT1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 357--358
+Underfull \hbox (badness 10000) in paragraph at lines 361--362
 []\OT1/ptm/m/n/10 semantic cor-rect-ness prox-ies, in-clud-ing \OT1/cmtt/m/n/10
  output[]faithfulness[]score \OT1/ptm/m/n/10 and
  []
@@ -880,6 +883,10 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-8.41992pt}.
 
 [9]
+Overfull \hbox (6.97052pt too wide) in paragraph at lines 416--425
+ [][] 
+ []
+
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 22.41992pt, for example:
@@ -888,14 +895,14 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-8.41992pt}.
 
 [10]
-Underfull \hbox (badness 10000) in paragraph at lines 436--437
+Underfull \hbox (badness 10000) in paragraph at lines 440--441
 \OT1/ptm/m/n/10 equal to $\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 00
 $ \OT1/ptm/m/n/10 in ev-ery case. All three also achieved \OT1/cmtt/m/n/10 outp
 ut[]faithfulness[]score \OT1/ptm/m/n/10 and
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 438--439
+Underfull \hbox (badness 10000) in paragraph at lines 442--443
 \OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 00$\OT1/pt
 m/m/n/10 ), \OT1/cmtt/m/n/10 upstream[]churn[]rate \OT1/ptm/m/n/10 ($\OT1/cmr/m
 /n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 00$\OT1/ptm/m/n/10 ), \OT1/cmtt/m/n/10
@@ -927,7 +934,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.500 
+l.502 
       ]
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -945,15 +952,9 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-8.41992pt}.
 
 [14]
-Underfull \hbox (badness 2409) in paragraph at lines 650--653
+Underfull \hbox (badness 2409) in paragraph at lines 656--659
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu
 -big.  Agent Work-flow Mem-ory.
- []
-
-
-Underfull \hbox (badness 1221) in paragraph at lines 720--723
-[]\OT1/ptm/m/n/10 Lingjiao Chen, Matei Za-haria, and James Zou.  How Is Chat-GP
-T's Be-hav-ior Chang-ing over Time?
  []
 
 
@@ -964,6 +965,11 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-8.41992pt}.
 
 [15]
+Underfull \hbox (badness 1221) in paragraph at lines 726--729
+[]\OT1/ptm/m/n/10 Lingjiao Chen, Matei Za-haria, and James Zou.  How Is Chat-GP
+T's Be-hav-ior Chang-ing over Time?
+ []
+
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 22.41992pt, for example:
@@ -978,14 +984,14 @@ L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `from-agent-loops-to-deterministic-graphs.out
 ' has not changed.
-(rerunfilecheck)             Checksum: C96E325B4428B21672B19092BCBB100C;8325.
+(rerunfilecheck)             Checksum: 58342A4E9AF6CC69C11A1D58E73369D5;8343.
  ) 
 Here is how much of TeX's memory you used:
- 22130 strings out of 467525
- 412287 string characters out of 5418982
- 805053 words of memory out of 5000000
- 50545 multiletter control sequences out of 15000+600000
- 655484 words of font info for 90 fonts, out of 8000000 for 9000
+ 22126 strings out of 467525
+ 412256 string characters out of 5418982
+ 806033 words of memory out of 5000000
+ 50544 multiletter control sequences out of 15000+600000
+ 651702 words of font info for 86 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,13n,104p,999b,834s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
@@ -999,8 +1005,8 @@ texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/t
 exlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/202
 6/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf-di
 st/fonts/type1/urw/times/utmri8a.pfb>
-Output written on from-agent-loops-to-deterministic-graphs.pdf (16 pages, 20341
-5 bytes).
+Output written on from-agent-loops-to-deterministic-graphs.pdf (16 pages, 20291
+3 bytes).
 PDF statistics:
  479 PDF objects out of 1000 (max. 8388607)
  434 compressed objects within 5 object streams

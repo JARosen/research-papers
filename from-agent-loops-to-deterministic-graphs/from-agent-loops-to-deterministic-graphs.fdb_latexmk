@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1778088839.73989 "from-agent-loops-to-deterministic-graphs.tex" "from-agent-loops-to-deterministic-graphs.pdf" "from-agent-loops-to-deterministic-graphs" 1778088840.29601 0
+["pdflatex"] 1778092337.69405 "from-agent-loops-to-deterministic-graphs.tex" "from-agent-loops-to-deterministic-graphs.pdf" "from-agent-loops-to-deterministic-graphs" 1778092338.27037 0
   "/Users/dev/Library/texmf/tex/latex/arxiv/arxiv.sty" 1777936217.66669 7642 824ef14f3548279d54b419cf5e0f3098 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -168,9 +168,9 @@
   "/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1777935947 5573038 b99aad5e4898a9034e953632f940512b ""
   "/usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1774209607 3636776 dc5fa9b6b1453b9d196cd42edf876004 ""
   "/usr/local/texlive/2026/texmf.cnf" 1774209515 577 648cd9f92f9c0eac486f4c71c85cfbbe ""
-  "from-agent-loops-to-deterministic-graphs.aux" 1778088840.23731 11212 00d9064aea83abffe0c1855176d4ebf0 "pdflatex"
-  "from-agent-loops-to-deterministic-graphs.out" 1778088840.2379 8325 c96e325b4428b21672b19092bcbb100c "pdflatex"
-  "from-agent-loops-to-deterministic-graphs.tex" 1778088833.21733 70900 c75c774576ca87a004bd0fb3035be7a1 ""
+  "from-agent-loops-to-deterministic-graphs.aux" 1778092338.21424 11215 fa4c195cb8382c8c95241bdfe8c58a45 "pdflatex"
+  "from-agent-loops-to-deterministic-graphs.out" 1778092338.21484 8343 58342a4e9af6cc69c11a1d58e73369d5 "pdflatex"
+  "from-agent-loops-to-deterministic-graphs.tex" 1778092329.81434 72062 4476fa98b160e5eeec17d8fed3942d80 ""
   (generated)
   "from-agent-loops-to-deterministic-graphs.aux"
   "from-agent-loops-to-deterministic-graphs.log"
