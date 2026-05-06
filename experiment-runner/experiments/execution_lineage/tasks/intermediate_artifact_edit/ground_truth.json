@@ -1,0 +1,25 @@
+{
+  "fast_demo": {
+    "task_type": "intermediate_artifact_edit",
+    "expected_final_output_stable": false,
+    "expected_recomputed_stages": [
+      "recommendation_criteria",
+      "implementation_plan",
+      "final_memo"
+    ],
+    "expected_preserved_stages": [
+      "utilization_context",
+      "reimbursement_context",
+      "operations_context",
+      "access_cost_context",
+      "claim_matrix",
+      "tension_analysis"
+    ],
+    "required_constraint_phrases": [
+      "budget-neutral",
+      "utilization controls",
+      "chronic-care",
+      "year-one"
+    ]
+  }
+}

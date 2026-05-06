@@ -55,7 +55,8 @@
       "depends_on": [
         "utilization_context",
         "reimbursement_context",
-        "operations_context"
+        "operations_context",
+        "access_cost_context"
       ]
     },
     {
@@ -86,6 +87,40 @@
       ]
     }
   ],
+  "initial_stage_source_ids": {
+    "utilization_context": [
+      "S1"
+    ],
+    "reimbursement_context": [
+      "S2_old"
+    ],
+    "operations_context": [
+      "S3",
+      "S6",
+      "S7"
+    ],
+    "access_cost_context": [
+      "S4",
+      "S5"
+    ]
+  },
+  "updated_stage_source_ids": {
+    "utilization_context": [
+      "S1"
+    ],
+    "reimbursement_context": [
+      "S2_old"
+    ],
+    "operations_context": [
+      "S3",
+      "S6",
+      "S7"
+    ],
+    "access_cost_context": [
+      "S4",
+      "S5"
+    ]
+  },
   "source_file": "sources.json",
   "ground_truth_file": "ground_truth.json",
   "edits_file": "edits.json",

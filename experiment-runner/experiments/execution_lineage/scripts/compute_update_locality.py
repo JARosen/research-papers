@@ -94,6 +94,10 @@ def main() -> None:
             .get("loop_real_world_final_update", {})
             .get("execution_metadata", {})
             .get("manual_context_reconstruction_actions"),
+            "loop_real_world_with_edit_event": results["conditions"]
+            .get("loop_real_world_with_edit_event", {})
+            .get("execution_metadata", {})
+            .get("manual_context_reconstruction_actions"),
             "loop_real_world_with_notes": results["conditions"]
             .get("loop_real_world_with_notes", {})
             .get("execution_metadata", {})

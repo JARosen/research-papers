@@ -29,6 +29,7 @@ as if it were interchangeable with `C1` loop-centric fresh execution.
 
 - `C1` `loop_centric_fresh`
 - `C2` `loop_real_world_final_update`
+- `C11` `loop_real_world_with_edit_event`
 - `C3` `loop_real_world_with_notes`
 - `C4` `loop_real_world_with_memory`
 - `C5` `simple_dag_fresh_recompute`
@@ -78,14 +79,53 @@ default:
 - `loop_centric`
 - `simple_dag`
 
+## Paper-Minimal Package
+
+The minimal empirical package for the paper now spans three update settings in
+the same telehealth policy domain:
+
+1. `local_supersession_update`
+2. `multi_edit_interaction_update`
+3. `multi_round_cumulative_update`
+
+This package is intentionally conservative. It is not designed to prove that
+DAG systems always write better prose. It is designed to test replay
+determinism, update locality, artifact preservation, recomputation burden,
+current-state discipline, and resistance to stale inherited structure as update
+complexity increases.
+
+Use the paper runner:
+
+```bash
+cd /Users/dev/Documents/GitHub/research-papers/experiment-runner
+.venv/bin/python -m experiment_runner.cli run-paper-minimal \
+  --output-dir results/paper-minimal-run \
+  --repeats 5 \
+  --judge-repeats 1
+```
+
+This writes:
+
+- `run_metadata.json`
+- `paper_results.json`
+- `summary_by_task_condition.json`
+- `summary_by_task_condition.csv`
+- `rows_by_task_condition_repeat.json`
+- `rendered_prompts/<task>/<round?>/<condition>/<repeat>/...`
+- `outputs/<task>/<round?>/<condition>/<repeat>/...`
+- `judge_inputs/<task>/<round?>/<repeat>/...`
+- `judge_outputs/<task>/<round?>/<repeat>/...`
+
 ## Assets
 
 - Protocol:
   [`experiments/execution_lineage/protocol.md`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/protocol.md)
 - Experiment README:
   [`experiments/execution_lineage/README.md`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/README.md)
-- Implemented task:
-  [`experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json)
+- Tasks:
+  [`experiments/execution_lineage/tasks/local_supersession_update/task.json`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/tasks/local_supersession_update/task.json)
+  [`experiments/execution_lineage/tasks/multi_edit_interaction_update/task.json`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/tasks/multi_edit_interaction_update/task.json)
+  [`experiments/execution_lineage/tasks/multi_round_cumulative_update/manifest.json`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/tasks/multi_round_cumulative_update/manifest.json)
 - Schemas:
   [`experiments/execution_lineage/schemas`](/Users/dev/Documents/GitHub/research-papers/experiment-runner/experiments/execution_lineage/schemas)
 - Scoring:
@@ -141,6 +181,7 @@ Result bundles should capture, at minimum:
 - timing and token metadata when available
 - transcripts and prompt/response logs for loop-centric runs
 - memory retrieval logs for the procedural-memory baseline
+- rendered prompt payloads in `results/<run>/rendered_prompts/` for audit
 
 ## Loop Context Strategy
 
@@ -150,6 +191,16 @@ The loop baselines now separate two modes:
 - `loop_real_world_*`: naturalistic update baselines that operate over prior
   outputs, optional prior notes, optional memory, and the full current source
   bundle without explicit dependency metadata
+
+Benchmark condition ladder:
+
+| Condition | Current sources | Prior memo | Prior notes / memory | Source edit event | Dependency graph | Selective recomputation |
+|---|---:|---:|---:|---:|---:|---:|
+| `loop_real_world_final_update` | yes | yes | no | no | no | no |
+| `loop_real_world_with_edit_event` | yes | yes | no | yes | no | no |
+| `loop_real_world_with_notes` | yes | yes | yes | no | no | no |
+| `loop_real_world_with_memory` | yes | yes | memory tool | no | no | no |
+| `simple_dag_replay_selective_recompute` | scoped/current | yes/artifacts | structured artifacts | yes | yes | yes |
 
 The staged loop machinery still uses compact transcript carry-forward rather
 than replaying the full raw transcript into every later step. It now uses:
@@ -164,6 +215,24 @@ is not semantic retrieval and it does not use DAG dependency knowledge to
 pre-scope artifacts. Hidden judge metadata such as affected claim IDs,
 recomputed-stage expectations, and allowed/disallowed artifact lists is not
 rendered into the real-world loop prompts.
+
+`loop_real_world_with_edit_event` is a source-change-awareness control. It may
+receive only the old/new source replacement event from the task edit data, for
+example `S2_old -> S2_current`. It does not receive dependency wiring,
+affected-claim labels, recomputation scopes, or allowed/disallowed artifact
+lists.
+
+Prompt families are now isolated on disk:
+
+- `prompts/loop_real_world/`: naturalistic loop-update prompts
+- `prompts/loop_staged/`: staged loop prompts used by `loop_centric_fresh` and the optional staged loop update
+- `prompts/simple_dag/`: DAG-stage prompts used only by the DAG harness
+
+Loop prompt edits must not change rendered DAG prompts.
+
+The DAG harness may still receive runtime execution metadata such as source
+replacement ids because that metadata is part of the graph runtime rather than
+hidden oracle prose inserted into loop prompts.
 
 The primary scientific comparison is loop-centric execution versus the in-repo
 simple DAG harness. ThruWire remains available in code as a secondary
@@ -186,11 +255,16 @@ The default experiment is reported as paired comparisons rather than as a flat
 
 - `loop_fresh_vs_dag_fresh`
 - `loop_real_world_final_update_vs_dag_update`
+- `loop_real_world_with_edit_event_vs_dag_update`
 - `loop_real_world_with_notes_vs_dag_update`
 - `loop_real_world_with_memory_vs_dag_update`
 
 The raw run still records all underlying conditions, but summaries and scoring
 are organized around these matchups.
+
+Any result bundle produced during the brief period when loop and DAG shared the
+same staged prompt files should be treated as a mixed prompt ablation rather
+than the clean loop-only comparison.
 
 Fresh-run variation under `RQ1` is diagnostic. The primary `RQ1` criterion is
 exact replay under unchanged execution identity.

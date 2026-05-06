@@ -10,6 +10,9 @@ from experiment_runner.tasks import load_task
 
 
 TASK_FILE = Path("experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json")
+MULTI_EDIT_TASK_FILE = Path("experiments/execution_lineage/tasks/multi_edit_interaction_update/task.json")
+NOOP_TASK_FILE = Path("experiments/execution_lineage/tasks/unrelated_branch_noop_update/task.json")
+INTERMEDIATE_EDIT_TASK_FILE = Path("experiments/execution_lineage/tasks/intermediate_artifact_edit/task.json")
 
 
 def assistant_output_item(text: str, *, item_id: str) -> dict:
@@ -103,6 +106,12 @@ class RunnerSmokeTests(unittest.TestCase):
         fresh = runner.run_fresh(self.task, repeats=1)
         update = runner.run_update(self.task, fresh, self.task.primary_edit).payload
         self.assertEqual(update["final_output"], "update-final-only")
+
+    def test_loop_update_with_edit_event_smoke(self) -> None:
+        runner = make_loop_runner(six_step_outputs("fresh") + single_output("update-edit-event", item_id="update_edit_event"))
+        fresh = runner.run_fresh(self.task, repeats=1)
+        update = runner.run_update(self.task, fresh, self.task.primary_edit, include_edit_event=True).payload
+        self.assertEqual(update["final_output"], "update-edit-event")
 
     def test_loop_update_with_intermediates_smoke(self) -> None:
         runner = make_loop_runner(
@@ -211,20 +220,65 @@ class RunnerSmokeTests(unittest.TestCase):
         identity_initial = runner._stage_identity(
             task=self.task,
             stage_name="claim_matrix",
-            prompt_name="loop_claim_matrix.md",
+            prompt_name="simple_dag/claim_matrix.md",
             source_text=self.task.render_sources(updated=False),
             dependency_artifacts=[],
-            updated=False,
+            source_backed=False,
         )
         identity_updated = runner._stage_identity(
             task=self.task,
             stage_name="claim_matrix",
-            prompt_name="loop_claim_matrix.md",
+            prompt_name="simple_dag/claim_matrix.md",
             source_text=self.task.render_sources(updated=True),
             dependency_artifacts=[],
-            updated=False,
+            source_backed=False,
         )
         self.assertEqual(identity_initial, identity_updated)
+
+    def test_multi_edit_task_stage_routing_smoke(self) -> None:
+        task = load_task(MULTI_EDIT_TASK_FILE)
+        self.assertIn("S3_current", task.render_sources_for_stage(updated=True, stage_name="operations_context"))
+        self.assertIn("S4_current", task.render_sources_for_stage(updated=True, stage_name="access_cost_context"))
+        self.assertIn("S5_current", task.render_sources_for_stage(updated=True, stage_name="access_cost_context"))
+
+    def test_unrelated_branch_task_routes_recruiting_note_to_isolated_stage(self) -> None:
+        task = load_task(NOOP_TASK_FILE)
+        recruiting = task.render_sources_for_stage(updated=True, stage_name="provider_recruiting_note")
+        self.assertIn("R1_current", recruiting)
+        self.assertNotIn("S2_current", recruiting)
+
+    def test_dag_stage_override_updates_only_downstream_identity(self) -> None:
+        task = load_task(INTERMEDIATE_EDIT_TASK_FILE)
+        stage_count = len(task.workflow_stages)
+        responses = [
+            {
+                "text": f"initial-{idx}",
+                "output_items": [assistant_output_item(f"initial-{idx}", item_id=f"initial_{idx}")],
+            }
+            for idx in range(stage_count)
+        ]
+        responses.extend(
+            [
+                {
+                    "text": f"updated-{idx}",
+                    "output_items": [assistant_output_item(f"updated-{idx}", item_id=f"updated_{idx}")],
+                }
+                for idx in range(2)
+            ]
+        )
+        runner = make_dag_runner(responses)
+        initial = runner._run_graph(task, updated=False, allow_replay=True)
+        updated = runner._run_graph_with_overrides(
+            task,
+            updated=True,
+            allow_replay=True,
+            stage_output_overrides=task.updated_stage_overrides,
+        )
+        initial_hashes = initial["artifact_hashes"]
+        updated_hashes = updated["artifact_hashes"]
+        self.assertEqual(initial_hashes["utilization_context"], updated_hashes["utilization_context"])
+        self.assertNotEqual(initial_hashes["recommendation_criteria"], updated_hashes["recommendation_criteria"])
+        self.assertNotEqual(initial_hashes["implementation_plan"], updated_hashes["implementation_plan"])
 
 
 if __name__ == "__main__":

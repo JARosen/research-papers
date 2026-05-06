@@ -1,0 +1,162 @@
+{
+  "schema_version": "execution_lineage.task.v1",
+  "task_id": "multi_edit_interaction_update",
+  "task_family": "policy_synthesis",
+  "title": "Telehealth policy brief under context pressure",
+  "instruction": "Produce a policy memo recommending whether a multistate health system should expand telehealth service lines for follow-up behavioral-health and chronic-care visits over the next 24 months. The memo must synthesize current evidence, distinguish current from superseded reimbursement context, preserve unresolved tensions, and avoid adjacent but out-of-scope considerations.",
+  "requested_output_format": {
+    "deliverable": "final_memo",
+    "sections": [
+      "Recommendation",
+      "Current Evidence",
+      "Risks and Tensions",
+      "Operational Implications",
+      "Open Questions"
+    ],
+    "length_guidance": "700-1000 words"
+  },
+  "workflow_stages": [
+    {
+      "id": "utilization_context",
+      "label": "Utilization Context",
+      "purpose": "Summarize current utilization and adoption evidence.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "reimbursement_context",
+      "label": "Reimbursement Context",
+      "purpose": "Summarize current reimbursement and supersession state.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "operations_context",
+      "label": "Operations Context",
+      "purpose": "Summarize current compliance, workflow, and adoption constraints.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "access_cost_context",
+      "label": "Access vs Cost Context",
+      "purpose": "Summarize access benefits, continuity gains, and cost uncertainty.",
+      "depends_on": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "claim_matrix",
+      "label": "Claim Matrix",
+      "purpose": "Map candidate claims to current supporting sources and mark changed vs unaffected claims.",
+      "depends_on": [
+        "utilization_context",
+        "reimbursement_context",
+        "operations_context",
+        "access_cost_context"
+      ]
+    },
+    {
+      "id": "tension_analysis",
+      "label": "Tension / Risk Analysis",
+      "purpose": "Preserve conflicts and unresolved uncertainties rather than flattening them.",
+      "depends_on": [
+        "access_cost_context"
+      ]
+    },
+    {
+      "id": "interaction_analysis",
+      "label": "Interaction Analysis",
+      "purpose": "Integrate reimbursement, compliance, access segmentation, and utilization-control interactions before setting recommendation criteria.",
+      "depends_on": [
+        "reimbursement_context",
+        "operations_context",
+        "access_cost_context",
+        "claim_matrix",
+        "tension_analysis"
+      ]
+    },
+    {
+      "id": "recommendation_criteria",
+      "label": "Recommendation Criteria",
+      "purpose": "Define decision criteria grounded in current claims and tensions.",
+      "depends_on": [
+        "interaction_analysis"
+      ]
+    },
+    {
+      "id": "final_memo",
+      "label": "Final Memo",
+      "purpose": "Write the final memo using only declared current artifacts.",
+      "depends_on": [
+        "claim_matrix",
+        "tension_analysis",
+        "recommendation_criteria"
+      ]
+    }
+  ],
+  "initial_stage_source_ids": {
+    "utilization_context": [
+      "S1"
+    ],
+    "reimbursement_context": [
+      "S2_old"
+    ],
+    "operations_context": [
+      "S3_old",
+      "S6",
+      "S7"
+    ],
+    "access_cost_context": [
+      "S4_old",
+      "S5_old"
+    ]
+  },
+  "updated_stage_source_ids": {
+    "utilization_context": [
+      "S1"
+    ],
+    "reimbursement_context": [
+      "S2_current"
+    ],
+    "operations_context": [
+      "S3_current",
+      "S6",
+      "S7"
+    ],
+    "access_cost_context": [
+      "S4_current",
+      "S5_current"
+    ]
+  },
+  "source_file": "sources.json",
+  "ground_truth_file": "ground_truth.json",
+  "edits_file": "edits.json",
+  "memory_file": "memory/INDEX.md",
+  "manual_intermediates": {
+    "evidence_digest_selected": [
+      "S1 indicates sustained telehealth usage above baseline in behavioral-health follow-up and selected chronic-care check-ins.",
+      "S2_old, S3_old, S4_old, and S5_old supported a cautious baseline recommendation before the interacting revisions.",
+      "D1 and D2 remain adjacent but out of scope for the requested recommendation."
+    ],
+    "claim_matrix_current": [
+      "C1 usage remains above baseline for selected visit types.",
+      "C2 reimbursement support is now targeted rather than broadly unstable.",
+      "C3 compliance burden is stronger and requires state-clustered rollout.",
+      "C4 access benefits are segmented rather than universal.",
+      "C5 cost controls are required for chronic-care follow-up.",
+      "C6 recommendation must integrate payer, compliance, access, and cost interactions."
+    ],
+    "tension_analysis_current": [
+      "T_access_vs_cost must be preserved: targeted access gains coexist with sharper chronic-care utilization risk.",
+      "Do not collapse payer, compliance, and access segmentation into a universal expansion story."
+    ],
+    "recommendation_criteria_current": [
+      "Support staged, service-line-specific expansion only where payer validation, compliance readiness, and utilization controls align.",
+      "Avoid pilot-only inertia, but also avoid universal expansion or system-wide savings claims."
+    ]
+  }
+}

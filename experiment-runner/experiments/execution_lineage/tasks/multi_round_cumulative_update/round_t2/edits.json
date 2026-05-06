@@ -1,0 +1,25 @@
+{
+  "edits": [
+    {
+      "edit_id": "E2_cost_utilization_revision",
+      "type": "replace_source",
+      "description": "Replace the earlier cost memo with a sharper chronic-care utilization-control warning.",
+      "old_source_id": "S5_old",
+      "new_source_id": "S5_current",
+      "expected_affected_claim_ids": [
+        "C5_cost_controls",
+        "C6_recommendation_interaction"
+      ],
+      "expected_unaffected_claim_ids": [
+        "C1_utilization_baseline",
+        "C2_reimbursement_targeted"
+      ],
+      "expected_recomputed_stages": [
+        "access_cost_context",
+        "tension_analysis",
+        "recommendation_criteria",
+        "final_memo"
+      ]
+    }
+  ]
+}

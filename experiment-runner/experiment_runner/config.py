@@ -129,6 +129,7 @@ def load_default_experiment_config() -> dict[str, Any]:
         "default_conditions": [
             "loop_centric_fresh",
             "loop_real_world_final_update",
+            "loop_real_world_with_edit_event",
             "loop_real_world_with_notes",
             "loop_real_world_with_memory",
             "simple_dag_fresh_recompute",

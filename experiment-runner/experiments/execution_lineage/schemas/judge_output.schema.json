@@ -195,6 +195,36 @@
                   "number",
                   "null"
                 ]
+              },
+              "stale_structure_retention_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "cross_artifact_consistency_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "recommendation_delta_correctness_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "implementation_delta_completeness_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "interaction_effect_coverage_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
               }
             }
           }

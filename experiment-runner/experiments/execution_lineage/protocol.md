@@ -13,6 +13,24 @@ The experiment tests the following hypothesis:
 This is an execution-lineage experiment with a strong context-discipline
 component, not primarily a better-prose experiment.
 
+## Experimental Scope
+
+The minimal paper package runs three task variants in the same telehealth
+domain:
+
+1. `local_supersession_update`
+2. `multi_edit_interaction_update`
+3. `multi_round_cumulative_update`
+
+The intended conservative claim is:
+
+> On simple local updates, strong loop baselines can match DAG replay on
+> final-output quality when given complete current sources. DAG replay still
+> provides deterministic replay, exact update locality, artifact preservation,
+> and lower recomputation or context burden. As updates become interacting or
+> cumulative, loop baselines are more exposed to drift, stale inherited
+> structure, unnecessary churn, or weaker current-state consistency.
+
 ## Research Questions
 
 ### RQ1: Replay Stability
@@ -81,6 +99,7 @@ Measures:
 |---|---|---|
 | `C1` | `loop_centric_fresh` | Controlled prompt-centric fresh baseline |
 | `C2` | `loop_real_world_final_update` | Chat-style prior-memo update baseline |
+| `C11` | `loop_real_world_with_edit_event` | Prior-memo update with source edit event only |
 | `C3` | `loop_real_world_with_notes` | Prior-memo plus pasted-notes update baseline |
 | `C4` | `loop_real_world_with_memory` | Transparent memory/wiki update baseline |
 | `C5` | `simple_dag_fresh_recompute` | Primary in-repo DAG recomputation baseline |
@@ -95,6 +114,7 @@ Rules:
 - Do not treat `C1` fresh generation as equivalent to `C6` replay.
 - Use `C5` when comparing fresh graph recomputation against fresh prompt runs.
 - Report fresh-run variation separately from replay stability.
+- This benchmark compares systems of work, not equal prompts.
 
 ## Harnesses
 
@@ -110,10 +130,20 @@ explicit dependency edges, execution identities, replay, automatic
 invalidation, expected affected claims, expected recomputed stages, or
 allowed/disallowed artifact lists.
 
+`loop_real_world_with_edit_event` is the one exception for source-change
+awareness: it may receive only the old/new source replacement ids from the
+task edit event. It still receives no dependency graph, affected-claim labels,
+recomputation scopes, or oracle metadata.
+
 The simple DAG harness uses the same model client and prompt assets as the
 loop-centric harness, but routes work through explicit stage dependencies,
 identity-based replay, and selective recomputation. This is the primary
 apples-to-apples substrate comparison.
+
+Prompt families are separated on disk so that loop prompt edits cannot change
+rendered DAG prompts. The loop conditions read from `prompts/loop_real_world/`
+and `prompts/loop_staged/`, while the DAG conditions read from
+`prompts/simple_dag/`.
 
 Harness inventory for the current implementation:
 
@@ -141,12 +171,43 @@ execution modes, the recommended reporting structure is paired:
 
 - `loop_fresh_vs_dag_fresh`
 - `loop_real_world_final_update_vs_dag_update`
+- `loop_real_world_with_edit_event_vs_dag_update`
 - `loop_real_world_with_notes_vs_dag_update`
 - `loop_real_world_with_memory_vs_dag_update`
 - optional `loop_real_world_staged_update_vs_dag_update`
 
 This avoids presenting the experiment as an unhelpful `4 vs 2` condition grid
 while preserving the stronger challenge baselines.
+
+## Fast Demo
+
+In addition to the paper-minimal package, the experiment includes a fast DAG
+demo for quick iteration. The fast demo is intended to highlight mechanism,
+not prose polish. Its default tasks are:
+
+1. `unrelated_branch_noop_update`
+2. `intermediate_artifact_edit`
+
+Its default conditions are:
+
+- `loop_real_world_final_update`
+- `loop_real_world_with_edit_event`
+- `simple_dag_replay_selective_recompute`
+
+The fast demo emphasizes:
+
+- no-op preservation
+- unrelated branch isolation
+- exact artifact preservation
+- downstream propagation from intermediate artifact edits
+- deterministic replay
+- reduced unnecessary churn
+- cross-artifact consistency
+
+The fast demo preserves the same information-boundary rules as the main
+experiment: loop conditions receive only user-level update information and no
+oracle dependency metadata, while the DAG condition may use runtime-derived
+dependency and replay state.
 
 ## Workflow Graph
 
@@ -166,6 +227,10 @@ The DAG-side final memo should depend only on declared current artifacts, especi
 
 It should not receive the full raw transcript or all raw sources unless the
 condition explicitly tests that behavior.
+
+When an update is processed, the DAG runtime may provide runtime execution
+metadata such as source replacement ids to recomputed stages. That is a graph
+runtime capability, not hidden loop assistance.
 
 ## Controlled Hazards
 
@@ -203,3 +268,18 @@ The judge should evaluate:
 - No fabricated results
 - No claims about completed measurements before a run exists
 - Paper source files remain untouched until experiment data is collected
+- Store rendered prompt payloads for each condition/run so prompt changes are auditable
+
+The paper-minimal runner writes audit artifacts per task, round, condition, and
+repeat under:
+
+- `rendered_prompts/`
+- `outputs/`
+- `judge_inputs/`
+- `judge_outputs/`
+- `summary_by_task_condition.json`
+- `summary_by_task_condition.csv`
+
+Any run produced during the temporary period when loop and DAG shared edited
+staged prompt files should be treated as a mixed prompt ablation rather than
+the clean loop-only comparison.

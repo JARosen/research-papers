@@ -1,0 +1,26 @@
+{
+  "edits": [
+    {
+      "edit_id": "E4_access_segmentation_revision",
+      "type": "replace_source",
+      "description": "Replace the earlier access analysis with the segmented access-benefit revision.",
+      "old_source_id": "S4_old",
+      "new_source_id": "S4_current",
+      "expected_affected_claim_ids": [
+        "C4_access_segmented",
+        "C6_recommendation_interaction"
+      ],
+      "expected_unaffected_claim_ids": [
+        "C2_reimbursement_targeted",
+        "C3_compliance_state_clustered",
+        "C5_cost_controls"
+      ],
+      "expected_recomputed_stages": [
+        "access_cost_context",
+        "tension_analysis",
+        "recommendation_criteria",
+        "final_memo"
+      ]
+    }
+  ]
+}

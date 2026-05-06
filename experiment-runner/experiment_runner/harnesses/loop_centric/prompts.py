@@ -8,5 +8,9 @@ from experiment_runner.config import EXPERIMENTS_DIR
 PROMPTS_DIR = EXPERIMENTS_DIR / "prompts"
 
 
+def prompt_path(name: str) -> Path:
+    return PROMPTS_DIR / name
+
+
 def load_prompt(name: str) -> str:
-    return (PROMPTS_DIR / name).read_text().strip()
+    return prompt_path(name).read_text().strip()

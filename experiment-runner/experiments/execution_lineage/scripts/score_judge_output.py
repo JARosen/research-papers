@@ -49,6 +49,11 @@ def main() -> None:
             "right_condition": "simple_dag_replay_selective_recompute",
             "comparison_focus": ["update locality", "claim churn", "regression"],
         },
+        "loop_real_world_with_edit_event_vs_dag_update": {
+            "left_condition": "loop_real_world_with_edit_event",
+            "right_condition": "simple_dag_replay_selective_recompute",
+            "comparison_focus": ["edit-event awareness", "claim churn", "regression"],
+        },
         "loop_real_world_with_notes_vs_dag_update": {
             "left_condition": "loop_real_world_with_notes",
             "right_condition": "simple_dag_replay_selective_recompute",
@@ -94,6 +99,10 @@ def main() -> None:
             "manual_context_reconstruction_actions": {
                 "loop_real_world_final_update": results["conditions"]
                 .get("loop_real_world_final_update", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
+                "loop_real_world_with_edit_event": results["conditions"]
+                .get("loop_real_world_with_edit_event", {})
                 .get("execution_metadata", {})
                 .get("manual_context_reconstruction_actions"),
                 "loop_real_world_with_notes": results["conditions"]

@@ -8,21 +8,9 @@ from typing import Any
 from experiment_runner.config import RunnerConfig
 from experiment_runner.harnesses.base import HarnessRunResult
 from experiment_runner.harnesses.common import OpenAITextModelClient, new_run_id, sha256_text, utc_now
-from experiment_runner.harnesses.loop_centric.prompts import load_prompt
+from experiment_runner.harnesses.loop_centric.prompts import load_prompt, prompt_path
 from experiment_runner.harnesses.loop_centric.transcript import Transcript
-from experiment_runner.tasks import ContextDisciplineTask
-
-
-STAGE_SPECS = [
-    {"name": "utilization_context", "prompt": "loop_utilization_context.md", "deps": []},
-    {"name": "reimbursement_context", "prompt": "loop_reimbursement_context.md", "deps": []},
-    {"name": "operations_context", "prompt": "loop_operations_context.md", "deps": []},
-    {"name": "access_cost_context", "prompt": "loop_access_cost_context.md", "deps": []},
-    {"name": "claim_matrix", "prompt": "loop_claim_matrix.md", "deps": ["utilization_context", "reimbursement_context", "operations_context"]},
-    {"name": "tension_analysis", "prompt": "loop_tension_analysis.md", "deps": ["access_cost_context"]},
-    {"name": "recommendation_criteria", "prompt": "loop_recommendation_criteria.md", "deps": ["claim_matrix", "tension_analysis"]},
-    {"name": "final_memo", "prompt": "loop_final_memo.md", "deps": ["claim_matrix", "tension_analysis", "recommendation_criteria"]},
-]
+from experiment_runner.tasks import ContextDisciplineTask, WorkflowStage
 
 
 @dataclass
@@ -103,11 +91,24 @@ class SimpleDAGHarnessRunner:
         }
 
     def _run_graph(self, task: ContextDisciplineTask, *, updated: bool, allow_replay: bool) -> dict[str, Any]:
+        return self._run_graph_with_overrides(task, updated=updated, allow_replay=allow_replay, stage_output_overrides=None)
+
+    def _run_graph_with_overrides(
+        self,
+        task: ContextDisciplineTask,
+        *,
+        updated: bool,
+        allow_replay: bool,
+        stage_output_overrides: dict[str, str] | None,
+    ) -> dict[str, Any]:
         transcript = Transcript()
         started_at = utc_now()
         run_start = time.perf_counter()
-        edit = task.primary_edit if updated else None
+        edits = task.update_edits if updated else ()
         instructions = "You are operating a DAG-scoped workflow. Use only the declared dependency artifacts and current inputs for the current stage."
+        stage_specs = self._stage_specs(task)
+        final_stage_name = self._final_stage_name(task, stage_specs)
+        overrides = dict(stage_output_overrides or {})
 
         artifacts_by_stage: dict[str, CachedArtifact] = {}
         execution_sources_by_step: dict[str, dict[str, Any]] = {}
@@ -117,22 +118,46 @@ class SimpleDAGHarnessRunner:
         total_output_tokens = 0
         model_calls = 0
 
-        for spec in STAGE_SPECS:
+        for spec in stage_specs:
             dependency_artifacts = [artifacts_by_stage[name] for name in spec["deps"]]
+            stage_source_text = task.render_sources_for_stage(updated=updated, stage_name=spec["name"]) if spec["source_backed"] else ""
             stage_identity = self._stage_identity(
                 task=task,
                 stage_name=spec["name"],
                 prompt_name=spec["prompt"],
-                source_text=task.render_sources_for_stage(updated=updated, stage_name=spec["name"]),
+                source_text=stage_source_text,
                 dependency_artifacts=dependency_artifacts,
-                updated=updated,
+                source_backed=spec["source_backed"],
+                override_text=overrides.get(spec["name"]),
             )
-            if allow_replay and stage_identity in self.cache:
+            if spec["name"] in overrides:
+                artifact = CachedArtifact(
+                    identity=stage_identity,
+                    stage_name=spec["name"],
+                    content=overrides[spec["name"]],
+                    hash_value=sha256_text(overrides[spec["name"]]),
+                    prompt_text="",
+                    model_usage={
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                    },
+                )
+                execution_sources_by_step[spec["name"]] = {
+                    "execution_source": "manual_override",
+                    "from_execution_cache": False,
+                    "source_ids": [],
+                    "dependency_stage_ids": list(spec["deps"]),
+                }
+                if allow_replay:
+                    self.cache[stage_identity] = artifact
+            elif allow_replay and stage_identity in self.cache:
                 artifact = self.cache[stage_identity]
                 print(f"[dag] reused {spec['name']}")
                 execution_sources_by_step[spec["name"]] = {
                     "execution_source": "replay",
                     "from_execution_cache": True,
+                    "source_ids": list(task.source_ids_for_stage(updated=updated, stage_name=spec["name"])) if spec["source_backed"] else [],
+                    "dependency_stage_ids": list(spec["deps"]),
                 }
             else:
                 print(f"[dag] computing {spec['name']}")
@@ -140,9 +165,11 @@ class SimpleDAGHarnessRunner:
                     task=task,
                     stage_name=spec["name"],
                     prompt_name=spec["prompt"],
-                    source_text=task.render_sources_for_stage(updated=updated, stage_name=spec["name"]),
+                    source_text=stage_source_text,
                     dependency_artifacts=dependency_artifacts,
-                    edit=edit,
+                    edits=edits,
+                    stage=spec["stage"],
+                    source_backed=spec["source_backed"],
                 )
                 input_items = [
                     {
@@ -208,6 +235,8 @@ class SimpleDAGHarnessRunner:
                 execution_sources_by_step[spec["name"]] = {
                     "execution_source": "fresh",
                     "from_execution_cache": False,
+                    "source_ids": [item.id for item in task.source_items_for_stage(updated=updated, stage_name=spec["name"])] if spec["source_backed"] else [],
+                    "dependency_stage_ids": list(spec["deps"]),
                 }
 
             artifacts_by_stage[spec["name"]] = artifact
@@ -231,7 +260,7 @@ class SimpleDAGHarnessRunner:
             "started_at": started_at,
             "ended_at": utc_now(),
             "duration_ms": duration_ms,
-            "final_output": artifacts_by_stage["final_memo"].content,
+            "final_output": artifacts_by_stage[final_stage_name].content,
             "intermediate_outputs": intermediate_outputs,
             "conversation_transcript": transcript.to_list(),
             "prompt_response_log": prompt_response_log,
@@ -274,7 +303,8 @@ class SimpleDAGHarnessRunner:
         prompt_name: str,
         source_text: str,
         dependency_artifacts: list[CachedArtifact],
-        updated: bool,
+        source_backed: bool,
+        override_text: str | None = None,
     ) -> str:
         payload = {
             "task_id": task.task_id,
@@ -285,8 +315,10 @@ class SimpleDAGHarnessRunner:
             "model": self.config.model_name,
             "provider": self.config.model_provider,
         }
-        if stage_name in {"utilization_context", "reimbursement_context", "operations_context", "access_cost_context"}:
+        if source_backed:
             payload["source_hash"] = sha256_text(source_text)
+        if override_text is not None:
+            payload["override_hash"] = sha256_text(override_text)
         return sha256_text(json.dumps(payload, sort_keys=True))
 
     def _build_stage_prompt(
@@ -297,18 +329,60 @@ class SimpleDAGHarnessRunner:
         prompt_name: str,
         source_text: str,
         dependency_artifacts: list[CachedArtifact],
-        edit: Any,
+        edits: tuple[Any, ...],
+        stage: WorkflowStage,
+        source_backed: bool,
     ) -> str:
         parts = [
             load_prompt(prompt_name),
+            f"Workflow stage: {stage.label}",
+            f"Stage purpose:\n{stage.purpose}",
             f"Task: {task.title}",
             f"Instruction:\n{task.instruction}",
+            "Requested output format:\n" + json.dumps(task.requested_output_format, indent=2, sort_keys=True),
         ]
-        if stage_name in {"utilization_context", "reimbursement_context", "operations_context", "access_cost_context"}:
-            parts.append(f"Current source bundle:\n{source_text}")
+        if source_backed:
+            parts.append(f"Current source bundle:\n{source_text or '<no matching current sources provided>'}")
         else:
             rendered = []
             for item in dependency_artifacts:
                 rendered.append(f"[{item.stage_name} | {item.identity}]\n{item.content}")
             parts.append("Declared dependency artifacts:\n" + "\n\n".join(rendered))
+        if edits:
+            lines = [
+                "Runtime execution metadata:",
+                "This stage is being evaluated under upstream source replacement update events.",
+                "Source replacement events:",
+                *[
+                    f"- Old source id: {edit.old_source_id} | New source id: {edit.new_source_id}"
+                    for edit in edits
+                ],
+            ]
+            parts.append("\n".join(lines))
         return "\n\n".join(parts).strip()
+
+    def _stage_specs(self, task: ContextDisciplineTask) -> list[dict[str, Any]]:
+        stage_ids = set(task.stage_ids())
+        specs: list[dict[str, Any]] = []
+        for stage in task.workflow_stages:
+            prompt_name = f"simple_dag/{stage.id}.md"
+            if not prompt_path(prompt_name).exists():
+                raise FileNotFoundError(f"Missing DAG prompt for stage '{stage.id}': {prompt_path(prompt_name)}")
+            deps = [dep for dep in stage.depends_on if dep in stage_ids]
+            specs.append(
+                {
+                    "name": stage.id,
+                    "prompt": prompt_name,
+                    "deps": deps,
+                    "stage": stage,
+                    "source_backed": task.stage_is_source_backed(stage.id),
+                }
+            )
+        return specs
+
+    @staticmethod
+    def _final_stage_name(task: ContextDisciplineTask, stage_specs: list[dict[str, Any]]) -> str:
+        deliverable = str(task.requested_output_format.get("deliverable", "") or "")
+        if deliverable and any(spec["name"] == deliverable for spec in stage_specs):
+            return deliverable
+        return stage_specs[-1]["name"]

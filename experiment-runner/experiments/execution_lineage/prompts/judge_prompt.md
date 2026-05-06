@@ -28,6 +28,11 @@ Evaluate:
 - context discipline
 - update correctness
 - traceability
+- stale inherited recommendation structure
+- cross-artifact consistency
+- whether the recommendation changed by the right amount for the current evidence
+- whether implementation and operational implications were updated when required
+- whether interacting edits were synthesized jointly rather than treated in isolation
 
 For each system output:
 1. extract the major final claims
@@ -43,5 +48,10 @@ For each system output:
 11. produce a traceability score
 12. produce a context-discipline score
 13. produce an output-faithfulness score
+14. produce a stale-structure-retention score
+15. produce a cross-artifact-consistency score
+16. produce a recommendation-delta-correctness score
+17. produce an implementation-delta-completeness score
+18. produce an interaction-effect-coverage score
 
 Return valid JSON only.

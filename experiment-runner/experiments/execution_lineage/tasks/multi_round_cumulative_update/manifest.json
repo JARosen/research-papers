@@ -1,0 +1,12 @@
+{
+  "task_id": "multi_round_cumulative_update",
+  "task_family": "policy_synthesis",
+  "mode": "cumulative_rounds",
+  "initial_task_file": "round_t1/task.json",
+  "rounds": [
+    { "round_id": "after_t1", "task_file": "round_t1/task.json" },
+    { "round_id": "after_t2", "task_file": "round_t2/task.json" },
+    { "round_id": "after_t3", "task_file": "round_t3/task.json" },
+    { "round_id": "after_t4", "task_file": "round_t4/task.json" }
+  ]
+}

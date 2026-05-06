@@ -16,14 +16,14 @@ from experiment_runner.tasks import ContextDisciplineTask, UpstreamEdit
 
 
 STEP_SEQUENCE = [
-    ("utilization_context", "loop_utilization_context.md"),
-    ("reimbursement_context", "loop_reimbursement_context.md"),
-    ("operations_context", "loop_operations_context.md"),
-    ("access_cost_context", "loop_access_cost_context.md"),
-    ("claim_matrix", "loop_claim_matrix.md"),
-    ("tension_analysis", "loop_tension_analysis.md"),
-    ("recommendation_criteria", "loop_recommendation_criteria.md"),
-    ("final_memo", "loop_final_memo.md"),
+    ("utilization_context", "loop_staged/utilization_context.md"),
+    ("reimbursement_context", "loop_staged/reimbursement_context.md"),
+    ("operations_context", "loop_staged/operations_context.md"),
+    ("access_cost_context", "loop_staged/access_cost_context.md"),
+    ("claim_matrix", "loop_staged/claim_matrix.md"),
+    ("tension_analysis", "loop_staged/tension_analysis.md"),
+    ("recommendation_criteria", "loop_staged/recommendation_criteria.md"),
+    ("final_memo", "loop_staged/final_memo.md"),
 ]
 
 REAL_WORLD_UPDATE_STEP = "final_memo_update"
@@ -79,11 +79,17 @@ class LoopCentricHarnessRunner:
         self.config = config
         self.model_client = OpenAITextModelClient(config)
 
-    def run_fresh(self, task_bundle: ContextDisciplineTask, *, repeats: int = 1) -> HarnessRunResult:
+    def run_fresh(
+        self,
+        task_bundle: ContextDisciplineTask,
+        *,
+        repeats: int = 1,
+        updated: bool = False,
+    ) -> HarnessRunResult:
         runs = []
         for index in range(repeats):
             print(f"[loop] fresh run {index + 1}/{repeats}")
-            runs.append(self._run_single_fresh(task_bundle, use_procedural_memory=False))
+            runs.append(self._run_single_fresh(task_bundle, use_procedural_memory=False, updated=updated))
         return HarnessRunResult(
             payload={
                 "condition_id": "C1",
@@ -93,11 +99,17 @@ class LoopCentricHarnessRunner:
             }
         )
 
-    def run_fresh_with_procedural_memory(self, task_bundle: ContextDisciplineTask, *, repeats: int = 1) -> HarnessRunResult:
+    def run_fresh_with_procedural_memory(
+        self,
+        task_bundle: ContextDisciplineTask,
+        *,
+        repeats: int = 1,
+        updated: bool = False,
+    ) -> HarnessRunResult:
         runs = []
         for index in range(repeats):
             print(f"[loop-memory] fresh run {index + 1}/{repeats}")
-            runs.append(self._run_single_fresh(task_bundle, use_procedural_memory=True))
+            runs.append(self._run_single_fresh(task_bundle, use_procedural_memory=True, updated=updated))
         return HarnessRunResult(
             payload={
                 "condition_name": "loop_real_world_with_memory",
@@ -110,21 +122,25 @@ class LoopCentricHarnessRunner:
         self,
         task_bundle: ContextDisciplineTask,
         prior_run: HarnessRunResult,
-        edit: UpstreamEdit,
+        edit: UpstreamEdit | tuple[UpstreamEdit, ...],
         *,
         include_intermediates: bool = False,
         use_procedural_memory: bool = False,
+        include_edit_event: bool = False,
     ) -> HarnessRunResult:
-        mode = "loop-memory-update" if use_procedural_memory else ("loop-update-with-intermediates" if include_intermediates else "loop-update-final-only")
+        mode = "loop-memory-update" if use_procedural_memory else (
+            "loop-update-with-edit-event" if include_edit_event else ("loop-update-with-intermediates" if include_intermediates else "loop-update-final-only")
+        )
         print(f"[{mode}] starting update run")
         prior_payload = prior_run.payload["runs"][0] if "runs" in prior_run.payload else prior_run.payload
         result = self._run_update(
             task_bundle,
             prior_final_output=str(prior_payload["final_output"]),
             prior_intermediates=prior_payload.get("intermediate_outputs", []),
-            edit=edit,
+            edits=(edit,) if isinstance(edit, UpstreamEdit) else tuple(edit),
             include_intermediates=include_intermediates,
             use_procedural_memory=use_procedural_memory,
+            include_edit_event=include_edit_event,
         )
         return HarnessRunResult(payload=result)
 
@@ -132,7 +148,7 @@ class LoopCentricHarnessRunner:
         self,
         task_bundle: ContextDisciplineTask,
         prior_run: HarnessRunResult,
-        edit: UpstreamEdit,
+        edit: UpstreamEdit | tuple[UpstreamEdit, ...],
     ) -> HarnessRunResult:
         print("[loop-staged-update] starting update run")
         prior_payload = prior_run.payload["runs"][0] if "runs" in prior_run.payload else prior_run.payload
@@ -142,14 +158,21 @@ class LoopCentricHarnessRunner:
             source_text=task_bundle.render_sources(updated=True),
             memory_metadata=blank_memory_metadata(uses_memory=False),
             memory_store=TransparentMemoryStore(None),
-            instructions=load_prompt("loop_real_world_staged_update.md"),
+            instructions=load_prompt("loop_real_world/staged_update.md"),
             prior_final_output=str(prior_payload["final_output"]),
-            edit=edit,
+            edit=(edit,) if isinstance(edit, UpstreamEdit) else tuple(edit),
+            updated=True,
             manual_context_reconstruction_actions=1,
         )
         return HarnessRunResult(payload=result)
 
-    def _run_single_fresh(self, task_bundle: ContextDisciplineTask, *, use_procedural_memory: bool) -> dict[str, Any]:
+    def _run_single_fresh(
+        self,
+        task_bundle: ContextDisciplineTask,
+        *,
+        use_procedural_memory: bool,
+        updated: bool,
+    ) -> dict[str, Any]:
         memory_store = TransparentMemoryStore(task_bundle.memory_file if use_procedural_memory else None)
         memory_metadata = blank_memory_metadata(uses_memory=use_procedural_memory)
         if use_procedural_memory:
@@ -159,10 +182,11 @@ class LoopCentricHarnessRunner:
         return self._execute_loop(
             task_bundle=task_bundle,
             transcript=Transcript(),
-            source_text=task_bundle.render_sources(updated=False),
+            source_text=task_bundle.render_sources(updated=updated),
             memory_metadata=memory_metadata,
             memory_store=memory_store,
-            instructions=load_prompt("loop_centric_fresh.md" if not use_procedural_memory else "loop_with_procedural_memory.md"),
+            instructions=load_prompt("loop_staged/fresh.md" if not use_procedural_memory else "loop_staged/with_procedural_memory.md"),
+            updated=updated,
         )
 
     def _run_update(
@@ -171,9 +195,10 @@ class LoopCentricHarnessRunner:
         *,
         prior_final_output: str,
         prior_intermediates: list[dict[str, Any]],
-        edit: UpstreamEdit,
+        edits: tuple[UpstreamEdit, ...],
         include_intermediates: bool,
         use_procedural_memory: bool,
+        include_edit_event: bool,
     ) -> dict[str, Any]:
         memory_store = TransparentMemoryStore(task_bundle.memory_file if use_procedural_memory else None)
         memory_metadata = blank_memory_metadata(uses_memory=use_procedural_memory)
@@ -188,11 +213,13 @@ class LoopCentricHarnessRunner:
         elif not use_procedural_memory:
             manual_context_reconstruction_actions = 1
 
-        prompt_name = "loop_real_world_final_update.md"
+        prompt_name = "loop_real_world/final_update.md"
+        if include_edit_event:
+            prompt_name = "loop_real_world/with_edit_event.md"
         if include_intermediates:
-            prompt_name = "loop_real_world_with_notes.md"
+            prompt_name = "loop_real_world/with_notes.md"
         if use_procedural_memory:
-            prompt_name = "loop_real_world_with_memory.md"
+            prompt_name = "loop_real_world/with_memory.md"
 
         return self._execute_real_world_update(
             task_bundle=task_bundle,
@@ -203,6 +230,7 @@ class LoopCentricHarnessRunner:
             instructions=load_prompt(prompt_name),
             prior_final_output=prior_final_output,
             prior_intermediates=prior_intermediates,
+            edits=edits if include_edit_event else (),
             manual_context_reconstruction_actions=manual_context_reconstruction_actions,
         )
 
@@ -217,6 +245,7 @@ class LoopCentricHarnessRunner:
         instructions: str,
         prior_final_output: str,
         prior_intermediates: list[dict[str, Any]] | None,
+        edits: tuple[UpstreamEdit, ...],
         manual_context_reconstruction_actions: int,
     ) -> dict[str, Any]:
         run_id = new_run_id("loop")
@@ -229,6 +258,7 @@ class LoopCentricHarnessRunner:
             source_text=source_text,
             prior_final_output=prior_final_output,
             prior_intermediates=prior_intermediates,
+            edits=edits,
         )
         transcript.add_message(
             role="user",
@@ -298,6 +328,7 @@ class LoopCentricHarnessRunner:
         prior_final_output: str | None = None,
         prior_intermediates: list[dict[str, Any]] | None = None,
         edit: UpstreamEdit | None = None,
+        updated: bool = False,
         manual_context_reconstruction_actions: int = 0,
     ) -> dict[str, Any]:
         run_id = new_run_id("loop")
@@ -322,7 +353,7 @@ class LoopCentricHarnessRunner:
 
             user_content = self._build_step_user_message(
                 task_bundle=task_bundle,
-                source_text=task_bundle.render_sources_for_stage(updated=edit is not None, stage_name=step_name),
+                source_text=task_bundle.render_sources_for_stage(updated=updated, stage_name=step_name),
                 step_prompt=load_prompt(prompt_file),
                 prior_final_output=prior_final_output,
                 prior_intermediates=prior_intermediates,
@@ -400,7 +431,7 @@ class LoopCentricHarnessRunner:
         step_prompt: str,
         prior_final_output: str | None,
         prior_intermediates: list[dict[str, Any]] | None,
-        edit: UpstreamEdit | None,
+        edit: tuple[UpstreamEdit, ...] | None,
     ) -> str:
         parts = [
             f"Task: {task_bundle.title}",
@@ -425,15 +456,23 @@ class LoopCentricHarnessRunner:
         source_text: str,
         prior_final_output: str,
         prior_intermediates: list[dict[str, Any]] | None,
+        edits: tuple[UpstreamEdit, ...],
     ) -> str:
         parts = [
             f"Previous final memo:\n{prior_final_output}",
         ]
+        if edits:
+            parts.append("Source update event:" if len(edits) == 1 else "Source update events:")
+            event_lines = task_bundle.edit_event_lines()
+            if event_lines:
+                parts.append("\n".join(event_lines))
         if prior_intermediates:
             rendered = []
             for item in prior_intermediates:
                 rendered.append(f"[{item.get('name')}]\n{item.get('content')}")
             parts.append("Prior working notes:\n" + "\n\n".join(rendered))
+        if task_bundle.update_user_note:
+            parts.append(f"Update note:\n{task_bundle.update_user_note}")
         parts.extend(
             [
                 f"Current source materials:\n{source_text}",

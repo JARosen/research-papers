@@ -1,0 +1,24 @@
+{
+  "memory_entries": [
+    {
+      "id": "workflow_recipe_v1",
+      "type": "workflow_recipe",
+      "content": "Use the current source set only. Ignore superseded source versions. Build evidence digest before claim matrix, claim matrix before tension analysis, tension analysis before recommendation criteria, and recommendation criteria before final memo. Preserve evidence tensions. When a source changes, update downstream affected claims and preserve unrelated claims."
+    },
+    {
+      "id": "source_version_notes_v1",
+      "type": "source_version_notes",
+      "content": "S2_old has been superseded by S2_current. Do not use S2_old for current reimbursement claims."
+    },
+    {
+      "id": "prior_claim_matrix_v1",
+      "type": "prior_artifact",
+      "content": "Prior claim matrix noted four main claims: usage remains above baseline, reimbursement uncertainty matters, operational constraints persist, and access gains do not imply system-wide savings."
+    },
+    {
+      "id": "prior_tension_analysis_v1",
+      "type": "prior_artifact",
+      "content": "Required tension T_access_vs_cost: telehealth improves access and continuity, but system-wide cost savings remain uncertain."
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "task_id": "multi_round_cumulative_update",
+  "task_family": "policy_synthesis",
+  "sources": {
+    "relevant": [
+      {
+        "id": "S1",
+        "role": "adoption_trends"
+      },
+      {
+        "id": "S2_current",
+        "role": "reimbursement_policy"
+      },
+      {
+        "id": "S3",
+        "role": "compliance_constraints"
+      },
+      {
+        "id": "S4",
+        "role": "access_benefits"
+      },
+      {
+        "id": "S5",
+        "role": "cost_uncertainty"
+      },
+      {
+        "id": "S6",
+        "role": "clinical_fit"
+      },
+      {
+        "id": "S7",
+        "role": "adoption_limits"
+      }
+    ],
+    "irrelevant_decoys": [
+      {
+        "id": "D1",
+        "reason": "adjacent operational topic but not probative for the requested recommendation"
+      },
+      {
+        "id": "D2",
+        "reason": "plausible digital-health context but outside clinical and reimbursement scope"
+      }
+    ],
+    "superseded": [
+      {
+        "old_id": "S2_old",
+        "current_id": "S2_current",
+        "superseded_claims": [
+          "C_reimbursement_uniformly_severe"
+        ]
+      }
+    ],
+    "conflicting_pairs": [
+      {
+        "source_ids": [
+          "S4",
+          "S5"
+        ],
+        "required_tension_id": "T_access_vs_cost"
+      }
+    ]
+  },
+  "expected_claims": [
+    {
+      "id": "C1",
+      "text": "Telehealth use remains above pre-2020 baseline for selected follow-up and behavioral-health services.",
+      "supported_by": [
+        "S1"
+      ],
+      "should_appear": true,
+      "affected_by_edit": false,
+      "required_in_final": true
+    },
+    {
+      "id": "C2",
+      "text": "Reimbursement conditions improved enough for selected behavioral-health and chronic-care telehealth follow-up services to support selective expansion, though parity is not universal.",
+      "supported_by": [
+        "S2_current"
+      ],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C5",
+      "text": "The recommendation should shift from pilot-only caution to selective expansion for the targeted follow-up service lines because the reimbursement premise changed.",
+      "supported_by": [
+        "S2_current",
+        "S3",
+        "S6"
+      ],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C3",
+      "text": "Licensing, documentation, consent, and workflow constraints still limit broad expansion.",
+      "supported_by": [
+        "S3",
+        "S6",
+        "S7"
+      ],
+      "should_appear": true,
+      "affected_by_edit": false,
+      "required_in_final": true
+    },
+    {
+      "id": "C4",
+      "text": "Access and continuity gains do not prove system-wide cost savings, so the recommendation should preserve uncertainty.",
+      "supported_by": [
+        "S4",
+        "S5"
+      ],
+      "should_appear": true,
+      "affected_by_edit": false,
+      "required_in_final": true
+    }
+  ],
+  "excluded_claims": [
+    {
+      "id": "X1",
+      "text": "Expansion should remain in pilot mode because reimbursement is still broadly too unstable to support targeted service-line growth.",
+      "reason": "stale",
+      "contradicted_by": [
+        "S2_current"
+      ]
+    },
+    {
+      "id": "X2",
+      "text": "Remote monitoring hardware procurement trends justify telehealth expansion.",
+      "reason": "irrelevant",
+      "source_ids": [
+        "D1"
+      ]
+    },
+    {
+      "id": "X3",
+      "text": "Employer wellness benefit trends are a core reason to expand clinical telehealth follow-up.",
+      "reason": "irrelevant",
+      "source_ids": [
+        "D2"
+      ]
+    }
+  ],
+  "required_tensions": [
+    {
+      "id": "T_access_vs_cost",
+      "description": "The output should preserve the tension between improved access / continuity and uncertain system-wide cost savings.",
+      "supported_by": [
+        "S4",
+        "S5"
+      ]
+    }
+  ],
+  "workflow_dependencies": {
+    "final_memo": {
+      "allowed_artifacts": [
+        "evidence_digest.selected",
+        "claim_matrix.current",
+        "tension_analysis.current",
+        "recommendation_criteria.current"
+      ],
+      "disallowed_context": [
+        "full_raw_transcript",
+        "superseded_sources",
+        "irrelevant_decoys",
+        "unrelated_branch_artifact"
+      ]
+    }
+  }
+}

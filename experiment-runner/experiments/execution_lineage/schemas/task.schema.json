@@ -85,6 +85,33 @@
     },
     "manual_intermediates": {
       "type": "object"
+    },
+    "initial_stage_source_ids": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "updated_stage_source_ids": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "update_user_note": {
+      "type": "string"
+    },
+    "updated_stage_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   }
 }

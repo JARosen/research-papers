@@ -1,0 +1,43 @@
+{
+  "task_id": "multi_round_cumulative_update",
+  "task_family": "policy_synthesis",
+  "sources": {
+    "relevant": [
+      { "id": "S1", "role": "adoption_trends" },
+      { "id": "S2_current", "role": "reimbursement_policy" },
+      { "id": "S3_current", "role": "compliance_constraints" },
+      { "id": "S4_old", "role": "access_benefits" },
+      { "id": "S5_current", "role": "cost_uncertainty" },
+      { "id": "S6", "role": "clinical_fit" },
+      { "id": "S7", "role": "adoption_limits" }
+    ],
+    "irrelevant_decoys": [
+      { "id": "D1", "reason": "adjacent operational topic but not probative for the requested recommendation" },
+      { "id": "D2", "reason": "plausible digital-health context but outside clinical and reimbursement scope" }
+    ],
+    "superseded": [
+      { "old_id": "S3_old", "current_id": "S3_current", "superseded_claims": ["X2_universal_expansion"] }
+    ],
+    "conflicting_pairs": [
+      { "source_ids": ["S4_old", "S5_current"], "required_tension_id": "T_access_vs_cost" }
+    ]
+  },
+  "expected_claims": [
+    { "id": "C2_reimbursement_targeted", "text": "Selected reimbursement support now justifies expansion for targeted behavioral-health and some chronic-care follow-up services, but parity is not universal.", "supported_by": ["S2_current"], "should_appear": true, "affected_by_edit": false, "required_in_final": true },
+    { "id": "C3_compliance_state_clustered", "text": "Compliance constraints now require state-clustered rollout rather than uniform multistate expansion.", "supported_by": ["S3_current"], "should_appear": true, "affected_by_edit": true, "required_in_final": true },
+    { "id": "C5_cost_controls", "text": "Chronic-care follow-up expansion still requires triage and utilization controls.", "supported_by": ["S5_current"], "should_appear": true, "affected_by_edit": false, "required_in_final": true },
+    { "id": "C6_recommendation_interaction", "text": "The recommendation should become payer-validated, compliance-gated, and state-clustered rather than a uniform multistate rollout.", "supported_by": ["S2_current", "S3_current", "S5_current", "S6"], "should_appear": true, "affected_by_edit": true, "required_in_final": true }
+  ],
+  "excluded_claims": [
+    { "id": "X2_universal_expansion", "text": "Telehealth should be expanded uniformly across all service lines and states.", "reason": "stale", "contradicted_by": ["S3_current", "S5_current"] }
+  ],
+  "required_tensions": [
+    { "id": "T_access_vs_cost", "description": "The output should preserve the tension between access and continuity gains and utilization-control risk.", "supported_by": ["S4_old", "S5_current"] }
+  ],
+  "workflow_dependencies": {
+    "final_memo": {
+      "allowed_artifacts": ["claim_matrix.current", "tension_analysis.current", "recommendation_criteria.current"],
+      "disallowed_context": ["full_raw_transcript", "superseded_sources", "irrelevant_decoys"]
+    }
+  }
+}

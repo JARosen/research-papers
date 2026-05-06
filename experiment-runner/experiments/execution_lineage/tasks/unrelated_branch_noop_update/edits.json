@@ -1,0 +1,15 @@
+{
+  "edits": [
+    {
+      "edit_id": "E1_provider_recruiting_update",
+      "type": "replace_source",
+      "description": "Replace the earlier provider recruiting note with the updated staffing analysis.",
+      "old_source_id": "R1_old",
+      "new_source_id": "R1_current",
+      "expected_recomputed_stages": [
+        "provider_recruiting_note"
+      ],
+      "human_readable_event": "A provider recruiting and staffing analysis was updated."
+    }
+  ]
+}

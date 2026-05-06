@@ -1,0 +1,140 @@
+{
+  "task_id": "multi_edit_interaction_update",
+  "task_family": "policy_synthesis",
+  "sources": {
+    "relevant": [
+      { "id": "S1", "role": "adoption_trends" },
+      { "id": "S2_current", "role": "reimbursement_policy" },
+      { "id": "S3_current", "role": "compliance_constraints" },
+      { "id": "S4_current", "role": "access_segmentation" },
+      { "id": "S5_current", "role": "cost_uncertainty" },
+      { "id": "S6", "role": "clinical_fit" },
+      { "id": "S7", "role": "adoption_limits" }
+    ],
+    "irrelevant_decoys": [
+      {
+        "id": "D1",
+        "reason": "adjacent operational topic but not probative for the requested recommendation"
+      },
+      {
+        "id": "D2",
+        "reason": "plausible digital-health context but outside clinical and reimbursement scope"
+      }
+    ],
+    "superseded": [
+      { "old_id": "S2_old", "current_id": "S2_current", "superseded_claims": ["X1_pilot_only"] },
+      { "old_id": "S3_old", "current_id": "S3_current", "superseded_claims": ["X2_universal_expansion"] },
+      { "old_id": "S4_old", "current_id": "S4_current", "superseded_claims": ["X2_universal_expansion"] },
+      { "old_id": "S5_old", "current_id": "S5_current", "superseded_claims": ["X3_system_wide_savings"] }
+    ],
+    "conflicting_pairs": [
+      {
+        "source_ids": ["S4_current", "S5_current"],
+        "required_tension_id": "T_access_vs_cost"
+      }
+    ]
+  },
+  "expected_claims": [
+    {
+      "id": "C1_utilization_baseline",
+      "text": "Telehealth use remains above pre-2020 baseline for selected follow-up and behavioral-health services.",
+      "supported_by": ["S1"],
+      "should_appear": true,
+      "affected_by_edit": false,
+      "required_in_final": true
+    },
+    {
+      "id": "C2_reimbursement_targeted",
+      "text": "Selected reimbursement support now justifies expansion for targeted behavioral-health and some chronic-care follow-up services, but parity is not universal.",
+      "supported_by": ["S2_current"],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C3_compliance_state_clustered",
+      "text": "Compliance constraints require a state-clustered rollout rather than a uniform multistate expansion.",
+      "supported_by": ["S3_current"],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C4_access_segmented",
+      "text": "Access benefits are strongest for behavioral-health follow-up and rural or mobility-limited patient segments.",
+      "supported_by": ["S4_current", "S7"],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C5_cost_controls",
+      "text": "Cost and utilization uncertainty require triage and utilization controls, especially for chronic-care follow-up.",
+      "supported_by": ["S5_current"],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    },
+    {
+      "id": "C6_recommendation_interaction",
+      "text": "The recommendation should be selective, staged, payer-validated, state-clustered, and service-line-specific rather than pilot-only or universal expansion.",
+      "supported_by": ["S2_current", "S3_current", "S4_current", "S5_current", "S6"],
+      "should_appear": true,
+      "affected_by_edit": true,
+      "required_in_final": true
+    }
+  ],
+  "excluded_claims": [
+    {
+      "id": "X1_pilot_only",
+      "text": "Expansion should remain pilot-only because reimbursement remains broadly too unstable.",
+      "reason": "stale",
+      "contradicted_by": ["S2_current"]
+    },
+    {
+      "id": "X2_universal_expansion",
+      "text": "Telehealth should be expanded uniformly across all service lines and states.",
+      "reason": "unsupported",
+      "contradicted_by": ["S3_current", "S4_current", "S5_current"]
+    },
+    {
+      "id": "X3_system_wide_savings",
+      "text": "Telehealth expansion is proven to generate system-wide cost savings.",
+      "reason": "unsupported",
+      "contradicted_by": ["S5_current"]
+    },
+    {
+      "id": "X4_remote_monitoring_procurement",
+      "text": "Remote monitoring device procurement trends justify broad telehealth expansion.",
+      "reason": "irrelevant",
+      "source_ids": ["D1"]
+    },
+    {
+      "id": "X5_employer_wellness",
+      "text": "Employer virtual-wellness benefit trends are a core reason for clinical telehealth expansion.",
+      "reason": "irrelevant",
+      "source_ids": ["D2"]
+    }
+  ],
+  "required_tensions": [
+    {
+      "id": "T_access_vs_cost",
+      "description": "The output should preserve the tension between targeted access and continuity gains and sharper chronic-care utilization risk.",
+      "supported_by": ["S4_current", "S5_current"]
+    }
+  ],
+  "workflow_dependencies": {
+    "final_memo": {
+      "allowed_artifacts": [
+        "claim_matrix.current",
+        "tension_analysis.current",
+        "recommendation_criteria.current"
+      ],
+      "disallowed_context": [
+        "full_raw_transcript",
+        "superseded_sources",
+        "irrelevant_decoys"
+      ]
+    }
+  }
+}

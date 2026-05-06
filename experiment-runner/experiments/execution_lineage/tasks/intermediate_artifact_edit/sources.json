@@ -1,0 +1,67 @@
+{
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Regional utilization survey",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Across a 24-system sample, telehealth utilization remains materially above pre-2020 levels for behavioral health, medication follow-up, and chronic-care check-ins. Rural and mobility-limited patients continue to rely on virtual follow-up capacity."
+    },
+    {
+      "id": "S2_current",
+      "title": "Revised payer brief on selected parity extensions",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Several large commercial plans and state Medicaid programs extended payment parity for selected behavioral-health and some chronic-care telehealth follow-up services through multiyear updates. Parity is stable enough to justify selective expansion with payer-by-payer validation, but it is not universal outside the targeted lines."
+    },
+    {
+      "id": "S3_current",
+      "title": "Revised state-cluster compliance assessment",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Two high-volume state clusters now have materially tighter licensing, consent, and audit requirements. Expansion should use state-clustered rollout sequencing and stronger local compliance support rather than a uniform multistate rollout."
+    },
+    {
+      "id": "S4_current",
+      "title": "Segmented access and continuity analysis",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Access benefits are strongest for behavioral-health follow-up and for rural or mobility-limited patient segments. Evidence is weaker for broad chronic-care expansion outside those targeted populations."
+    },
+    {
+      "id": "S5_current",
+      "title": "Sharpened chronic-care cost and utilization caution memo",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Broad savings claims are not supported. Chronic-care follow-up expansion is especially vulnerable to low-acuity utilization growth unless triage, interval controls, and substitution rules are enforced."
+    },
+    {
+      "id": "S6",
+      "title": "Clinical workflow fit note",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Telehealth performs best for medication management, therapy, routine chronic-care follow-up, and monitoring. It is less appropriate for new diagnostic workups, imaging-dependent care, and complaints requiring physical examination."
+    },
+    {
+      "id": "S7",
+      "title": "Broadband access brief",
+      "kind": "relevant",
+      "status": "current",
+      "active_in_initial": true,
+      "active_after_edit": true,
+      "excerpt": "Connectivity gaps and digital literacy barriers remain concentrated in some rural and elderly populations, creating adoption limits even where demand for virtual care is strong."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "fast_demo": {
+    "task_type": "unrelated_branch_noop_update",
+    "expected_final_output_stable": true,
+    "expected_recomputed_stages": [
+      "provider_recruiting_note"
+    ],
+    "expected_preserved_stages": [
+      "utilization_context",
+      "reimbursement_context",
+      "operations_context",
+      "access_cost_context",
+      "claim_matrix",
+      "tension_analysis",
+      "recommendation_criteria",
+      "final_memo"
+    ],
+    "contamination_source_ids": [
+      "R1_current"
+    ],
+    "contamination_keywords": [
+      "recruiting",
+      "staffing",
+      "workforce",
+      "virtual-first roles"
+    ]
+  }
+}

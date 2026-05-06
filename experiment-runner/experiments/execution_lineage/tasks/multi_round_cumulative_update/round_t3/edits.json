@@ -1,0 +1,26 @@
+{
+  "edits": [
+    {
+      "edit_id": "E3_compliance_revision",
+      "type": "replace_source",
+      "description": "Replace the earlier compliance assessment with the state-clustered rollout revision.",
+      "old_source_id": "S3_old",
+      "new_source_id": "S3_current",
+      "expected_affected_claim_ids": [
+        "C3_compliance_state_clustered",
+        "C6_recommendation_interaction"
+      ],
+      "expected_unaffected_claim_ids": [
+        "C1_utilization_baseline",
+        "C2_reimbursement_targeted",
+        "C5_cost_controls"
+      ],
+      "expected_recomputed_stages": [
+        "operations_context",
+        "claim_matrix",
+        "recommendation_criteria",
+        "final_memo"
+      ]
+    }
+  ]
+}

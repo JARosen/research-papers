@@ -1,0 +1,151 @@
+{
+  "schema_version": "execution_lineage.task.v1",
+  "task_id": "multi_round_cumulative_update",
+  "task_family": "policy_synthesis",
+  "title": "Telehealth policy brief under context pressure",
+  "instruction": "Produce a policy memo recommending whether a multistate health system should expand telehealth service lines for follow-up behavioral-health and chronic-care visits over the next 24 months. The memo must synthesize current evidence, distinguish current from superseded reimbursement context, preserve unresolved tensions, and avoid adjacent but out-of-scope considerations.",
+  "requested_output_format": {
+    "deliverable": "final_memo",
+    "sections": [
+      "Recommendation",
+      "Current Evidence",
+      "Risks and Tensions",
+      "Operational Implications",
+      "Open Questions"
+    ],
+    "length_guidance": "700-1000 words"
+  },
+  "workflow_stages": [
+    {
+      "id": "utilization_context",
+      "label": "Utilization Context",
+      "purpose": "Summarize current utilization and adoption evidence.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "reimbursement_context",
+      "label": "Reimbursement Context",
+      "purpose": "Summarize current reimbursement and supersession state.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "operations_context",
+      "label": "Operations Context",
+      "purpose": "Summarize current compliance, workflow, and adoption constraints.",
+      "allowed_inputs": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "access_cost_context",
+      "label": "Access vs Cost Context",
+      "purpose": "Summarize access benefits, continuity gains, and cost uncertainty.",
+      "depends_on": [
+        "active_sources"
+      ]
+    },
+    {
+      "id": "claim_matrix",
+      "label": "Claim Matrix",
+      "purpose": "Map candidate claims to current supporting sources and mark changed vs unaffected claims.",
+      "depends_on": [
+        "utilization_context",
+        "reimbursement_context",
+        "operations_context",
+        "access_cost_context"
+      ]
+    },
+    {
+      "id": "tension_analysis",
+      "label": "Tension / Risk Analysis",
+      "purpose": "Preserve conflicts and unresolved uncertainties rather than flattening them.",
+      "depends_on": [
+        "access_cost_context"
+      ]
+    },
+    {
+      "id": "recommendation_criteria",
+      "label": "Recommendation Criteria",
+      "purpose": "Define decision criteria grounded in current claims and tensions.",
+      "depends_on": [
+        "claim_matrix",
+        "tension_analysis"
+      ]
+    },
+    {
+      "id": "final_memo",
+      "label": "Final Memo",
+      "purpose": "Write the final memo using only declared current artifacts.",
+      "depends_on": [
+        "claim_matrix",
+        "tension_analysis",
+        "recommendation_criteria"
+      ]
+    }
+  ],
+  "initial_stage_source_ids": {
+    "utilization_context": [
+      "S1"
+    ],
+    "reimbursement_context": [
+      "S2_current"
+    ],
+    "operations_context": [
+      "S3_old",
+      "S6",
+      "S7"
+    ],
+    "access_cost_context": [
+      "S4_old",
+      "S5_old"
+    ]
+  },
+  "updated_stage_source_ids": {
+    "utilization_context": [
+      "S1"
+    ],
+    "reimbursement_context": [
+      "S2_current"
+    ],
+    "operations_context": [
+      "S3_old",
+      "S6",
+      "S7"
+    ],
+    "access_cost_context": [
+      "S4_old",
+      "S5_current"
+    ]
+  },
+  "source_file": "sources.json",
+  "ground_truth_file": "ground_truth.json",
+  "edits_file": "edits.json",
+  "memory_file": "memory/INDEX.md",
+  "manual_intermediates": {
+    "evidence_digest_selected": [
+      "S1 indicates telehealth usage remains above pre-2020 baseline in behavioral health, rural follow-ups, and chronic-care monitoring.",
+      "S2_old indicates reimbursement instability remains a central blocker and that follow-up telehealth expansion should stay in pilot mode rather than move into broad operational rollout.",
+      "S4 and S5 jointly imply a required tension: access gains are real, but system-wide cost savings remain uncertain and may even reverse under overutilization.",
+      "D1 and D2 are adjacent but out of scope for the requested recommendation."
+    ],
+    "claim_matrix_current": [
+      "C1 usage remains above baseline for selected visit types.",
+      "C2 reimbursement instability remains a major barrier and argues against moving beyond tightly limited pilots.",
+      "C3 licensing, documentation, and broadband constraints still limit expansion.",
+      "C4 access improvement does not prove system-wide savings."
+    ],
+    "tension_analysis_current": [
+      "T_access_vs_cost must be preserved: expanded access and patient convenience coexist with uncertain aggregate spending effects.",
+      "Do not collapse payer heterogeneity into a uniform reimbursement story."
+    ],
+    "recommendation_criteria_current": [
+      "Do not move beyond pilot-scale telehealth expansion until reimbursement stability is stronger and more predictable.",
+      "Avoid claiming broad system-wide savings without stronger evidence."
+    ],
+    "unrelated_branch_note": "Provider recruiting constraints were analyzed separately but should not change the final telehealth recommendation."
+  }
+}

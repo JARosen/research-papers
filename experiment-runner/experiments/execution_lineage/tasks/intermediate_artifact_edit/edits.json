@@ -1,0 +1,16 @@
+{
+  "edits": [
+    {
+      "edit_id": "E1_recommendation_criteria_update",
+      "type": "artifact_edit",
+      "description": "Executive leadership updated the recommendation criteria with a budget-neutrality constraint and utilization-control gate.",
+      "target_stage": "recommendation_criteria",
+      "human_readable_event": "Executive leadership updated the recommendation criteria: year-one telehealth expansion must be budget-neutral and must include utilization controls before chronic-care follow-up expansion can scale.",
+      "expected_recomputed_stages": [
+        "recommendation_criteria",
+        "implementation_plan",
+        "final_memo"
+      ]
+    }
+  ]
+}
