@@ -121,46 +121,36 @@ class ContextDisciplineTask:
         return (
             f"Task: {self.title}\n\n"
             f"Instruction:\n{self.instruction}\n\n"
-            "Current source bundle:\n"
+            "Current source materials:\n"
             f"{self.render_sources(updated=False)}\n\n"
             "Requirements:\n"
-            "- Use only the current source bundle.\n"
-            "- Ignore irrelevant but plausible adjacent material.\n"
-            "- Preserve unresolved tensions and uncertainty.\n"
+            "- Use the current source materials for the memo.\n"
+            "- Keep uncertainty and tradeoffs where the evidence is mixed.\n"
+            "- Cite source IDs for evidence-based claims.\n"
             "- Return only the final memo.\n"
         )
 
     def loop_update_final_only_prompt(self, prior_final_output: str) -> str:
-        edit = self.primary_edit
         return (
-            "Update an existing final memo after an upstream source revision.\n\n"
-            f"Prior final memo:\n{prior_final_output}\n\n"
-            f"Edit: {edit.description}\n\n"
-            "Updated current source bundle:\n"
+            "You previously drafted the memo below. Since then, the source materials have changed.\n\n"
+            "Please produce an updated final memo that reflects the current evidence and follows the requested output format.\n\n"
+            f"Prior memo:\n{prior_final_output}\n\n"
+            "Current source materials:\n"
             f"{self.render_sources(updated=True)}\n\n"
-            "Instructions:\n"
-            "- Update only claims affected by the edit.\n"
-            "- Preserve unaffected material where possible.\n"
-            "- Do not use superseded or irrelevant context.\n"
-            "- Return only the updated final memo.\n"
+            f"Task:\n{self.instruction}\n\n"
+            f"Requested output format:\n{self.requested_output_format}\n"
         )
 
     def loop_update_with_intermediates_prompt(self, prior_final_output: str) -> str:
-        edit = self.primary_edit
         return (
-            "Update an existing final memo after an upstream source revision.\n\n"
-            f"Prior final memo:\n{prior_final_output}\n\n"
-            "Manual intermediate notes and artifacts from the prior workflow:\n"
+            "We are revising a policy memo using the latest available source materials.\n\n"
+            f"Previous final memo:\n{prior_final_output}\n\n"
+            "Prior working notes:\n"
             f"{self.render_manual_intermediates()}\n\n"
-            f"Edit: {edit.description}\n\n"
-            "Updated current source bundle:\n"
+            "Current source materials:\n"
             f"{self.render_sources(updated=True)}\n\n"
-            "Instructions:\n"
-            "- Treat the intermediate notes as manually bundled context rather than guaranteed truth.\n"
-            "- Update only affected claims and preserve unaffected work.\n"
-            "- Preserve required tensions and uncertainty.\n"
-            "- Do not use superseded or irrelevant context.\n"
-            "- Return only the updated final memo.\n"
+            f"Task:\n{self.instruction}\n\n"
+            f"Requested output format:\n{self.requested_output_format}\n"
         )
 
 

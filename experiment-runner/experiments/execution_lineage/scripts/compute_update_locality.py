@@ -90,12 +90,21 @@ def main() -> None:
         "changed_claim_recall": recall,
         "unaffected_claim_regression_rate": regression,
         "manual_context_reconstruction_actions": {
-            "loop_centric_update_final_only": results["conditions"]
-            .get("loop_centric_update_final_only", {})
+            "loop_real_world_final_update": results["conditions"]
+            .get("loop_real_world_final_update", {})
             .get("execution_metadata", {})
             .get("manual_context_reconstruction_actions"),
-            "loop_centric_update_with_intermediates": results["conditions"]
-            .get("loop_centric_update_with_intermediates", {})
+            "loop_real_world_with_notes": results["conditions"]
+            .get("loop_real_world_with_notes", {})
+            .get("execution_metadata", {})
+            .get("manual_context_reconstruction_actions"),
+            "loop_real_world_with_memory": results["conditions"]
+            .get("loop_real_world_with_memory", {})
+            .get("updated_run", {})
+            .get("execution_metadata", {})
+            .get("manual_context_reconstruction_actions"),
+            "loop_real_world_staged_update": results["conditions"]
+            .get("loop_real_world_staged_update", {})
             .get("execution_metadata", {})
             .get("manual_context_reconstruction_actions"),
         },

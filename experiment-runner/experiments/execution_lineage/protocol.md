@@ -80,11 +80,12 @@ Measures:
 | ID | Condition | Purpose |
 |---|---|---|
 | `C1` | `loop_centric_fresh` | Controlled prompt-centric fresh baseline |
-| `C2` | `loop_centric_update_final_only` | Ordinary prompt-centric update baseline |
-| `C3` | `loop_centric_update_with_intermediates` | Stronger prompt-centric update baseline |
-| `C4` | `loop_centric_with_procedural_memory` | Transparent memory/wiki baseline |
+| `C2` | `loop_real_world_final_update` | Chat-style prior-memo update baseline |
+| `C3` | `loop_real_world_with_notes` | Prior-memo plus pasted-notes update baseline |
+| `C4` | `loop_real_world_with_memory` | Transparent memory/wiki update baseline |
 | `C5` | `simple_dag_fresh_recompute` | Primary in-repo DAG recomputation baseline |
 | `C6` | `simple_dag_replay_selective_recompute` | Primary in-repo DAG replay/update baseline |
+| Optional `C10` | `loop_real_world_staged_update` | Stronger staged manual-update baseline |
 | Disabled first pass `C7` | `thruwire_fresh_recompute` | Secondary ThruWire fresh recomputation validation |
 | Disabled first pass `C8` | `thruwire_replay_selective_recompute` | Secondary ThruWire replay/update validation |
 | Optional `C9` | `chatgpt_product_selenium` | Preserved ecological/product baseline |
@@ -103,9 +104,11 @@ The default scientific comparison is:
 - versus a minimal in-repo execution-lineage DAG harness
 
 The loop-centric harness carries workflow state through prompt text, compact
-conversation history, rolling summaries, and optional transparent memory
-retrieval. It does not use executable dependency edges, execution identities,
-replay, or automatic invalidation.
+conversation history, rolling summaries, optional prior notes, and optional
+transparent memory retrieval. Its real-world update baselines do not receive
+explicit dependency edges, execution identities, replay, automatic
+invalidation, expected affected claims, expected recomputed stages, or
+allowed/disallowed artifact lists.
 
 The simple DAG harness uses the same model client and prompt assets as the
 loop-centric harness, but routes work through explicit stage dependencies,
@@ -137,9 +140,10 @@ Although the raw experiment records multiple loop-centric baselines and two DAG
 execution modes, the recommended reporting structure is paired:
 
 - `loop_fresh_vs_dag_fresh`
-- `loop_update_final_only_vs_dag_update`
-- `loop_update_with_intermediates_vs_dag_update`
-- `loop_memory_vs_dag_update`
+- `loop_real_world_final_update_vs_dag_update`
+- `loop_real_world_with_notes_vs_dag_update`
+- `loop_real_world_with_memory_vs_dag_update`
+- optional `loop_real_world_staged_update_vs_dag_update`
 
 This avoids presenting the experiment as an unhelpful `4 vs 2` condition grid
 while preserving the stronger challenge baselines.
@@ -154,7 +158,7 @@ Operations Context ------/                           |
 Access vs Cost Context --> Tension / Risk Analysis -/
 ```
 
-The final memo should depend only on declared current artifacts, especially:
+The DAG-side final memo should depend only on declared current artifacts, especially:
 
 - `claim_matrix.current`
 - `tension_analysis.current`

@@ -311,8 +311,4 @@ class SimpleDAGHarnessRunner:
             for item in dependency_artifacts:
                 rendered.append(f"[{item.stage_name} | {item.identity}]\n{item.content}")
             parts.append("Declared dependency artifacts:\n" + "\n\n".join(rendered))
-        if edit is not None:
-            parts.append(
-                f"Upstream edit:\n{edit.description}\nOld source id: {edit.old_source_id}\nNew source id: {edit.new_source_id}"
-            )
         return "\n\n".join(parts).strip()

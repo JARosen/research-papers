@@ -44,20 +44,25 @@ def main() -> None:
             "right_condition": "simple_dag_fresh_recompute",
             "comparison_focus": ["fresh variation", "fresh semantic overlap"],
         },
-        "loop_update_final_only_vs_dag_update": {
-            "left_condition": "loop_centric_update_final_only",
+        "loop_real_world_final_update_vs_dag_update": {
+            "left_condition": "loop_real_world_final_update",
             "right_condition": "simple_dag_replay_selective_recompute",
             "comparison_focus": ["update locality", "claim churn", "regression"],
         },
-        "loop_update_with_intermediates_vs_dag_update": {
-            "left_condition": "loop_centric_update_with_intermediates",
+        "loop_real_world_with_notes_vs_dag_update": {
+            "left_condition": "loop_real_world_with_notes",
             "right_condition": "simple_dag_replay_selective_recompute",
-            "comparison_focus": ["strong baseline update locality", "claim churn", "regression"],
+            "comparison_focus": ["notes-assisted update locality", "claim churn", "regression"],
         },
-        "loop_memory_vs_dag_update": {
-            "left_condition": "loop_centric_with_procedural_memory",
+        "loop_real_world_with_memory_vs_dag_update": {
+            "left_condition": "loop_real_world_with_memory",
             "right_condition": "simple_dag_replay_selective_recompute",
             "comparison_focus": ["memory-augmented update behavior", "current-state control", "invalid reuse"],
+        },
+        "loop_real_world_staged_update_vs_dag_update": {
+            "left_condition": "loop_real_world_staged_update",
+            "right_condition": "simple_dag_replay_selective_recompute",
+            "comparison_focus": ["staged manual update behavior", "claim churn", "regression"],
         },
     }
 
@@ -87,12 +92,21 @@ def main() -> None:
             "changed_claim_recall": recall,
             "unaffected_claim_regression_rate": regression,
             "manual_context_reconstruction_actions": {
-                "loop_centric_update_final_only": results["conditions"]
-                .get("loop_centric_update_final_only", {})
+                "loop_real_world_final_update": results["conditions"]
+                .get("loop_real_world_final_update", {})
                 .get("execution_metadata", {})
                 .get("manual_context_reconstruction_actions"),
-                "loop_centric_update_with_intermediates": results["conditions"]
-                .get("loop_centric_update_with_intermediates", {})
+                "loop_real_world_with_notes": results["conditions"]
+                .get("loop_real_world_with_notes", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
+                "loop_real_world_with_memory": results["conditions"]
+                .get("loop_real_world_with_memory", {})
+                .get("updated_run", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
+                "loop_real_world_staged_update": results["conditions"]
+                .get("loop_real_world_staged_update", {})
                 .get("execution_metadata", {})
                 .get("manual_context_reconstruction_actions"),
             },

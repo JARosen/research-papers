@@ -25,18 +25,19 @@ This experiment is not a prose-polish bakeoff. It evaluates whether a workflow:
 ## Conditions
 
 - `C1` `loop_centric_fresh`
-- `C2` `loop_centric_update_final_only`
-- `C3` `loop_centric_update_with_intermediates`
-- `C4` `loop_centric_with_procedural_memory`
+- `C2` `loop_real_world_final_update`
+- `C3` `loop_real_world_with_notes`
+- `C4` `loop_real_world_with_memory`
 - `C5` `simple_dag_fresh_recompute`
 - `C6` `simple_dag_replay_selective_recompute`
+- Optional `C10` `loop_real_world_staged_update`
 - Optional `C9` `chatgpt_product_selenium`
 - Disabled for first pass: `C7` `thruwire_fresh_recompute`
 - Disabled for first pass: `C8` `thruwire_replay_selective_recompute`
 
 The primary comparison is now:
 
-- loop-centric / prompt-centric execution
+- real-world loop-centric update execution
 - versus a minimal execution-lineage DAG harness
 
 ThruWire is retained in code as a secondary system-validation comparison, but
@@ -78,9 +79,10 @@ Only the first two are active in the current default experiment.
 The first-pass experiment should be interpreted as four paired comparisons:
 
 - `loop_fresh_vs_dag_fresh`
-- `loop_update_final_only_vs_dag_update`
-- `loop_update_with_intermediates_vs_dag_update`
-- `loop_memory_vs_dag_update`
+- `loop_real_world_final_update_vs_dag_update`
+- `loop_real_world_with_notes_vs_dag_update`
+- `loop_real_world_with_memory_vs_dag_update`
+- optional `loop_real_world_staged_update_vs_dag_update`
 
 This keeps the stronger loop baselines while presenting the results as explicit
 head-to-head matchups against the same DAG-side fresh or update behavior.
@@ -115,8 +117,15 @@ The procedural-memory condition uses a markdown memory wiki rooted at
 semantics, logs every retrieval decision, and keeps retrieval heuristic rather
 than dependency-scoped.
 
-The active execution path is a matched six-stage workflow in both harnesses:
-`source_set -> evidence_digest -> claim_matrix -> tension_analysis -> recommendation_criteria -> final_memo`.
+Real-world loop baselines receive prior outputs, optional prior notes, optional
+memory access, and the current source bundle in naturalistic prompts. They do
+not receive oracle labels such as expected affected claims, expected
+recomputed stages, or allowed/disallowed artifact lists. Those remain hidden
+judge metadata or DAG-runtime state.
+
+The staged execution path used by the fresh loop baseline and the DAG harness
+is an eight-stage workflow:
+`utilization_context -> reimbursement_context -> operations_context -> access_cost_context -> claim_matrix -> tension_analysis -> recommendation_criteria -> final_memo`.
 
 The schema supports adding more task families later without changing the judge
 or scoring contract.

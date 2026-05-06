@@ -26,6 +26,8 @@ STEP_SEQUENCE = [
     ("final_memo", "loop_final_memo.md"),
 ]
 
+REAL_WORLD_UPDATE_STEP = "final_memo_update"
+
 SUMMARY_PROMPT = """Summarize the earlier workflow history for a long-running loop.
 
 Produce a compact but information-dense state summary for future workflow steps.
@@ -98,7 +100,7 @@ class LoopCentricHarnessRunner:
             runs.append(self._run_single_fresh(task_bundle, use_procedural_memory=True))
         return HarnessRunResult(
             payload={
-                "condition_name": "loop_centric_with_procedural_memory",
+                "condition_name": "loop_real_world_with_memory",
                 "runs": runs,
                 "final_output": runs[-1]["final_output"] if runs else "",
             }
@@ -123,6 +125,27 @@ class LoopCentricHarnessRunner:
             edit=edit,
             include_intermediates=include_intermediates,
             use_procedural_memory=use_procedural_memory,
+        )
+        return HarnessRunResult(payload=result)
+
+    def run_staged_update(
+        self,
+        task_bundle: ContextDisciplineTask,
+        prior_run: HarnessRunResult,
+        edit: UpstreamEdit,
+    ) -> HarnessRunResult:
+        print("[loop-staged-update] starting update run")
+        prior_payload = prior_run.payload["runs"][0] if "runs" in prior_run.payload else prior_run.payload
+        result = self._execute_loop(
+            task_bundle=task_bundle,
+            transcript=Transcript(),
+            source_text=task_bundle.render_sources(updated=True),
+            memory_metadata=blank_memory_metadata(uses_memory=False),
+            memory_store=TransparentMemoryStore(None),
+            instructions=load_prompt("loop_real_world_staged_update.md"),
+            prior_final_output=str(prior_payload["final_output"]),
+            edit=edit,
+            manual_context_reconstruction_actions=1,
         )
         return HarnessRunResult(payload=result)
 
@@ -159,30 +182,109 @@ class LoopCentricHarnessRunner:
             memory_metadata["memory_entry_ids_available"] = listed["memory_entry_ids_available"]
             memory_metadata["memory_index"] = listed["memory_index"]
 
-        instructions = "loop_update_final_only.md"
-        if include_intermediates:
-            instructions = "loop_update_with_intermediates.md"
-        if use_procedural_memory:
-            instructions = "loop_with_procedural_memory.md"
-
         manual_context_reconstruction_actions = 0
         if include_intermediates:
             manual_context_reconstruction_actions = len(prior_intermediates)
         elif not use_procedural_memory:
             manual_context_reconstruction_actions = 1
 
-        return self._execute_loop(
+        prompt_name = "loop_real_world_final_update.md"
+        if include_intermediates:
+            prompt_name = "loop_real_world_with_notes.md"
+        if use_procedural_memory:
+            prompt_name = "loop_real_world_with_memory.md"
+
+        return self._execute_real_world_update(
             task_bundle=task_bundle,
             transcript=Transcript(),
             source_text=task_bundle.render_sources(updated=True),
             memory_metadata=memory_metadata,
             memory_store=memory_store,
-            instructions=load_prompt(instructions),
+            instructions=load_prompt(prompt_name),
             prior_final_output=prior_final_output,
             prior_intermediates=prior_intermediates,
-            edit=edit,
             manual_context_reconstruction_actions=manual_context_reconstruction_actions,
         )
+
+    def _execute_real_world_update(
+        self,
+        *,
+        task_bundle: ContextDisciplineTask,
+        transcript: Transcript,
+        source_text: str,
+        memory_metadata: dict[str, Any],
+        memory_store: TransparentMemoryStore,
+        instructions: str,
+        prior_final_output: str,
+        prior_intermediates: list[dict[str, Any]] | None,
+        manual_context_reconstruction_actions: int,
+    ) -> dict[str, Any]:
+        run_id = new_run_id("loop")
+        started_at = utc_now()
+        run_start = time.perf_counter()
+        prompt_response_log: list[dict[str, Any]] = []
+
+        user_content = self._build_real_world_update_message(
+            task_bundle=task_bundle,
+            source_text=source_text,
+            prior_final_output=prior_final_output,
+            prior_intermediates=prior_intermediates,
+        )
+        transcript.add_message(
+            role="user",
+            content=user_content,
+            step_name=REAL_WORLD_UPDATE_STEP,
+            model=self.config.model_name,
+            provider=self.config.model_provider,
+        )
+
+        step_result = self._run_step_with_tools(
+            transcript=transcript,
+            instructions=instructions,
+            step_name=REAL_WORLD_UPDATE_STEP,
+            memory_store=memory_store,
+            memory_metadata=memory_metadata,
+            prompt_response_log=prompt_response_log,
+        )
+        duration_ms = int((time.perf_counter() - run_start) * 1000)
+        final_output = step_result["text"]
+
+        return {
+            "run_id": run_id,
+            "task_id": task_bundle.task_id,
+            "model": self.config.model_name,
+            "provider": self.config.model_provider,
+            "started_at": started_at,
+            "ended_at": utc_now(),
+            "duration_ms": duration_ms,
+            "final_output": final_output,
+            "intermediate_outputs": [
+                {
+                    "name": "final_memo",
+                    "content": final_output,
+                    "identity": None,
+                    "hash": sha256_text(final_output),
+                }
+            ],
+            "conversation_transcript": transcript.to_list(),
+            "prompt_response_log": prompt_response_log,
+            "memory_metadata": memory_metadata,
+            "execution_metadata": {
+                "harness_type": "loop_centric",
+                "uses_graph_dependencies": False,
+                "uses_execution_identity": False,
+                "uses_replay": False,
+                "uses_automatic_invalidation": False,
+                "uses_persistent_product_memory": False,
+                "context_strategy": self.config.loop_context_strategy,
+                "manual_context_reconstruction_actions": manual_context_reconstruction_actions,
+            },
+            "model_usage": {
+                "model_calls": step_result["model_calls"],
+                "input_tokens": step_result["input_tokens"],
+                "output_tokens": step_result["output_tokens"],
+            },
+        }
 
     def _execute_loop(
         self,
@@ -314,10 +416,31 @@ class LoopCentricHarnessRunner:
             for item in prior_intermediates:
                 rendered.append(f"[{item.get('name')}]\n{item.get('content')}")
             parts.append("Prior intermediate notes/artifacts:\n" + "\n\n".join(rendered))
-        if edit is not None:
-            parts.append(
-                f"Upstream edit:\n{edit.description}\nOld source id: {edit.old_source_id}\nNew source id: {edit.new_source_id}"
-            )
+        return "\n\n".join(parts)
+
+    def _build_real_world_update_message(
+        self,
+        *,
+        task_bundle: ContextDisciplineTask,
+        source_text: str,
+        prior_final_output: str,
+        prior_intermediates: list[dict[str, Any]] | None,
+    ) -> str:
+        parts = [
+            f"Previous final memo:\n{prior_final_output}",
+        ]
+        if prior_intermediates:
+            rendered = []
+            for item in prior_intermediates:
+                rendered.append(f"[{item.get('name')}]\n{item.get('content')}")
+            parts.append("Prior working notes:\n" + "\n\n".join(rendered))
+        parts.extend(
+            [
+                f"Current source materials:\n{source_text}",
+                f"Task:\n{task_bundle.instruction}",
+                f"Requested output format:\n{task_bundle.requested_output_format}",
+            ]
+        )
         return "\n\n".join(parts)
 
     def _run_step_with_tools(

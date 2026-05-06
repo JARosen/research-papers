@@ -80,6 +80,15 @@ def six_step_outputs(prefix: str) -> list[dict]:
     ]
 
 
+def single_output(text: str, *, item_id: str) -> list[dict]:
+    return [
+        {
+            "text": text,
+            "output_items": [assistant_output_item(text, item_id=item_id)],
+        }
+    ]
+
+
 class RunnerSmokeTests(unittest.TestCase):
     def setUp(self) -> None:
         self.task = load_task(TASK_FILE)
@@ -90,16 +99,18 @@ class RunnerSmokeTests(unittest.TestCase):
         self.assertEqual(result["final_output"], "fresh-7")
 
     def test_loop_update_final_only_smoke(self) -> None:
-        runner = make_loop_runner(six_step_outputs("fresh") + six_step_outputs("update-final-only"))
+        runner = make_loop_runner(six_step_outputs("fresh") + single_output("update-final-only", item_id="update_final"))
         fresh = runner.run_fresh(self.task, repeats=1)
         update = runner.run_update(self.task, fresh, self.task.primary_edit).payload
-        self.assertEqual(update["final_output"], "update-final-only-7")
+        self.assertEqual(update["final_output"], "update-final-only")
 
     def test_loop_update_with_intermediates_smoke(self) -> None:
-        runner = make_loop_runner(six_step_outputs("fresh") + six_step_outputs("update-with-intermediates"))
+        runner = make_loop_runner(
+            six_step_outputs("fresh") + single_output("update-with-intermediates", item_id="update_notes")
+        )
         fresh = runner.run_fresh(self.task, repeats=1)
         update = runner.run_update(self.task, fresh, self.task.primary_edit, include_intermediates=True).payload
-        self.assertEqual(update["final_output"], "update-with-intermediates-7")
+        self.assertEqual(update["final_output"], "update-with-intermediates")
 
     def test_loop_procedural_memory_smoke(self) -> None:
         responses = six_step_outputs("fresh-no-memory")
@@ -137,7 +148,7 @@ class RunnerSmokeTests(unittest.TestCase):
                 "output_items": [assistant_output_item("memory-update-0", item_id="mu_0")],
             },
         ]
-        responses += six_step_outputs("memory-update")[1:]
+        responses += []
         runner = make_loop_runner(responses)
 
         fresh = runner.run_fresh(self.task, repeats=1)
@@ -148,8 +159,14 @@ class RunnerSmokeTests(unittest.TestCase):
             include_intermediates=True,
             use_procedural_memory=True,
         ).payload
-        self.assertEqual(update["final_output"], "memory-update-7")
+        self.assertEqual(update["final_output"], "memory-update-0")
         self.assertTrue(update["memory_metadata"]["memory_tool_calls"])
+
+    def test_loop_real_world_staged_update_smoke(self) -> None:
+        runner = make_loop_runner(six_step_outputs("fresh") + six_step_outputs("staged-update"))
+        fresh = runner.run_fresh(self.task, repeats=1)
+        update = runner.run_staged_update(self.task, fresh, self.task.primary_edit).payload
+        self.assertEqual(update["final_output"], "staged-update-7")
 
     def test_simple_dag_smoke(self) -> None:
         update_responses = [

@@ -1,8 +1,2 @@
-Build the utilization context artifact from the relevant current sources for
-utilization and adoption.
-
-Requirements:
-- summarize only the current utilization and adoption evidence
-- cite source IDs
-- do not make reimbursement or recommendation claims here
-- exclude decoys and stale material
+Draft working notes on utilization and adoption evidence from the current source materials.
+Highlight the points that seem most decision-relevant, preserve uncertainty where adoption is mixed or constrained, and cite source IDs.

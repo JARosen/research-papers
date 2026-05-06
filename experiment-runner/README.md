@@ -28,11 +28,12 @@ as if it were interchangeable with `C1` loop-centric fresh execution.
 ## Conditions
 
 - `C1` `loop_centric_fresh`
-- `C2` `loop_centric_update_final_only`
-- `C3` `loop_centric_update_with_intermediates`
-- `C4` `loop_centric_with_procedural_memory`
+- `C2` `loop_real_world_final_update`
+- `C3` `loop_real_world_with_notes`
+- `C4` `loop_real_world_with_memory`
 - `C5` `simple_dag_fresh_recompute`
 - `C6` `simple_dag_replay_selective_recompute`
+- Optional `C10` `loop_real_world_staged_update`
 - Optional `C9` `chatgpt_product_selenium`
 - Disabled for first pass: `C7` `thruwire_fresh_recompute`
 - Disabled for first pass: `C8` `thruwire_replay_selective_recompute`
@@ -143,8 +144,15 @@ Result bundles should capture, at minimum:
 
 ## Loop Context Strategy
 
-The loop baseline no longer replays the full raw transcript into every later
-step. It now uses:
+The loop baselines now separate two modes:
+
+- `loop_centric_fresh`: the controlled staged fresh run used for RQ1
+- `loop_real_world_*`: naturalistic update baselines that operate over prior
+  outputs, optional prior notes, optional memory, and the full current source
+  bundle without explicit dependency metadata
+
+The staged loop machinery still uses compact transcript carry-forward rather
+than replaying the full raw transcript into every later step. It now uses:
 
 - compact live conversation history
 - a rolling summary once estimated history crosses `4000` tokens
@@ -153,7 +161,9 @@ step. It now uses:
 
 The procedural-memory baseline is intentionally file-backed and transparent. It
 is not semantic retrieval and it does not use DAG dependency knowledge to
-pre-scope artifacts.
+pre-scope artifacts. Hidden judge metadata such as affected claim IDs,
+recomputed-stage expectations, and allowed/disallowed artifact lists is not
+rendered into the real-world loop prompts.
 
 The primary scientific comparison is loop-centric execution versus the in-repo
 simple DAG harness. ThruWire remains available in code as a secondary
@@ -166,7 +176,7 @@ cd /Users/dev/Documents/GitHub/research-papers/experiment-runner
   --task-file experiments/execution_lineage/tasks/telehealth_policy_context_pressure_v1/task.json \
   --repeats 3 \
   --output-dir results/execution-lineage-with-thruwire \
-  --conditions loop_centric_fresh loop_centric_update_final_only loop_centric_update_with_intermediates loop_centric_with_procedural_memory simple_dag_fresh_recompute simple_dag_replay_selective_recompute thruwire_fresh_recompute thruwire_replay_selective_recompute
+  --conditions loop_centric_fresh loop_real_world_final_update loop_real_world_with_notes loop_real_world_with_memory simple_dag_fresh_recompute simple_dag_replay_selective_recompute thruwire_fresh_recompute thruwire_replay_selective_recompute
 ```
 
 ## Comparison Structure
@@ -175,9 +185,9 @@ The default experiment is reported as paired comparisons rather than as a flat
 `4 vs 2` condition inventory:
 
 - `loop_fresh_vs_dag_fresh`
-- `loop_update_final_only_vs_dag_update`
-- `loop_update_with_intermediates_vs_dag_update`
-- `loop_memory_vs_dag_update`
+- `loop_real_world_final_update_vs_dag_update`
+- `loop_real_world_with_notes_vs_dag_update`
+- `loop_real_world_with_memory_vs_dag_update`
 
 The raw run still records all underlying conditions, but summaries and scoring
 are organized around these matchups.

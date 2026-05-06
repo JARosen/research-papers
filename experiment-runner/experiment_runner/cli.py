@@ -111,21 +111,27 @@ def _build_paired_comparisons(results: dict[str, Any]) -> dict[str, Any]:
             "right_condition": graph_fresh.get("condition_name"),
             "rq": ["RQ1", "RQ3"],
         }
-    if results.get("loop_centric_update_final_only") and graph_update:
-        paired["loop_update_final_only_vs_dag_update"] = {
-            "left_condition": "loop_centric_update_final_only",
+    if results.get("loop_real_world_final_update") and graph_update:
+        paired["loop_real_world_final_update_vs_dag_update"] = {
+            "left_condition": "loop_real_world_final_update",
             "right_condition": graph_update.get("condition_name"),
             "rq": ["RQ2", "RQ3"],
         }
-    if results.get("loop_centric_update_with_intermediates") and graph_update:
-        paired["loop_update_with_intermediates_vs_dag_update"] = {
-            "left_condition": "loop_centric_update_with_intermediates",
+    if results.get("loop_real_world_with_notes") and graph_update:
+        paired["loop_real_world_with_notes_vs_dag_update"] = {
+            "left_condition": "loop_real_world_with_notes",
             "right_condition": graph_update.get("condition_name"),
             "rq": ["RQ2", "RQ3"],
         }
-    if results.get("loop_centric_with_procedural_memory") and graph_update:
-        paired["loop_memory_vs_dag_update"] = {
-            "left_condition": "loop_centric_with_procedural_memory",
+    if results.get("loop_real_world_with_memory") and graph_update:
+        paired["loop_real_world_with_memory_vs_dag_update"] = {
+            "left_condition": "loop_real_world_with_memory",
+            "right_condition": graph_update.get("condition_name"),
+            "rq": ["RQ2", "RQ3"],
+        }
+    if results.get("loop_real_world_staged_update") and graph_update:
+        paired["loop_real_world_staged_update_vs_dag_update"] = {
+            "left_condition": "loop_real_world_staged_update",
             "right_condition": graph_update.get("condition_name"),
             "rq": ["RQ2", "RQ3"],
         }
@@ -165,10 +171,17 @@ def _build_summary(results: dict[str, Any]) -> dict[str, Any]:
             "stages_recomputed_percent": update_result.get("stages_recomputed_percent"),
             "artifacts_preserved_percent": update_result.get("artifacts_preserved_percent"),
             "manual_context_reconstruction_actions": {
-                "loop_centric_update_final_only": results.get("loop_centric_update_final_only", {})
+                "loop_real_world_final_update": results.get("loop_real_world_final_update", {})
                 .get("execution_metadata", {})
                 .get("manual_context_reconstruction_actions"),
-                "loop_centric_update_with_intermediates": results.get("loop_centric_update_with_intermediates", {})
+                "loop_real_world_with_notes": results.get("loop_real_world_with_notes", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
+                "loop_real_world_with_memory": results.get("loop_real_world_with_memory", {})
+                .get("updated_run", {})
+                .get("execution_metadata", {})
+                .get("manual_context_reconstruction_actions"),
+                "loop_real_world_staged_update": results.get("loop_real_world_staged_update", {})
                 .get("execution_metadata", {})
                 .get("manual_context_reconstruction_actions"),
             },
@@ -200,9 +213,10 @@ async def _run_conditions(
         item in conditions
         for item in [
             "loop_centric_fresh",
-            "loop_centric_update_final_only",
-            "loop_centric_update_with_intermediates",
-            "loop_centric_with_procedural_memory",
+            "loop_real_world_final_update",
+            "loop_real_world_with_notes",
+            "loop_real_world_with_memory",
+            "loop_real_world_staged_update",
         ]
     ):
         if loop_fresh_result is None:
@@ -214,29 +228,30 @@ async def _run_conditions(
             results["loop_centric_fresh"] = payload
             if checkpoint is not None:
                 checkpoint(results)
-    if "loop_centric_update_final_only" in conditions and loop_fresh_result is not None and "loop_centric_update_final_only" not in results:
+    if "loop_real_world_final_update" in conditions and loop_fresh_result is not None and "loop_real_world_final_update" not in results:
         update = loop_runner.run_update(task, loop_fresh_result, task.primary_edit)
         payload = dict(update.payload)
         payload["condition_id"] = "C2"
-        payload["condition_name"] = "loop_centric_update_final_only"
-        payload["condition"] = "loop_centric_update_final_only"
-        results["loop_centric_update_final_only"] = payload
+        payload["condition_name"] = "loop_real_world_final_update"
+        payload["condition"] = "loop_real_world_final_update"
+        results["loop_real_world_final_update"] = payload
         if checkpoint is not None:
             checkpoint(results)
-    if "loop_centric_update_with_intermediates" in conditions and loop_fresh_result is not None and "loop_centric_update_with_intermediates" not in results:
+    if "loop_real_world_with_notes" in conditions and loop_fresh_result is not None and "loop_real_world_with_notes" not in results:
         update = loop_runner.run_update(task, loop_fresh_result, task.primary_edit, include_intermediates=True)
         payload = dict(update.payload)
         payload["condition_id"] = "C3"
-        payload["condition_name"] = "loop_centric_update_with_intermediates"
-        payload["condition"] = "loop_centric_update_with_intermediates"
-        results["loop_centric_update_with_intermediates"] = payload
+        payload["condition_name"] = "loop_real_world_with_notes"
+        payload["condition"] = "loop_real_world_with_notes"
+        results["loop_real_world_with_notes"] = payload
         if checkpoint is not None:
             checkpoint(results)
-    if "loop_centric_with_procedural_memory" in conditions and "loop_centric_with_procedural_memory" not in results:
+    if "loop_real_world_with_memory" in conditions and "loop_real_world_with_memory" not in results:
         memory_fresh_result = loop_runner.run_fresh_with_procedural_memory(task, repeats=1)
         memory_payload = dict(memory_fresh_result.payload)
         memory_payload["condition_id"] = "C4"
-        memory_payload["condition_name"] = "loop_centric_with_procedural_memory"
+        memory_payload["condition_name"] = "loop_real_world_with_memory"
+        memory_payload["condition"] = "loop_real_world_with_memory"
         memory_update = loop_runner.run_update(
             task,
             memory_fresh_result,
@@ -245,7 +260,16 @@ async def _run_conditions(
             use_procedural_memory=True,
         )
         memory_payload["updated_run"] = memory_update.payload
-        results["loop_centric_with_procedural_memory"] = memory_payload
+        results["loop_real_world_with_memory"] = memory_payload
+        if checkpoint is not None:
+            checkpoint(results)
+    if "loop_real_world_staged_update" in conditions and loop_fresh_result is not None and "loop_real_world_staged_update" not in results:
+        update = loop_runner.run_staged_update(task, loop_fresh_result, task.primary_edit)
+        payload = dict(update.payload)
+        payload["condition_id"] = "C10"
+        payload["condition_name"] = "loop_real_world_staged_update"
+        payload["condition"] = "loop_real_world_staged_update"
+        results["loop_real_world_staged_update"] = payload
         if checkpoint is not None:
             checkpoint(results)
     if (

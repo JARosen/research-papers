@@ -1,7 +1,2 @@
 Produce recommendation criteria grounded in the current evidence and preserved tensions.
-
-Requirements:
-- define criteria before writing the final recommendation
-- avoid irrelevant or stale context
-- preserve uncertainty where evidence is mixed
-- cite source IDs where useful
+Define the criteria that should drive the memo's recommendation, keep uncertainty where the evidence is mixed, and cite source IDs where useful.

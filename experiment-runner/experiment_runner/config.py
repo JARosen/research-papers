@@ -128,14 +128,15 @@ def load_default_experiment_config() -> dict[str, Any]:
     return {
         "default_conditions": [
             "loop_centric_fresh",
-            "loop_centric_update_final_only",
-            "loop_centric_update_with_intermediates",
-            "loop_centric_with_procedural_memory",
+            "loop_real_world_final_update",
+            "loop_real_world_with_notes",
+            "loop_real_world_with_memory",
             "simple_dag_fresh_recompute",
             "simple_dag_replay_selective_recompute",
         ],
         "optional_conditions": [
             "chatgpt_product_selenium",
+            "loop_real_world_staged_update",
         ],
         "disabled_conditions": [
             "thruwire_fresh_recompute",
