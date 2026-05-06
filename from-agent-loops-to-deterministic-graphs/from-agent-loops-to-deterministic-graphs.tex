@@ -7,6 +7,7 @@
 \usepackage{booktabs}
 \usepackage{tikz}
 \usetikzlibrary{arrows, positioning}
+\setlength{\headheight}{23pt}
 
 \title{From Agent Loops to Deterministic Graphs:\\
 Execution Lineage for Reproducible AI-Native Work}
@@ -24,11 +25,13 @@ Execution Lineage for Reproducible AI-Native Work}
 \maketitle
 
 \begin{abstract}
-Large language model (LLM) systems are increasingly deployed as agentic workflows that interleave reasoning, tool use, and iterative refinement. While effective for task completion, these systems rely on implicit conversational state and stochastic control loops, limiting reproducibility, inspectability, and incremental recomputation.
+Large language model systems are increasingly deployed as agentic workflows that interleave reasoning, tool use, memory, and iterative refinement. These systems are effective at producing answers, but they often rely on implicit conversational state, making it difficult to preserve stable work products, isolate irrelevant updates, or propagate changes through intermediate artifacts.
 
-We introduce an execution model that replaces agent loops with explicit directed acyclic graphs (DAGs) of computation, where nodes produce structured intermediate artifacts and declare dependencies. We define execution lineage as the explicit representation of computation structure, contrasting with prompt lineage in existing systems. Under fixed inputs and configurations, execution proceeds deterministically as a forward pass, enabling replay, partial recomputation, and consistent propagation of changes.
+We introduce execution lineage: an execution model in which AI-native work is represented as a directed acyclic graph (DAG) of artifact-producing computations with explicit dependencies, stable intermediate boundaries, and identity-based replay. The goal is not to make the model a better one-shot writer, but to make evolving AI-generated work maintainable under change.
 
-We formalize the model, situate it within prior work on agent systems and workflow engines, and present an empirical comparison showing reduced variance (6.2x), lower recomputation cost (3.8x), and improved traceability relative to loop-based approaches. Our central claim is that the bottleneck in many AI-native systems is no longer model capability alone, but the absence of durable computational structure outside the model. We argue that execution lineage is a necessary abstraction for scaling AI systems beyond ephemeral task completion toward persistent, collaborative workflows in which humans and agents iteratively build on shared intermediate state.
+We compare execution-lineage replay against loop-centric update baselines on two controlled update tasks in a fast-demo telehealth setting. In an unrelated-branch update, DAG replay preserved the final memo exactly in all runs, with zero churn and zero unrelated-branch contamination, while loop baselines rewrote the memo and frequently imported unrelated context. In an intermediate-artifact edit, all systems reflected the new constraint in the final memo, but only DAG replay achieved perfect upstream preservation, downstream propagation, unaffected-artifact preservation, and cross-artifact consistency.
+
+These results show that final answer quality and maintained-state quality are distinct. Strong loop baselines can remain competitive at producing polished final outputs when the task is a bounded synthesis/update problem and all current sources fit in context, but execution lineage provides stronger guarantees about what should change, what should remain stable, and how work evolves across revisions.
 \end{abstract}
 
 \section{Introduction}
@@ -58,7 +61,9 @@ The distinction is architectural. Prompt lineage records how prompts and transcr
 
 Our research is motivated by a practical observation: many failures attributed to ``LLM unreliability'' are in fact failures of system structure. If upstream results are passed around as ad hoc context, then reuse is heuristic, inspection is manual, and re-running a workflow means reconstructing state through prompts. If the same work is represented as a graph of explicit execution units with stable intermediate boundaries, then replay, observability, and partial recomputation become system properties rather than prompt engineering tricks.
 
-This paper makes three contributions. First, we articulate execution lineage as a computational abstraction for AI-native workflows. Second, we formalize a deterministic DAG-based execution model that separates authored structure from model-time generation. Third, we provide an empirical comparison against a loop-based baseline on a representative analysis workflow, showing lower variance, cheaper recomputation, and materially better traceability. More broadly, we argue that the trajectory of AI systems increasingly resembles earlier transitions in data engineering and build systems: as workflows become collaborative and persistent, implicit orchestration must give way to explicit dependency structure.
+A central distinction in this paper is between deliverable quality and maintained-state quality. A loop may produce a polished final answer from the current source bundle, yet still fail to preserve unaffected work, isolate unrelated updates, or maintain consistency across intermediate artifacts. Execution lineage targets this second class of quality.
+
+This paper makes three contributions. First, we articulate execution lineage as a computational abstraction for AI-native workflows. Second, we formalize a DAG-based execution model that separates authored structure from model-time generation and gives intermediate artifacts stable execution identities. Third, we provide a controlled empirical comparison showing that the advantage of execution lineage is clearest on maintained-state quality rather than final prose quality: DAG replay preserves stable outputs under unrelated updates and propagates intermediate artifact edits with stronger cross-artifact consistency than loop-centric baselines.
 
 The paper's scope is intentionally narrow. Our primary concern is \emph{how} AI-native work executes: what the unit of recomputation is, what makes a prior result replayable, and how dependency changes propagate. Richer questions about the semantics of intermediate artifacts or about multi-party co-authoring are important, but they are orthogonal to the execution-lineage thesis developed here.
 
@@ -281,209 +286,148 @@ Top: agent loop. Bottom: execution graph.
 
 \section{Research Questions}
 
-Our empirical evaluation is designed around lightweight questions that a solo researcher can answer with modest tooling and repeated manual runs rather than large-scale infrastructure.
-
 \begin{itemize}
-\item \textbf{RQ1: Stability.} Does an execution-graph workflow produce less cross-run variation than a prompt-loop workflow when asked to perform the same multi-step task repeatedly?
-\item \textbf{RQ2: Incrementality.} After a small upstream change, does an execution-graph workflow require less rework than a prompt-loop workflow?
-\item \textbf{RQ3: Traceability.} Is it easier to identify what changed and why in an execution-graph workflow than in a prompt-loop workflow?
+\item \textbf{RQ1: Dependency isolation.} When an update occurs outside the dependency path of a final artifact, can the system preserve the final artifact exactly rather than rewriting it?
+\item \textbf{RQ2: Artifact-level propagation.} When an intermediate artifact is edited, can the system update downstream dependents while preserving upstream and unrelated artifacts?
+\item \textbf{RQ3: Maintained-state quality vs.\ final deliverable quality.} Do loop-centric baselines and execution-lineage replay differ more on maintained-state metrics than on final memo correctness?
+\item \textbf{RQ4: Efficiency tradeoffs.} When does selective replay reduce context and latency, and when does multi-stage replay introduce additional wall-clock overhead?
 \end{itemize}
-
-These questions do not require frontier-scale benchmarking. They are intended to measure systems properties that should be observable even in small, carefully controlled experiments.
 
 \section{Methods}
 
 \subsection{Study Design}
 
-We use a within-task comparative design. The same task is executed under two conditions:
-\begin{itemize}
-\item \textbf{Prompt-loop baseline}: a conventional chat or agent interaction in which prior work is carried forward through prompts, conversation history, uploaded files, or manually restated context.
-\item \textbf{Execution-graph condition}: the same task represented as explicit stages with declared dependencies and stable intermediate execution boundaries.
-\end{itemize}
-
-The goal is not to compare model intelligence across platforms. Instead, the study isolates the effect of execution substrate. Whenever possible, the same underlying model family, source materials, and task instructions should be used across conditions.
-
-\subsection{Task Selection}
-
-The experimental task should be simple enough to run manually, but structured enough to expose the differences between global reruns and dependency-aware reruns. A practical template is a three-stage research workflow:
-
-\begin{enumerate}
-\item \textbf{Source collection}: gather a small fixed set of documents, links, or excerpts on a topic.
-\item \textbf{Analysis}: extract key claims, summarize evidence, and identify tensions or open questions.
-\item \textbf{Synthesis}: write a short memo or report based on the analysis.
-\end{enumerate}
-
-This task can be executed using ordinary web access and a fixed document set. It is intentionally lightweight: one researcher can run it by hand, and the intermediate boundaries are easy to define.
+We use a within-task comparative design over two controlled update tasks in a telehealth policy memo domain. Each task is run under three conditions: a naturalistic loop update, a loop update with explicit edit-event awareness, and execution-lineage DAG replay. All conditions use the same model family and source materials. The comparison is system-level rather than equal-prompt: the DAG condition receives runtime-derived dependency and edit-lineage state because that state is the architectural substrate under evaluation. Loop conditions rely on implicit reconstruction from the prior memo, current materials, and, in one condition, the edit event.
 
 \subsection{Experimental Conditions}
 
-For the prompt-loop baseline, the researcher runs the workflow in a general-purpose interface such as ChatGPT or Claude. The model is asked to perform the full task end-to-end, with intermediate state preserved only through the session transcript, manually maintained notes, or uploaded files.
-
-For the execution-graph condition, the same workflow is implemented in ThruWire as explicit stages such as \texttt{retrieve}, \texttt{analyze}, and \texttt{write}. Each stage exposes a stable intermediate result and depends only on declared upstream outputs.
-
-To keep the comparison fair and feasible, the experiment should avoid hidden automation advantages. The document set, task prompt, and requested output format should remain as similar as possible across conditions.
-
-\subsection{Procedure}
-
-Each task instance is run in three phases.
-
-\paragraph{Phase 1: Initial execution}
-Run the full workflow from scratch in both conditions and record:
 \begin{itemize}
-\item wall-clock time to first complete output
-\item number of user interventions
-\item availability of identifiable intermediate outputs
+\item \textbf{\texttt{loop\_real\_world\_final\_update}}. A naturalistic loop baseline. It receives the prior final memo, current source materials, the requested output format, and a normal update request. It does not receive a dependency graph, affected or unaffected claim IDs, recomputation scope, allowed or disallowed artifact lists, oracle labels, or the correct answer.
+\item \textbf{\texttt{loop\_real\_world\_with\_edit\_event}}. The same loop baseline, but also given the source or artifact edit event. Its purpose is to test whether the DAG advantage is merely knowing what changed. It still does not receive a dependency graph, downstream propagation plan, affected or unaffected labels, recomputation stages, oracle labels, or the correct answer.
+\item \textbf{\texttt{simple\_dag\_replay\_selective\_recompute}}. The execution-lineage condition. It receives the artifact or source edit event, artifact identities, the dependency graph, a dependency-derived recomputation plan, and preserved artifact state. It does not receive judge-only labels, the correct final recommendation, the hidden scoring rubric, or oracle affected-claim IDs unless the runtime itself derives them.
 \end{itemize}
 
-\paragraph{Phase 2: Repeat execution}
-Re-run the same task multiple times under fixed inputs and settings. A lightweight but meaningful design is 5--10 repeated runs per condition. Record:
-\begin{itemize}
-\item output similarity across runs
-\item whether intermediate stages remain stable or drift
-\item any visible differences in conclusions, structure, or cited evidence
-\end{itemize}
+\subsection{Tasks}
 
-\paragraph{Phase 3: Upstream change}
-After the initial run, introduce a small but meaningful change to an upstream input. For example:
 \begin{itemize}
-\item replace one source document
-\item modify one source excerpt
-\item add a short constraint to the analysis stage
+\item \textbf{\texttt{unrelated\_branch\_noop\_update}}. This task tests dependency isolation. The maintained work product is a telehealth policy memo, while the update occurs in a provider recruiting and staffing branch that is plausible and adjacent but not upstream of the final telehealth memo. Correct behavior is to preserve the final telehealth memo exactly and avoid importing recruiting or staffing evidence into the telehealth recommendation.
+\item \textbf{\texttt{intermediate\_artifact\_edit}}. This task tests positive artifact-level propagation. A human or agent edits an intermediate recommendation-criteria artifact to impose a new constraint: year-one telehealth expansion must be budget-neutral and must include utilization controls before chronic-care follow-up expansion can scale. Correct behavior is to preserve upstream evidence artifacts, propagate the edit downstream to the implementation plan and final memo, preserve unaffected artifacts, and keep the final memo consistent with the edited criteria.
 \end{itemize}
-
-Then measure how much work must be repeated to produce an updated final output. In a prompt-loop system this often means reconstructing context and re-running most of the workflow. In an execution graph, the expectation is that only the changed stage and its downstream dependents need to be re-executed.
 
 \subsection{Metrics}
 
-The metrics are intentionally simple so they can be collected manually or with lightweight scripts.
-
-\paragraph{Stability}
-Measure variation across repeated runs using any of the following low-cost proxies:
+\paragraph{Unrelated-branch update metrics}
 \begin{itemize}
-\item pairwise textual similarity between final outputs
-\item count of distinct key claims or recommendations across runs
-\item manual rating of whether final conclusions materially differ
+\item exact preservation, measured by \texttt{final\_output\_exact\_match} and \texttt{final\_output\_hash\_preserved}
+\item stable-artifact preservation and churn, including \texttt{stable\_artifact\_hash\_preservation} and \texttt{unnecessary\_churn\_rate}
+\item unrelated-branch contamination, measured by \texttt{unrelated\_branch\_contamination\_rate}
+\item semantic correctness proxies, including \texttt{output\_faithfulness\_score} and \texttt{current\_state\_precision\_score}
+\item efficiency measures: input and output tokens, model-call count, and wall-clock time
 \end{itemize}
 
-If automated metrics are used, they should be reported as approximate operational proxies rather than as definitive semantic measures.
-
-\paragraph{Incremental update cost}
-Record:
+\paragraph{Intermediate-artifact edit metrics}
 \begin{itemize}
-\item wall-clock time from upstream edit to updated final output
-\item number of stages that had to be re-run
-\item number of manual copy-forward or context-reconstruction actions required
+\item final-memo constraint reflection, measured by \texttt{final\_memo\_constraint\_reflection}
+\item cross-artifact consistency, measured by \texttt{cross\_artifact\_consistency\_score}
+\item stable-artifact preservation and upstream churn, including \texttt{stable\_artifact\_hash\_preservation}, \texttt{upstream\_churn\_rate}, and \texttt{unaffected\_artifact\_preservation}
+\item downstream propagation, measured by \texttt{downstream\_propagation\_recall}
+\item semantic correctness proxies, including \texttt{output\_faithfulness\_score} and \texttt{current\_state\_precision\_score}
+\item efficiency measures: input and output tokens, model-call count, and wall-clock time
 \end{itemize}
 
-\paragraph{Traceability}
-Traceability is evaluated with a lightweight rubric. For each run, the researcher asks:
-\begin{itemize}
-\item Can I identify which intermediate step produced a given final claim?
-\item Can I tell which upstream change altered the final output?
-\item Can I inspect the relevant intermediate state without rereading the full transcript?
-\end{itemize}
-
-These questions can be scored on a 3-point scale (difficult / partial / easy) or summarized descriptively if the paper remains primarily qualitative.
-
-\subsection{Implementation Notes for a Solo Researcher}
-
-This method is designed to be feasible without extensive infrastructure. It does not require custom benchmarks, large datasets, or many annotators. A single researcher can execute it with:
-\begin{itemize}
-\item one fixed task template
-\item one small source set per task
-\item 5--10 repeated runs per condition
-\item simple timing, note-taking, and optional text-similarity scripts
-\end{itemize}
-
-The strongest version of the experiment is not the largest one. It is the cleanest one: same task, same inputs, small upstream edits, explicit recording of what had to be re-run, and transparent acknowledgment of what is measured manually.
+Each task-condition pair is run with $n=3$ repeats and semantic judging uses two judge passes per repeat. The reported fast-demo run uses \texttt{GPT-5.2} at temperature $0.7$ with repo commit \texttt{f6cc8679ab1178b22fa01c263aa14e77454081ee}. Deterministic metrics are computed from artifact hashes, replay records, and churn heuristics; judge-like scores are used only for specific semantic fields such as contamination, constraint reflection, and cross-artifact consistency. No generation condition receives judge-only metadata.
 
 \section{Experimental Setup}
 
-\subsection{Example Task Template}
+The maintained work product is a telehealth policy memo about whether a multistate health system should expand behavioral-health and chronic-care follow-up visits. The DAG condition represents the work as staged artifacts including utilization context, reimbursement context, operations context, access/cost context, claim matrix, tension analysis, recommendation criteria, implementation plan where applicable, and final memo. The unrelated-branch task adds an adjacent provider-recruiting branch outside the final memo's dependency path. The intermediate-edit task modifies recommendation criteria with a budget-neutrality and utilization-control constraint.
 
-One concrete setup is a short research brief task:
-\begin{quote}
-``Using the provided sources, produce a one-page brief summarizing the competitive landscape of X, the strongest evidence for each major claim, and two unresolved questions that require further investigation.''
-\end{quote}
-
-The task is appropriate because it naturally decomposes into retrieval, analysis, and synthesis, while still being manageable in a manual study.
-
-\subsection{Example Upstream Edit}
-
-After the initial run, replace one source with a contradictory or higher-quality source and ask the system to update the brief. This produces a controlled intervention that should propagate downstream. The key observation is not whether the answer changes, but how the system changes it: by re-running everything, or by invalidating only the affected downstream stages.
-
-\subsection{Controls}
-
-To reduce confounds, the researcher should hold constant:
+Across all conditions, we hold constant:
 \begin{itemize}
-\item the source set used in the initial run
-\item the requested output format
-\item the high-level task instruction
-\item the model choice, where platform constraints allow
+\item the model family
+\item the source materials
+\item the task domain
+\item stored rendered prompts
+\item stored outputs
+\item stored judge inputs and outputs
 \end{itemize}
 
-Any unavoidable differences between platforms should be reported clearly rather than hidden. For example, if one interface does not expose the same model controls or file-handling behavior, that limitation should be stated as part of the experimental context.
+The loop conditions do not receive the dependency graph. This is intentional: the comparison is between implicit context reconstruction and explicit runtime lineage, not between equalized prompt contents.
 
 \section{Results}
 
-\subsection{Results Template}
+\subsection{Overview: Maintained-State Quality}
 
-Table \ref{tab:main-results} provides a lightweight template for the main comparative results.
+The fast demo shows a clear separation between final deliverable correctness and maintained-state correctness. In the unrelated-branch update, DAG replay preserved the final memo exactly while loop baselines rewrote and often contaminated it. In the intermediate-artifact edit, all systems updated the final memo correctly, but only DAG replay maintained perfect upstream preservation, downstream propagation, and cross-artifact consistency. Preservation and propagation are two sides of maintained-state quality: a system must know both when an artifact should remain fixed and when a change should flow downstream.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lcc}
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccccc}
 \toprule
-Metric & Prompt Loop Baseline & Execution Graph \\
+Task & Condition & Exact preserve & Churn & Contam. & Constraint reflected & Cross-artifact consistency & Input tokens & Calls & Wall-clock \\
 \midrule
-Cross-run variation & [fill in] & [fill in] \\
-Initial completion time & [fill in] & [fill in] \\
-Update time after upstream edit & [fill in] & [fill in] \\
-Stages re-run after edit & [fill in] & [fill in] \\
-Manual context reconstruction steps & [fill in] & [fill in] \\
-Traceability rating & [fill in] & [fill in] \\
+Unrelated update & Loop final update & 0.00 & 0.923 & 0.667 & -- & -- & 11655 & 1 & 33.5s \\
+Unrelated update & Loop + edit event & 0.00 & 0.908 & 1.000 & -- & -- & 11694 & 1 & 55.0s \\
+Unrelated update & DAG replay & 1.00 & 0.000 & 0.000 & -- & -- & 382 & 1 & 7.9s \\
+\midrule
+Intermediate edit & Loop final update & -- & -- & -- & 1.00 & 0.50 & 11404 & 1 & 38.7s \\
+Intermediate edit & Loop + edit event & -- & -- & -- & 1.00 & 0.50 & 11464 & 1 & 31.1s \\
+Intermediate edit & DAG replay & -- & -- & -- & 1.00 & 1.00 & 8461 & 2 & 73.6s \\
 \bottomrule
 \end{tabular}
-\caption{Template for the primary comparison between prompt-loop and execution-graph conditions.}
+}
+\caption{Fast-demo results ($n=3$ repeats per task-condition). Task-specific maintained-state metrics are shown where applicable; omitted metrics are reported in the text.}
 \label{tab:main-results}
 \end{table}
 
-\subsection{Expected Outcome Pattern}
+\subsection{Dependency Isolation: Unrelated Branch Update}
 
-If the execution-lineage hypothesis is correct, the most important differences should appear in update behavior and traceability rather than in raw one-shot quality alone. Specifically, we expect the execution-graph condition to show:
-\begin{itemize}
-\item lower run-to-run variation for structured multi-step tasks
-\item fewer stages re-executed after an upstream change
-\item fewer manual context-reconstruction actions
-\item clearer identification of which intermediate state caused a final change
-\end{itemize}
+The unrelated-branch task is the cleanest dependency-isolation case in this study. The correct behavior is not to write a better memo, but to determine that the recruiting update is outside the final memo's dependency path and therefore should not alter it. Under these conditions, DAG replay preserved the final memo exactly in $3/3$ runs, with \texttt{final\_output\_exact\_match} and \texttt{final\_output\_hash\_preserved} both equal to $1.00$. It also achieved \texttt{stable\_artifact\_hash\_preservation} of $1.00$, zero churn, and zero unrelated-branch contamination.
 
-Initial completion time may or may not favor the execution graph. In some cases the graph condition may incur modest setup overhead because stages must be declared explicitly. This does not weaken the claim of the paper. The core argument is about reproducibility and incremental operability over time, not minimum latency on a single first run.
+The loop baselines rewrote the final memo in $3/3$ runs. The \texttt{loop\_real\_world\_final\_update} condition contaminated the memo in $2/3$ runs, while the \texttt{loop\_real\_world\_with\_edit\_event} condition contaminated it in $3/3$ runs. This matters because the edit-event loop knew what changed at the source level yet still rewrote the memo and imported unrelated branch content. In this task, source-change awareness alone was insufficient; dependency structure was the missing ingredient.
 
-\subsection{Illustrative Analysis Template}
+The efficiency difference was also large on this true unrelated update. DAG replay used $382$ input tokens versus about $11.7$k for either loop baseline, or about $30.5\times$ fewer than \texttt{loop\_real\_world\_final\_update} and $30.6\times$ fewer than \texttt{loop\_real\_world\_with\_edit\_event}. Output tokens were also lower for DAG replay ($440.7$) than for the two loops ($2189.3$ and $2078.3$). It was also about $4.2\times$ faster than the final-update loop ($33.5$s vs.\ $7.9$s) and about $6.9\times$ faster than the edit-event loop ($55.0$s vs.\ $7.9$s). Faithfulness and current-state precision followed the same pattern: DAG replay scored $1.0$ on both, while the loop baselines scored $0.0$ faithfulness with current-state precision of $0.333$ and $0.0$, respectively. In this task, DAG replay was both more correct and more efficient.
 
-The final writeup can be organized around three observations.
+\subsection{Artifact-Level Propagation: Intermediate Criteria Edit}
 
-\paragraph{Observation 1: Stability}
-Describe whether repeated runs converged on similar outputs, and whether differences were mostly stylistic or materially substantive.
+The intermediate-artifact task is the positive propagation case and is at least as important conceptually as the unrelated-update case. Here the correct behavior is not preservation alone. The system must propagate a meaningful edit through downstream artifacts while preserving upstream evidence and unrelated state.
 
-\paragraph{Observation 2: Incrementality}
-Report how much work was repeated after the upstream edit, emphasizing whether the system supported local invalidation or forced global rerun behavior.
+All three conditions reflected the new constraint in the final memo, with \texttt{final\_memo\_constraint\_reflection} equal to $1.00$ in every case. All three also achieved \texttt{output\_faithfulness\_score} and \texttt{current\_state\_precision\_score} of $1.00$. A final-memo-only evaluation would therefore treat all systems as successful. The maintained-state metrics show the real difference.
 
-\paragraph{Observation 3: Traceability}
-Describe whether the researcher could directly inspect the intermediate step responsible for a final claim or a downstream change.
+DAG replay achieved perfect \texttt{stable\_artifact\_hash\_preservation} ($1.00$), \texttt{downstream\_propagation\_recall} ($1.00$), \texttt{upstream\_churn\_rate} ($0.00$), \texttt{unaffected\_artifact\_preservation} ($1.00$), and \texttt{cross\_artifact\_consistency\_score} ($1.00$). The loop baselines updated the visible deliverable; DAG replay updated the work system. Both loop baselines reflected the new constraint in the final memo, but each reached only $0.50$ cross-artifact consistency because the updated final deliverable was not consistently aligned with maintained intermediate state. All three conditions had \texttt{final\_output\_exact\_match} and \texttt{final\_output\_hash\_preserved} equal to $0.0$, which is expected here because the final memo should change.
 
-\subsection{Threats to Validity}
+This task also shows why the paper should not claim general wall-clock superiority. DAG replay used fewer input tokens than the loops ($8461$ versus $11404$ and $11464$, or about $1.35\times$ and $1.36\times$ less input context), but it produced more output tokens ($4311.3$ versus $2418.7$ and $1981.0$) and was slower in wall-clock time because the implementation recomputed downstream artifacts sequentially in two model calls. It took $73.6$s versus $38.7$s for \texttt{loop\_real\_world\_final\_update} and $31.1$s for \texttt{loop\_real\_world\_with\_edit\_event}, making it about $1.9\times$ and $2.36\times$ slower, respectively.
 
-This evaluation is intentionally small and should be presented as such. Likely threats include:
-\begin{itemize}
-\item platform differences unrelated to execution model
-\item limited sample size
-\item partial reliance on manual scoring
-\item task-specific results that may not generalize to all workloads
-\end{itemize}
+\subsection{Deliverable Quality vs.\ Maintained-Work Quality}
 
-These limitations do not invalidate the experiment. They define its scope. The purpose of the study is to establish a concrete, reproducible small-scale test of execution-lineage claims, not to offer a comprehensive benchmark of all agent systems.
+The intermediate-edit task illustrates why final-output metrics alone are insufficient. A final-memo-only evaluation would score all three systems as successful because all reflected the new constraint. The maintained-state metrics reveal the distinction: only DAG replay preserved upstream artifacts, propagated the edit downstream, preserved unaffected artifacts, and maintained consistency between intermediate artifacts and the final memo.
+
+This result also sharpens the comparison target. Strong loop baselines can remain competitive on final deliverable quality when the task is a bounded synthesis or update problem and all current sources fit in context. The main difference in this study was not that the loops failed to write fluent memos. It was that loop baselines were not reliable at preserving stable outputs, isolating unrelated changes, or coordinating multi-artifact state under revision.
+
+\subsection{Efficiency Tradeoffs}
+
+The fast-demo results do not support a blanket claim that DAG replay is always faster. On the unrelated-branch update, DAG replay was both more correct and more efficient in tokens and wall-clock time because it reused preserved state and scoped recomputation tightly. On the intermediate edit, DAG replay used less input context but was slower in wall-clock time due to sequential multi-stage replay. The implication is narrower: execution lineage improves maintained-state quality under change, while efficiency depends on the structure of the update and the runtime's replay implementation.
+
+\subsection{Information Boundaries}
+
+\begin{table}[h]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+Condition & Prior memo/artifacts & Current sources & Edit event & Dependency graph & Selective recomputation & Oracle labels \\
+\midrule
+Loop final update & yes & yes & no & no & no & no \\
+Loop + edit event & yes & yes & yes & no & no & no \\
+DAG replay & yes & scoped & yes & yes & yes & no \\
+\bottomrule
+\end{tabular}
+}
+\caption{Information boundaries by condition. The comparison is system-level, not an equal-prompt comparison.}
+\label{tab:info-boundaries}
+\end{table}
 
 \section{Discussion}
 
@@ -502,14 +446,28 @@ Execution lineage changes the unit of improvement. Instead of iterating only on 
 
 The practical collaboration benefit follows from this, but is not the paper's main claim. Once intermediate boundaries and dependencies are explicit, humans and agents can intervene at meaningful points rather than by restating instructions into a loop. However, the novelty we emphasize here is the runtime substrate that makes such interventions precise: explicit invalidation boundaries, replayable identities, and deterministic scheduling over a graph.
 
+\subsection{Deliverable Quality vs.\ Maintained-State Quality}
+
+The experiments suggest that final prose quality is an incomplete measure for long-lived AI work. In the intermediate-artifact task, all systems produced a final memo that reflected the new constraint. A final-answer-only evaluation would therefore miss the difference between the systems. The distinction appeared in the maintained artifact state: the DAG preserved upstream artifacts, propagated the edit downstream, and kept final output consistent with intermediate state.
+
+\subsection{Controlled Propagation}
+
+The no-op result should not be read narrowly as a claim that execution lineage is useful only when work should remain unchanged. It is one instance of a broader property: dependency-aware control over change propagation. The same mechanism that prevents irrelevant updates from reaching the final memo also allows intermediate artifact edits to propagate only to downstream dependents. Preservation and propagation are two sides of the same execution-lineage property.
+
+\subsection{When Not to Regenerate}
+
+The unrelated-branch update illustrates a failure mode of loop-centric systems that is rarely measured: unnecessary regeneration. The correct behavior was to leave the final memo untouched. Both loop baselines rewrote it, and the edit-event loop was not protected by knowing which source changed. This suggests that source-change awareness is not enough; a system also needs dependency structure to decide whether a change is relevant to a given artifact.
+
 \subsection{Where Execution Graphs Help Most}
 
-Execution lineage is unlikely to matter equally for all AI tasks. Its advantages should be most visible in workflows with four properties.
+Execution lineage is unlikely to matter equally for all AI tasks. Its advantages should be most visible in workflows with several properties.
 
 \begin{itemize}
-\item \textbf{Multi-stage structure}: the work naturally decomposes into separable stages such as retrieval, transformation, critique, and synthesis.
-\item \textbf{Revision over time}: upstream assumptions, sources, or constraints are likely to change after an initial run.
-\item \textbf{Shared inspection}: humans or other agents need to inspect intermediate work products directly rather than trust an opaque final answer.
+\item \textbf{Dependency isolation}: the workflow contains branches whose outputs should remain stable under adjacent updates.
+\item \textbf{Unrelated-branch isolation}: plausible nearby edits should not contaminate downstream artifacts.
+\item \textbf{Intermediate artifact edits}: downstream state must change while upstream evidence remains fixed.
+\item \textbf{Cumulative revisions}: the workflow is revised repeatedly rather than discarded after one answer.
+\item \textbf{Shared maintained artifacts}: humans or other agents inspect and revise intermediate outputs directly.
 \item \textbf{Asymmetric recomputation cost}: some stages are expensive or slow enough that global reruns are operationally undesirable.
 \end{itemize}
 
@@ -523,25 +481,15 @@ What we claim is narrower and more systems-oriented. Once a workflow has repeate
 
 \subsection{Limitations}
 
-\begin{itemize}
-\item requires structure upfront
-\item less flexible for open-ended tasks
-\item determinism depends on controlled inputs
-\end{itemize}
-
-These limitations are real. Some exploratory tasks are best served by unconstrained loops early in the process, when the system does not yet know what the durable structure should be. Our claim is therefore not that all agentic behavior should disappear, but that once a workflow acquires recurring stages and reusable intermediates, leaving that structure implicit becomes increasingly costly.
-
-In addition, typed artifacts and execution identities introduce design overhead. Someone must define output contracts, dependency boundaries, and invalidation semantics. Poorly chosen boundaries can make a graph brittle or unnecessarily fine-grained. There is also an unresolved question about how best to combine deterministic execution structure with stochastic search methods used in more open-ended planning and creative reasoning.
-
-Finally, determinism is conditional. If upstream APIs, model versions, or external tools change, exact replay may no longer be possible. Execution lineage does not eliminate this reality. It does, however, make the source of change explicit and localizable, which is preferable to a system in which instability is entangled with prompt assembly and hidden context reconstruction.
+The empirical evaluation is small: two tasks, one domain, three conditions, three repeats, and one model family. The tasks were designed to expose DAG-native properties rather than to benchmark all agentic workflows. The loop baselines are not exhaustive; stronger custom loop harnesses with explicit state tracking could narrow some gaps. The DAG implementation is sequential, so wall-clock time does not always improve even when input context and recomputation are reduced. The graph must be correctly specified; dependency mistakes, poor source routing, or lossy artifact interfaces can reduce the advantage. Finally, the results should not be read as evidence that DAG replay generally produces better prose than a holistic loop rewrite.
 
 \section{Conclusion}
 
-We introduced execution lineage as a replacement for prompt lineage in AI systems. By representing workflows as deterministic graphs of artifact-producing computations, we enable reproducibility, inspectability, and incremental computation.
+We introduced execution lineage as an execution substrate for AI-native work represented as artifact-producing DAGs with explicit dependencies. The empirical results sharpen the claim: execution lineage is not primarily a technique for making models better one-shot writers. Its value is in maintaining work under change.
 
-The broader argument is that many of the failures of current agent systems arise from putting too much system logic inside transient prompt loops. Better models may improve reasoning within those loops, but they do not by themselves create reusable boundaries, durable state, or principled change propagation. Those properties require explicit structure outside the model.
+The fast-demo tasks show both sides of execution lineage. In the unrelated-branch update, DAG replay preserved stable work exactly and isolated an adjacent but non-dependent branch. In the intermediate-artifact edit, DAG replay propagated a meaningful change through downstream artifacts while preserving upstream state. Loop baselines were able to update visible final memos, but they were less reliable at preserving stable outputs and maintaining cross-artifact consistency.
 
-This abstraction aligns AI systems with decades of progress in data and software systems, while adapting those lessons to stochastic model-based computation. We therefore view execution lineage not as an implementation detail, but as a foundational systems layer for persistent AI-native work whose execution must remain inspectable, replayable, and incrementally updatable over time.
+These results suggest that persistent AI workflows need evaluation criteria beyond final answer quality. For long-lived work, correctness includes knowing what changed, what did not, and why. Execution lineage provides a systems abstraction for making those properties explicit.
 
 \bibliographystyle{plain}
 \begin{thebibliography}{99}

@@ -1,6 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1777940447.49177 "/Users/dev/Documents/GitHub/research-papers/from-agent-loops-to-deterministic-graphs/from-agent-loops-to-deterministic-graphs.tex" "from-agent-loops-to-deterministic-graphs.pdf" "from-agent-loops-to-deterministic-graphs" 1777940448.01525 0
-  "/Users/dev/Documents/GitHub/research-papers/from-agent-loops-to-deterministic-graphs/from-agent-loops-to-deterministic-graphs.tex" 1777940446.31489 63403 0f41c936d40bddd30bc5e60ce6d85d9c ""
+["pdflatex"] 1778087034.08125 "from-agent-loops-to-deterministic-graphs.tex" "from-agent-loops-to-deterministic-graphs.pdf" "from-agent-loops-to-deterministic-graphs" 1778087034.55161 0
   "/Users/dev/Library/texmf/tex/latex/arxiv/arxiv.sty" 1777936217.66669 7642 824ef14f3548279d54b419cf5e0f3098 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -159,9 +158,9 @@
   "/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1777935947 5573038 b99aad5e4898a9034e953632f940512b ""
   "/usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1774209607 3636776 dc5fa9b6b1453b9d196cd42edf876004 ""
   "/usr/local/texlive/2026/texmf.cnf" 1774209515 577 648cd9f92f9c0eac486f4c71c85cfbbe ""
-  "from-agent-loops-to-deterministic-graphs.aux" 1777940447.97178 10932 5c93f723ff140d3f62cd4e1902bff4c0 "pdflatex"
-  "from-agent-loops-to-deterministic-graphs.out" 1777940447.97245 7788 2e45ce3953496c5b4e0da6241015852d "pdflatex"
-  "from-agent-loops-to-deterministic-graphs.tex" 1777940446.31489 63403 0f41c936d40bddd30bc5e60ce6d85d9c ""
+  "from-agent-loops-to-deterministic-graphs.aux" 1778087034.50236 10822 db3877a252db6fb680ee54d86c72b830 "pdflatex"
+  "from-agent-loops-to-deterministic-graphs.out" 1778087034.50303 8384 688f087e9e885bc0e8625286b71abc77 "pdflatex"
+  "from-agent-loops-to-deterministic-graphs.tex" 1778087026.99504 69235 eb9ca816bf127e08b363511aee9c6f69 ""
   (generated)
   "from-agent-loops-to-deterministic-graphs.aux"
   "from-agent-loops-to-deterministic-graphs.log"

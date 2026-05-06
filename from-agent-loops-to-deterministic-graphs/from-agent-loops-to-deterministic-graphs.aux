@@ -18,7 +18,6 @@
 \citation{wang2023voyager}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Surveys and Taxonomies}{2}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Agentic LLM Systems}{2}{subsection.2.2}\protected@file@percent }
 \citation{yao2023tree}
 \citation{pan2026nlah}
 \citation{zhang2025harness}
@@ -38,6 +37,7 @@
 \citation{madaan2023selfrefine}
 \citation{li2023structuredreflection}
 \citation{liu2018workflowguided}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Agentic LLM Systems}{3}{subsection.2.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Agent Harnesses and Runtimes}{3}{subsection.2.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Reasoning Traces, Search, and Intermediate Steps}{3}{subsection.2.4}\protected@file@percent }
 \citation{isard2007dryad}
@@ -57,12 +57,12 @@
 \citation{trivedi2024appworld}
 \citation{mialon2023gaia}
 \citation{zheng2025lifelongagentbench}
-\citation{hu2025memoryagentbench}
-\citation{wei2025evomemory}
-\citation{shen2026mem2actbench}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Workflow and DAG Systems}{4}{subsection.2.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Programmatic LLM Systems}{4}{subsection.2.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Benchmarks and Reproducible Agent Environments}{4}{subsection.2.7}\protected@file@percent }
+\citation{hu2025memoryagentbench}
+\citation{wei2025evomemory}
+\citation{shen2026mem2actbench}
 \citation{souza2025provenance}
 \citation{ma2025hpc}
 \citation{chen2023evaluating}
@@ -79,7 +79,7 @@
 \@writefile{toc}{\contentsline {paragraph}{Deterministic publication.}{6}{section*.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Intermediate State and Typed Local Boundaries}{6}{subsection.3.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Dependency Materialization}{6}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Execution Semantics}{6}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Execution Semantics}{7}{subsection.3.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Determinism}{7}{subsection.3.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Replay and Partial Recomputation}{7}{subsection.3.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Invalidation Semantics}{7}{subsection.3.7}\protected@file@percent }
@@ -89,40 +89,35 @@
 \@writefile{toc}{\contentsline {section}{\numberline {5}Research Questions}{8}{section.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Methods}{8}{section.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Study Design}{8}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Task Selection}{9}{subsection.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Experimental Conditions}{9}{subsection.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Procedure}{9}{subsection.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Phase 1: Initial execution}{9}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Phase 2: Repeat execution}{9}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Phase 3: Upstream change}{9}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Metrics}{10}{subsection.6.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Stability}{10}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Incremental update cost}{10}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Traceability}{10}{section*.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Implementation Notes for a Solo Researcher}{10}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Experimental Conditions}{9}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Tasks}{9}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Metrics}{9}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Unrelated-branch update metrics}{9}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Intermediate-artifact edit metrics}{9}{section*.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7}Experimental Setup}{10}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Example Task Template}{10}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Example Upstream Edit}{11}{subsection.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Controls}{11}{subsection.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Results}{11}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Results Template}{11}{subsection.8.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Template for the primary comparison between prompt-loop and execution-graph conditions.}}{11}{table.1}\protected@file@percent }
-\newlabel{tab:main-results}{{1}{11}{Template for the primary comparison between prompt-loop and execution-graph conditions}{table.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Expected Outcome Pattern}{11}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Illustrative Analysis Template}{11}{subsection.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Observation 1: Stability}{11}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Observation 2: Incrementality}{12}{section*.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Observation 3: Traceability}{12}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Threats to Validity}{12}{subsection.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Results}{10}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Overview: Maintained-State Quality}{10}{subsection.8.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Fast-demo results ($n=3$ repeats per task-condition). Task-specific maintained-state metrics are shown where applicable; omitted metrics are reported in the text.}}{10}{table.1}\protected@file@percent }
+\newlabel{tab:main-results}{{1}{10}{Fast-demo results ($n=3$ repeats per task-condition). Task-specific maintained-state metrics are shown where applicable; omitted metrics are reported in the text}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Dependency Isolation: Unrelated Branch Update}{10}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Artifact-Level Propagation: Intermediate Criteria Edit}{11}{subsection.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Deliverable Quality vs.\ Maintained-Work Quality}{11}{subsection.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Efficiency Tradeoffs}{11}{subsection.8.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.6}Information Boundaries}{12}{subsection.8.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Information boundaries by condition. The comparison is system-level, not an equal-prompt comparison.}}{12}{table.2}\protected@file@percent }
+\newlabel{tab:info-boundaries}{{2}{12}{Information boundaries by condition. The comparison is system-level, not an equal-prompt comparison}{table.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {9}Discussion}{12}{section.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Why This Matters}{12}{subsection.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Where Execution Graphs Help Most}{12}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Deliverable Quality vs.\ Maintained-State Quality}{12}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Controlled Propagation}{12}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}When Not to Regenerate}{12}{subsection.9.4}\protected@file@percent }
 \bibstyle{plain}
 \bibcite{huang2024planning}{1}
-\bibcite{li2024review}{2}
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}What This Paper Does Not Claim}{13}{subsection.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Limitations}{13}{subsection.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.5}Where Execution Graphs Help Most}{13}{subsection.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.6}What This Paper Does Not Claim}{13}{subsection.9.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.7}Limitations}{13}{subsection.9.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{13}{section.10}\protected@file@percent }
+\bibcite{li2024review}{2}
 \bibcite{zhang2024memorysurvey}{3}
 \bibcite{du2026memorysurvey}{4}
 \bibcite{nye2021scratchpads}{5}
