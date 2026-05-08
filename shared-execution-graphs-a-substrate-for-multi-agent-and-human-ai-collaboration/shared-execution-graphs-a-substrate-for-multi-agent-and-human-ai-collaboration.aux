@@ -14,6 +14,10 @@
 \citation{wu2023autogen}
 \citation{hong2023metagpt}
 \citation{wang2023voyager}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Messages and shared memory can coordinate participants, but they usually lack explicit execution and propagation semantics. A shared execution graph gives humans, agents, and tools one authoritative substrate for edits, replay, invalidation, and recomputation.}}{3}{figure.1}\protected@file@percent }
+\newlabel{fig:collaboration-contrast}{{1}{3}{Messages and shared memory can coordinate participants, but they usually lack explicit execution and propagation semantics. A shared execution graph gives humans, agents, and tools one authoritative substrate for edits, replay, invalidation, and recomputation}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Background and Related Work}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Agent Loops and Multi-Agent Coordination}{3}{subsection.3.1}\protected@file@percent }
 \citation{pan2026nlah}
 \citation{zhang2025harness}
 \citation{wang2024awm}
@@ -21,11 +25,6 @@
 \citation{han2025legomem}
 \citation{yan2025memoryr1}
 \citation{borro2026memori}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Messages and shared memory can coordinate participants, but they usually lack explicit execution and propagation semantics. A shared execution graph gives humans, agents, and tools one authoritative substrate for edits, replay, invalidation, and recomputation.}}{3}{figure.1}\protected@file@percent }
-\newlabel{fig:collaboration-contrast}{{1}{3}{Messages and shared memory can coordinate participants, but they usually lack explicit execution and propagation semantics. A shared execution graph gives humans, agents, and tools one authoritative substrate for edits, replay, invalidation, and recomputation}{figure.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Background and Related Work}{3}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Agent Loops and Multi-Agent Coordination}{3}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Execution Lineage and Artifact-Centric State}{3}{subsection.3.2}\protected@file@percent }
 \citation{isard2007dryad}
 \citation{zaharia2016spark}
 \citation{airflowdocs}
@@ -36,19 +35,20 @@
 \citation{ellis1989groupware}
 \citation{shapiro2011crdt}
 \citation{amershi2019guidelines}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Execution Lineage and Artifact-Centric State}{4}{subsection.3.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Workflow DAGs, Provenance, and Replay}{4}{subsection.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Blackboard Systems, Shared Memory, and Collaborative Editing}{4}{subsection.3.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Human-AI Collaboration}{4}{subsection.3.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Problem Formulation}{4}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Execution identity is weak.}{4}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Execution identity is weak.}{5}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Dependency structure is weak.}{5}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Propagation is heuristic.}{5}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Conflict visibility is weak.}{5}{section*.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {5}Shared Execution Graph Model}{5}{section.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Definition}{5}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Why Shared Execution Is Stronger Than Shared Memory}{5}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Identity.}{5}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Affectedness.}{5}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Why Shared Execution Is Stronger Than Shared Memory}{6}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Identity.}{6}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Affectedness.}{6}{section*.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Propagation.}{6}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Graph Mutations as Collaboration Units}{6}{subsection.5.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Actors, Mutations, and Execution Identity}{6}{section.6}\protected@file@percent }
@@ -57,12 +57,12 @@
 \@writefile{toc}{\contentsline {paragraph}{Autonomous agents.}{6}{section*.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{External tools and services.}{6}{section*.10}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Interactive clients.}{6}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Mutations}{6}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Mutations}{7}{subsection.6.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Execution Identity as Collaboration Grounding}{7}{subsection.6.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Extending the Graph}{7}{subsection.6.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7}Consistency, Invalidation, and Propagation}{7}{section.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Consistency as a Graph Property}{7}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Invalidation Before Recomputation}{7}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Invalidation Before Recomputation}{8}{subsection.7.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Propagation Semantics}{8}{subsection.7.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Exact preservation.}{8}{section*.12}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Selective recomputation.}{8}{section*.13}\protected@file@percent }
@@ -70,52 +70,52 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Inspectability}{8}{subsection.7.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {8}Concurrency and Conflict Semantics}{8}{section.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Why Concurrency Needs Its Own Model}{8}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Graph Mutation as the Unit of Collaboration}{8}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Optimistic edits.}{8}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Validation at publish time.}{8}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Conflict localization.}{8}{section*.17}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Conflicts on the Same Block}{8}{subsection.8.3}\protected@file@percent }
-\citation{ellis1989groupware}
-\citation{shapiro2011crdt}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Graph Mutation as the Unit of Collaboration}{9}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Optimistic edits.}{9}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Validation at publish time.}{9}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Conflict localization.}{9}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Conflicts on the Same Block}{9}{subsection.8.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Stale Reads and Stale Artifacts}{9}{subsection.8.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Review and Approval Workflows}{9}{subsection.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.6}Actor Attribution and Audit Logs}{9}{subsection.8.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.7}Relation to OT and CRDT-Style Thinking}{9}{subsection.8.7}\protected@file@percent }
+\citation{ellis1989groupware}
+\citation{shapiro2011crdt}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.6}Actor Attribution and Audit Logs}{10}{subsection.8.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.7}Relation to OT and CRDT-Style Thinking}{10}{subsection.8.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {9}System Design}{10}{section.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Research Abstraction from the Sibling Repository}{10}{subsection.9.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Blocks, Steps, and Local Typed State}{10}{subsection.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Project Execution and Regeneration}{10}{subsection.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Shared Editing Without Product Lock-In}{10}{subsection.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Project Execution and Regeneration}{11}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Shared Editing Without Product Lock-In}{11}{subsection.9.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {10}Evaluation}{11}{section.10}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Evaluation Objective}{11}{subsection.10.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Compared Conditions}{11}{subsection.10.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Single shared chat or transcript.}{11}{section*.18}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Separate agent loops with shared memory or wiki state.}{11}{section*.19}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Shared execution graph.}{11}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Implemented In-Repo Tasks}{11}{subsection.10.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Unrelated-branch update.}{11}{section*.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Intermediate-artifact edit.}{11}{section*.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.4}Observed Repository Results}{11}{subsection.10.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Implemented In-Repo Tasks}{12}{subsection.10.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Unrelated-branch update.}{12}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Intermediate-artifact edit.}{12}{section*.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.4}Observed Repository Results}{12}{subsection.10.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {10.5}Proposed Multiplayer Evaluation Extension}{12}{subsection.10.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11}Discussion}{12}{section.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {11.1}Collaboration Through Structure, Not Only Messaging}{12}{subsection.11.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {11.2}Why Existing Shared-State Systems Are Insufficient}{12}{subsection.11.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Chat rooms and transcripts.}{12}{section*.23}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Shared documents and wikis.}{12}{section*.24}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Git repositories.}{12}{section*.25}\protected@file@percent }
 \citation{hogan2021knowledgegraphs}
+\@writefile{toc}{\contentsline {section}{\numberline {11}Discussion}{13}{section.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.1}Collaboration Through Structure, Not Only Messaging}{13}{subsection.11.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {11.2}Why Existing Shared-State Systems Are Insufficient}{13}{subsection.11.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Chat rooms and transcripts.}{13}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Shared documents and wikis.}{13}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Git repositories.}{13}{section*.25}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Task queues.}{13}{section*.26}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Knowledge graphs and vector memory.}{13}{section*.27}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Blackboard systems and message-passing agents.}{13}{section*.28}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {11.3}Multiplayer AI Work as Executable Co-Authoring}{13}{subsection.11.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {12}Limitations}{13}{section.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {13}Conclusion}{13}{section.13}\protected@file@percent }
 \bibcite{yao2023react}{1}
 \bibcite{schick2023toolformer}{2}
 \bibcite{li2023camel}{3}
 \bibcite{wu2023autogen}{4}
 \bibcite{hong2023metagpt}{5}
 \bibcite{wang2023voyager}{6}
+\@writefile{toc}{\contentsline {section}{\numberline {13}Conclusion}{14}{section.13}\protected@file@percent }
 \bibcite{pan2026nlah}{7}
 \bibcite{zhang2025harness}{8}
 \bibcite{wang2024awm}{9}

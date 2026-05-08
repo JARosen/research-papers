@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  6 MAY 2026 14:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  7 MAY 2026 10:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -22,8 +22,7 @@ File: size10.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
 \bibindent=\dimen148
-)
-(/Users/dev/Library/texmf/tex/latex/arxiv/arxiv.sty
+) (./arxiv.sty
 (/usr/local/texlive/2026/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2026/03/07 v6.0 Page Geometry
 
@@ -987,8 +986,8 @@ Package rerunfilecheck Info: File `from-agent-loops-to-deterministic-graphs.out
 (rerunfilecheck)             Checksum: 58342A4E9AF6CC69C11A1D58E73369D5;8343.
  ) 
 Here is how much of TeX's memory you used:
- 22126 strings out of 467525
- 412256 string characters out of 5418982
+ 22125 strings out of 467525
+ 412135 string characters out of 5418982
  806033 words of memory out of 5000000
  50544 multiletter control sequences out of 15000+600000
  651702 words of font info for 86 fonts, out of 8000000 for 9000

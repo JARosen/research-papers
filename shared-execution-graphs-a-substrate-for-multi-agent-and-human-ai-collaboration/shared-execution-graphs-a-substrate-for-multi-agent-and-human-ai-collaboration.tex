@@ -34,11 +34,11 @@ A Substrate for Multi-Agent and Human-AI Collaboration}
 \maketitle
 
 \begin{abstract}
-Large language model systems increasingly perform work that is collaborative, multi-step, and persistent across time. Yet most human-AI and multi-agent systems still coordinate through loops: one chat per user, one transcript per agent, and one growing pile of notes, memory entries, documents, tickets, or messages used to reconstruct state at update time. Those mechanisms preserve communication, but they are usually weak as execution substrates. They do not ordinarily preserve execution identity, explicit dependency semantics, artifact invalidation, or reliable downstream propagation when upstream reasoning changes.
+In many multi-agent and human-AI systems, each participant is incentivized to be locally heroic: solve the task in front of it, emit a plausible answer, and move on. That behavior can be effective for a single step, but it scales poorly when many humans and agents share evolving state. Intermediate artifacts, assumptions, and downstream dependencies drift apart because each actor optimizes for local task completion rather than stewardship of the whole computational process. The result is collaborative state that may look productive in transcripts while becoming structurally incoherent under revision.
 
-This paper argues that collaboration for AI-native work should be grounded in a shared execution graph rather than isolated chat loops or shared memory alone. A shared execution graph is a durable directed acyclic graph of blocks, tasks, or notebooks with explicit dependencies, replayable execution identities, inspectable intermediate artifacts, and incremental recomputation semantics. It is shared because multiple humans, agents, and tools can read, edit, execute, review, and consume the same graph state. In this model, collaboration is not merely communication about work. It is co-authoring and executing a shared computational structure.
+This paper argues that collaboration for AI-native work should be grounded in a shared execution graph rather than isolated chat loops or shared memory alone. A shared execution graph is a durable directed acyclic graph of blocks, tasks, or notebooks with explicit dependencies, replayable execution identities, inspectable intermediate artifacts, and incremental recomputation semantics. It is shared because multiple humans, agents, and tools can read, edit, execute, review, and consume the same graph state. In this model, collaboration is not merely communication about work. It is joint stewardship of a shared computational structure.
 
-We position this paper as the collaboration-model counterpart to the first two papers in this series. If Paper 1 asked how AI-native work should execute and Paper 2 asked what durable state that execution should produce, this paper asks how multiple participants should coordinate over that executable state. We distinguish shared execution from shared memory, compare graph-based collaboration to chat rooms, shared documents, wikis, git repositories, task queues, knowledge graphs, vector memory, blackboard systems, and message-passing multi-agent loops, and argue that these alternatives usually lack the dependency-aware propagation semantics required for maintained collaborative state.
+We build on prior work on execution lineage and artifact-centric state, but the present paper is self-contained and asks a different systems question: how should multiple participants coordinate over executable shared state? We distinguish shared execution from shared memory, compare graph-based collaboration to chat rooms, shared documents, wikis, git repositories, task queues, knowledge graphs, vector memory, blackboard systems, and message-passing multi-agent loops, and argue that these alternatives usually lack the dependency-aware propagation semantics required for maintained collaborative state.
 
 The contribution is a systems-level abstraction, not a claim that shared graphs eliminate conflict or replace all collaboration interfaces. Graph authoring has overhead, many tasks remain well served by lightweight conversation, and conflict resolution still requires policy and sometimes human judgment. The narrower claim is that for long-lived AI-native work, a shared execution graph is a stronger collaboration substrate than shared chat, shared memory, or shared documents because it preserves explicit dependency structure, execution identity, and consistent propagation under change.
 \end{abstract}
@@ -49,7 +49,9 @@ Human-AI collaboration is often described as conversation. A user asks, the mode
 
 That interface, however, becomes structurally weak once work is long-lived. Many real tasks are not single conversational episodes. They produce intermediate analyses, assumptions, plans, decision artifacts, transformations, and revisions that must remain coherent across repeated edits by multiple humans and multiple agents. In these settings, the system's main challenge is no longer only answer generation. It is maintaining shared state under change.
 
-Papers 1 and 2 in this series argued that long-lived AI-native work should be modeled as explicit execution graphs that produce durable intermediate artifacts. Paper 1 introduced \emph{execution lineage} as the runtime substrate for deterministic replay and selective recomputation. Paper 2 introduced intermediate artifacts as first-class state, with lineage, supersession, and maintained-state quality as central concerns. Those arguments imply a third question that becomes unavoidable once more than one actor is involved:
+One reason current collaboration degrades is behavioral as much as representational: each actor tends to optimize for solving its own visible subtask. An agent asked for a plan tries to finish the plan. A reviewer asked for comments tries to finish the review. A research agent tries to add findings quickly. Each can succeed locally while leaving the shared system globally inconsistent. Once many actors operate in parallel, this ``be the hero'' pattern becomes a scaling failure because no one is explicitly responsible for preserving coherent dependencies, artifact authority, invalidation state, or downstream correctness.
+
+Prior work on execution lineage and artifact-centric state makes a stronger alternative available. If AI-native work executes through explicit graphs and publishes durable intermediate artifacts, then collaboration can be organized around maintaining that executable state rather than around passing messages about it. That leads to the central question of this paper:
 \begin{quote}
 If AI-native work executes as a graph and produces durable artifact state, how should multiple humans and agents collaborate over that state?
 \end{quote}
@@ -58,14 +60,14 @@ The common answer today is some mixture of messaging and auxiliary stores. Agent
 
 This distinction motivates the paper's core claim:
 \begin{quote}
-Collaboration is not merely communication; it is co-authoring and executing a shared computational structure.
+Collaboration is not merely communication; it is stewardship of a shared computational structure.
 \end{quote}
 
 We call that structure a \emph{shared execution graph}. It is a directed acyclic graph (DAG) of blocks, notebooks, or tasks with explicit dependency edges, replayable execution identities, typed intermediate artifacts, and propagation semantics. It is shared because all participants---humans, autonomous agents, code assistants, tools, and external services---can inspect and mutate the same substrate. Messages may still exist, but they are no longer the authoritative state boundary. The graph is.
 
 This shift matters because \emph{shared memory is not the same as shared execution}. A memory store may tell an agent that a recommendation changed. A shared execution graph tells the system which block changed, which artifact it superseded, which downstream blocks now have stale reads, which branches remain unaffected, and which recomputations or reviews should follow. The first is a coordination hint; the second is a collaboration substrate.
 
-The paper makes four contributions. First, it defines the shared execution graph as the collaboration-model extension of execution lineage and artifact lineage. Second, it formalizes actors, mutations, execution identity, and propagation semantics for multi-human and multi-agent work. Third, it introduces a concurrency and conflict model centered on graph mutation, stale state detection, invalidation, attribution, and reviewable edits rather than on informal message coordination alone. Fourth, it proposes an evaluation framework in which collaborative systems are judged not only by final output quality, but also by maintained collaborative state quality over time.
+The paper makes four contributions. First, it defines the shared execution graph as a collaboration substrate that turns shared work into an explicit object of stewardship rather than a side effect of message exchange. Second, it formalizes actors, mutations, execution identity, and propagation semantics for multi-human and multi-agent work. Third, it introduces a concurrency and conflict model centered on graph mutation, stale state detection, invalidation, attribution, and reviewable edits rather than on informal message coordination alone. Fourth, it proposes an evaluation framework in which collaborative systems are judged not only by final output quality, but also by maintained collaborative state quality over time.
 
 The scope is intentionally restrained. We do not claim that all collaboration should become graph-native, that conversation is obsolete, or that shared graphs remove disagreement. Many tasks do not justify graph authoring overhead. Some collaborative ambiguity is irreducibly social. Agents can also make poor structural edits, and poorly designed dependency semantics can create false confidence. The narrower thesis is that when work is multi-step, multi-actor, revisable, and execution-dependent, a shared execution graph is a materially stronger substrate than shared chat transcripts, message loops, or generic memory stores.
 
@@ -73,9 +75,9 @@ The scope is intentionally restrained. We do not claim that all collaboration sh
 
 Consider a strategy workflow shared by two humans and three agents. A human researcher authors an upstream market-structure block. A research agent expands the graph with competitor profiles and customer segmentation artifacts. A planning agent consumes those artifacts to draft rollout options. A finance-minded human edits an upstream assumptions block to require that year-one launch remain budget-neutral. A review agent checks whether the downstream strategy memo and implementation plan still conform.
 
-In a loop-centric system, this work commonly fragments. The human researcher has one chat. The planning agent has another. The review agent reads a shared document plus a few notes in a wiki or ticket system. The updated budget constraint may be mentioned in a message, copied into a planning brief, and partially reflected in a revised memo. But there is no authoritative computational object that knows exactly which downstream artifacts depend on the changed assumption. One agent may continue using the old segmentation summary. Another may rewrite the final memo correctly while leaving the rollout plan stale. A human reviewer can eventually reconcile these inconsistencies, but the system itself does not know where the inconsistency boundary is.
+In a loop-centric system, this work commonly fragments. The human researcher has one chat. The planning agent has another. The review agent reads a shared document plus a few notes in a wiki or ticket system. The updated budget constraint may be mentioned in a message, copied into a planning brief, and partially reflected in a revised memo. But there is no authoritative computational object that knows exactly which downstream artifacts depend on the changed assumption. One agent may continue using the old segmentation summary. Another may rewrite the final memo correctly while leaving the rollout plan stale. Each actor looks productive within its local loop, yet the collaboration as a whole accumulates state debt because nobody is operating as steward of the shared computational state.
 
-Now contrast a shared execution graph. The market assumptions, competitor profiles, segmentation, rollout criteria, implementation plan, and final memo are explicit blocks with explicit dependencies. The budget-neutrality change is a graph mutation against a concrete upstream block or artifact. The runtime can mark downstream artifacts as stale, preserve unrelated branches exactly, and schedule recomputation or review where appropriate. Humans and agents can both inspect the affected subgraph before choosing whether to recompute automatically, request approval, or manually edit a downstream node.
+Now contrast a shared execution graph. The market assumptions, competitor profiles, segmentation, rollout criteria, implementation plan, and final memo are explicit blocks with explicit dependencies. The budget-neutrality change is a graph mutation against a concrete upstream block or artifact. The runtime can mark downstream artifacts as stale, preserve unrelated branches exactly, and schedule recomputation or review where appropriate. Humans and agents can both inspect the affected subgraph before choosing whether to recompute automatically, request approval, or manually edit a downstream node. The graph therefore changes the expected behavior of each participant: instead of merely solving a local task, each actor must reason about affectedness, publication authority, and the coherence of the maintained whole.
 
 The difference is not merely better storage. Both systems may preserve the same text somewhere. The difference is that one preserves \emph{execution structure}. In the graph case, participants share the same object of collaboration: a dependency-aware, executable, replayable structure. In the loop case, collaboration is mediated by communication plus reconstruction.
 
@@ -146,7 +148,7 @@ The important limitation for our purposes is not that message passing fails. It 
 
 \subsection{Execution Lineage and Artifact-Centric State}
 
-Paper 1 in this series argued that AI-native work should execute through explicit DAG structure with replayable execution identities, deterministic forward execution, and selective recomputation boundaries. Paper 2 argued that such execution requires durable intermediate artifacts with lineage, addressability, and supersession semantics. The present paper inherits those abstractions directly. A shared execution graph is therefore not merely a task graph. It is an execution-lineage graph whose nodes publish artifact-centric state.
+Prior work on execution lineage argues that AI-native work benefits from explicit DAG structure with replayable execution identities, deterministic forward execution, and selective recomputation boundaries. Related work on artifact-centric state argues that such execution requires durable intermediate artifacts with lineage, addressability, and supersession semantics. The present paper builds on those abstractions directly. A shared execution graph is therefore not merely a task graph. It is an execution-lineage graph whose nodes publish artifact-centric state.
 
 This framing is adjacent to recent work on agent harnesses and workflow memory \cite{pan2026nlah,zhang2025harness,wang2024awm,fan2024workflowllm,han2025legomem,yan2025memoryr1,borro2026memori}. Harness research recognizes that important behavior lives outside the raw model invocation. Memory research recognizes that long-lived agents require durable external state. Our claim is narrower and more structural: memory helps an actor remember; a shared execution graph defines the collaboration substrate over which actors coordinate, mutate, and propagate work.
 
@@ -175,7 +177,7 @@ We consider AI-native work that is collaborative along at least one of three axe
 \item work persists across time and must be revised under changing assumptions
 \end{itemize}
 
-The dominant loop-centric approach typically treats each actor as owning a local context window and coordinating through messages or externalized notes. Let $A = \{a_1, \dots, a_n\}$ be actors, each with local state $L_i$, and let coordination occur through messages $M$ plus an auxiliary shared store $S$:
+The dominant loop-centric approach typically treats each actor as owning a local context window and coordinating through messages or externalized notes. This creates a predictable behavioral bias: each actor is rewarded for solving the local subproblem it can see, not for maintaining the global integrity of the shared system. Let $A = \{a_1, \dots, a_n\}$ be actors, each with local state $L_i$, and let coordination occur through messages $M$ plus an auxiliary shared store $S$:
 \begin{equation}
 \text{collaboration}_{\mathrm{loop}} = \{L_i\}_{i=1}^{n} + M + S
 \end{equation}
@@ -194,7 +196,7 @@ If an upstream assumption changes, propagation is commonly manual, prompt-assemb
 \paragraph{Conflict visibility is weak.}
 Two actors can make incompatible edits against overlapping state without the system surfacing that incompatibility until late human review, because the authoritative collaboration object is ambiguous.
 
-These failures are all variants of the same structural issue: \emph{shared state is not the same as shared execution}. A wiki page, vector store, or task queue can preserve shared information while remaining silent about which computations that information should invalidate or regenerate.
+These failures are all variants of the same structural issue: \emph{shared state is not the same as shared execution}. A wiki page, vector store, or task queue can preserve shared information while remaining silent about which computations that information should invalidate or regenerate. They also leave the burden of systems thinking implicit. Each participant must infer whether it is safe to proceed, what else is affected, and whether its local success will create downstream incoherence.
 
 We therefore define the target object differently. Let
 \begin{equation}
@@ -223,11 +225,11 @@ where:
 \item $\Pi$ is the policy layer governing invalidation, recomputation, approval, and conflict handling
 \end{itemize}
 
-Each node $v$ has a structural specification $\sigma_v$, a resolved input surface $x_v$, a local execution procedure $f_v$, and a published output boundary $o_v$. Following Paper 1, we define execution identity as:
+Each node $v$ has a structural specification $\sigma_v$, a resolved input surface $x_v$, a local execution procedure $f_v$, and a published output boundary $o_v$. Following the execution-lineage formulation, we define execution identity as:
 \begin{equation}
 k_v = h(\sigma_v, x_v, \{k_u : u \in \mathrm{pred}(v)\})
 \end{equation}
-where $\mathrm{pred}(v)$ are the immediate predecessors of $v$. Following Paper 2, the published result of a node is not just text but a durable artifact surface with lineage and status.
+where $\mathrm{pred}(v)$ are the immediate predecessors of $v$. Following the artifact-centric formulation, the published result of a node is not just text but a durable artifact surface with lineage and status.
 
 The collaboration-specific extension is that multiple actors may inspect or mutate $\sigma_v$, $x_v$, dependency edges, publication metadata, or review status over time. Those edits operate against explicit graph structure rather than only against informal narrative context.
 
@@ -277,7 +279,7 @@ Tools may populate source artifacts, run validators, render outputs, execute cod
 \paragraph{Interactive clients.}
 Chat clients, code assistants, or MCP-driven interfaces may present graph state conversationally while still reading from and writing to the graph as the authoritative backend.
 
-The important point is that these actors can differ in interface while sharing the same substrate. One actor may experience the system as a visual DAG, another as a notebook-like builder, another as a chat interface with tool access. The collaboration model does not require one UI. It requires one authoritative execution graph.
+The important point is that these actors can differ in interface while sharing the same substrate. One actor may experience the system as a visual DAG, another as a notebook-like builder, another as a chat interface with tool access. The collaboration model does not require one UI. It requires one authoritative execution graph and a shared obligation to preserve its coherence.
 
 \subsection{Mutations}
 
@@ -295,7 +297,7 @@ Examples include:
 \item attaching a review decision to a recomputed node
 \end{itemize}
 
-Mutations matter because they are the place where collaboration becomes operational. A message saying ``budget neutrality now matters'' is not yet a maintained-state operation. A mutation that updates a criteria block or supersedes a recommendation artifact is.
+Mutations matter because they are the place where collaboration becomes operational. A message saying ``budget neutrality now matters'' is not yet a maintained-state operation. A mutation that updates a criteria block or supersedes a recommendation artifact is. In that sense, a mutation is also a stewardship act: it changes the system's maintained state and therefore carries responsibility for affected downstream correctness.
 
 \subsection{Execution Identity as Collaboration Grounding}
 
@@ -307,7 +309,7 @@ Execution identity provides the collaboration substrate with a concrete referent
 \item reasoning about stale reads and recomputation scope
 \end{itemize}
 
-This is especially important in multi-agent work. Without execution identity, two agents can appear to operate on the ``same'' upstream note while actually consuming different prompt reconstructions or artifact versions. The graph eliminates some of this ambiguity by grounding collaboration in explicit execution records.
+This is especially important in multi-agent work. Without execution identity, two agents can appear to operate on the ``same'' upstream note while actually consuming different prompt reconstructions or artifact versions. The graph eliminates some of this ambiguity by grounding collaboration in explicit execution records. That grounding is what lets actors reason meta-cognitively about the state they are inheriting rather than merely improvising from local context.
 
 \subsection{Extending the Graph}
 
@@ -327,7 +329,7 @@ In collaborative AI systems, consistency should not be framed only as agreement 
 \item affected downstream branches are identifiable and reviewable
 \end{itemize}
 
-Paper 2 described maintained-state quality at the artifact level. Shared execution graphs generalize that concern to multiple actors maintaining a common dependency structure over time.
+Artifact-centric work describes maintained-state quality at the artifact level. Shared execution graphs generalize that concern to multiple actors maintaining a common dependency structure over time. This is the key behavioral shift: participants are evaluated not only on whether they contributed useful local work, but on whether their contributions preserve systemic coherence.
 
 \subsection{Invalidation Before Recomputation}
 
@@ -344,7 +346,7 @@ The system may then choose among replay, recomputation, manual review, or tempor
 Shared execution graphs support three useful propagation outcomes.
 
 \paragraph{Exact preservation.}
-If an edit occurs on an unrelated branch, unaffected downstream artifacts should remain exactly preserved. This is the no-op locality result already emphasized in Paper 1's evaluation.
+If an edit occurs on an unrelated branch, unaffected downstream artifacts should remain exactly preserved. This is the no-op locality result already emphasized in prior execution-lineage evaluations.
 
 \paragraph{Selective recomputation.}
 If an upstream artifact changes in a dependency-relevant way, only affected descendants should be invalidated and recomputed.
@@ -352,7 +354,7 @@ If an upstream artifact changes in a dependency-relevant way, only affected desc
 \paragraph{Superseding publication.}
 When recomputation produces a new current artifact, downstream consumers should see the superseding artifact as authoritative while historical versions remain available for audit.
 
-These propagation semantics are stronger than what shared documents or chats normally provide. Those systems can record that something changed; they usually do not operationalize what the change should invalidate.
+These propagation semantics are stronger than what shared documents or chats normally provide. Those systems can record that something changed; they usually do not operationalize what the change should invalidate. A stewardship-oriented collaboration model requires exactly this operationalization because actors need the system to surface what responsible next action looks like.
 
 \subsection{Inspectability}
 
@@ -365,7 +367,7 @@ Propagation is useful only if participants can inspect it. Humans and agents sho
 \item which outputs were replayed, recomputed, or manually edited?
 \end{itemize}
 
-This is a major advantage over transcript-mediated collaboration. In a large chat or wiki-based workflow, these questions often require manual reconstruction from narrative history.
+This is a major advantage over transcript-mediated collaboration. In a large chat or wiki-based workflow, these questions often require manual reconstruction from narrative history. The execution graph externalizes that systems thinking instead of leaving it as an informal burden on whichever actor happens to notice a problem.
 
 \section{Concurrency and Conflict Semantics}
 
@@ -373,7 +375,7 @@ This is a major advantage over transcript-mediated collaboration. In a large cha
 
 Once multiple humans and agents can edit a shared graph, concurrency stops being an implementation detail. It becomes part of the collaboration model. Two agents may propose edits to the same block. A human may revise upstream assumptions while an agent is recomputing downstream artifacts. A review agent may consume an artifact that was current when review began but has become stale before review completes.
 
-We do not claim that shared execution graphs eliminate such conflicts. The claim is narrower: they make conflicts \emph{more legible} because they occur against explicit structure rather than hidden conversational state.
+We do not claim that shared execution graphs eliminate such conflicts. The claim is narrower: they make conflicts \emph{more legible} because they occur against explicit structure rather than hidden conversational state. Legibility matters because scalable collaboration requires participants to behave less like isolated problem-solvers and more like maintainers of a shared system.
 
 \subsection{Graph Mutation as the Unit of Collaboration}
 
@@ -398,7 +400,7 @@ If two actors edit the same block specification, prompt contract, or authoritati
 \item let one actor's mutation supersede another under a priority policy
 \end{itemize}
 
-The point is not that one universal policy is correct. The point is that the shared graph gives the system a concrete place to detect and represent the conflict. In chat-centric collaboration, such conflicts may remain hidden until their consequences appear in downstream prose.
+The point is not that one universal policy is correct. The point is that the shared graph gives the system a concrete place to detect and represent the conflict. In chat-centric collaboration, such conflicts may remain hidden until their consequences appear in downstream prose. A stewardship model therefore depends on explicit conflict surfaces rather than on hoping that locally capable actors will spontaneously coordinate correctly.
 
 \subsection{Stale Reads and Stale Artifacts}
 
@@ -420,7 +422,7 @@ Some graph mutations can execute automatically; others should trigger review. Fo
 \item a repair agent may propose a structural dependency change that must be reviewed before execution
 \end{itemize}
 
-The graph is useful here because approval applies to explicit objects: a mutation, a node, an artifact supersession, or a recomputation set. The review surface is therefore more precise than ``please check this latest chat output.''
+The graph is useful here because approval applies to explicit objects: a mutation, a node, an artifact supersession, or a recomputation set. The review surface is therefore more precise than ``please check this latest chat output.'' Precision matters because it trains both humans and agents to reason about shared state transitions, not only local answer quality.
 
 \subsection{Actor Attribution and Audit Logs}
 
@@ -492,7 +494,7 @@ The right question is not simply whether a collaboration system produces a good 
 \item maintained-state quality under collaborative change
 \end{itemize}
 
-This follows directly from Papers 1 and 2. Final answer quality alone can hide stale or contradictory intermediate state. In multi-actor settings, that problem becomes worse because several contributors may build on different local reconstructions of current reality.
+This follows directly from prior work on execution lineage and artifact-centric state. Final answer quality alone can hide stale or contradictory intermediate state. In multi-actor settings, that problem becomes worse because several contributors may build on different local reconstructions of current reality.
 
 \subsection{Compared Conditions}
 
@@ -511,7 +513,7 @@ The distinction between the second and third conditions is central. Shared memor
 
 \subsection{Implemented In-Repo Tasks}
 
-The repository already contains controlled telehealth-policy update tasks and metrics in the execution-lineage experiment harness. Those tasks are not multi-human multiplayer benchmarks by themselves, but they directly operationalize the propagation semantics Paper 3 depends on.
+The repository already contains controlled telehealth-policy update tasks and metrics in the execution-lineage experiment harness. Those tasks are not multi-human multiplayer benchmarks by themselves, but they directly operationalize the propagation semantics this paper depends on.
 
 \paragraph{Unrelated-branch update.}
 An isolated provider-recruiting branch changes while the final telehealth recommendation should remain untouched. This tests exact preservation, unaffected-artifact preservation, and contamination avoidance.
@@ -529,7 +531,7 @@ These results should be interpreted carefully. They do not prove that shared exe
 
 \subsection{Proposed Multiplayer Evaluation Extension}
 
-To evaluate Paper 3 directly, the same harness logic can be extended to collaborative tasks such as:
+To evaluate the present thesis directly, the same harness logic can be extended to collaborative tasks such as:
 \begin{itemize}
 \item collaborative strategy authoring where one human edits assumptions while agents maintain downstream options and memo text
 \item research synthesis where multiple agents own different evidence branches and a human revises the decision criterion midstream
@@ -590,7 +592,7 @@ These systems are not useless. Many collaborative stacks will continue to use se
 
 Once collaboration is grounded in a shared execution graph, multi-agent work looks less like a swarm of independent chats and more like executable co-authoring. Humans can adjust structure, approve supersessions, or repair assumptions. Agents can extend the graph, maintain stale branches, or monitor invariant violations. Tools can validate or render results. All of these actions become mutations against one shared computational object.
 
-This is a stronger collaboration model because it aligns social coordination with computational structure.
+This is a stronger collaboration model because it aligns social coordination with computational structure. It also changes what competent participation means. A good collaborator is not merely an actor that solves its assigned local problem. It is an actor that helps maintain coherent shared state: correct blocks, correct steps, correct artifacts, correct dependency structure, and correct publication status, both locally and globally.
 
 \section{Limitations}
 
@@ -610,13 +612,13 @@ These limitations matter because the paper is not proposing a universal replacem
 
 \section{Conclusion}
 
-Paper 1 in this series asked how AI-native work should execute and answered with execution lineage over deterministic graphs. Paper 2 asked what durable state that execution should produce and answered with first-class intermediate artifacts and artifact lineage. Paper 3 asks how multiple humans, agents, and tools should coordinate over that executable state.
+This paper argued that the central failure mode of multi-agent and human-AI collaboration is not only missing memory. It is missing stewardship of shared executable state. When each actor tries to be locally heroic, the system can accumulate stale artifacts, ambiguous authority, hidden dependency breakage, and unnecessary recomputation even while every participant appears productive in isolation.
 
-The answer argued here is the shared execution graph. A shared execution graph is a stronger collaboration substrate than isolated chats, shared memory, or shared documents because it gives participants a common authoritative structure with explicit dependencies, execution identity, artifact supersession, invalidation semantics, and selective propagation under change.
+The shared execution graph is the proposed remedy. It is a stronger collaboration substrate than isolated chats, shared memory, or shared documents because it gives participants a common authoritative structure with explicit dependencies, execution identity, artifact supersession, invalidation semantics, and selective propagation under change. That structure pushes both humans and agents toward a more meta-cognitive mode of operation: not only ``how do I solve my task,'' but ``what state am I inheriting, what state am I changing, what else becomes affected, and how do I preserve coherence of the whole system?''
 
 The paper's central claim is deliberately narrow. Shared execution graphs do not solve collaboration, eliminate conflict, or replace conversation. But for long-lived AI-native work, they make collaboration more operationally precise. Participants can coordinate over concrete executions and artifacts rather than vague conversational state. Upstream edits can invalidate identifiable downstream work. Recomputations can be localized. Review can attach to specific mutations. Maintained shared state can be evaluated for coherence over time.
 
-In that sense, the shared execution graph is not merely another memory layer. It is the executable substrate on which multiplayer AI work can become durable, inspectable, and maintainable.
+In that sense, the shared execution graph is not merely another memory layer. It is the executable substrate on which multiplayer AI work can become durable, inspectable, maintainable, and scalable across larger numbers of humans and agents.
 
 \begin{thebibliography}{99}
 
