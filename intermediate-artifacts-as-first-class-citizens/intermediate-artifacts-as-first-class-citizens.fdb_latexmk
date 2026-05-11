@@ -1,5 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1778238792.25608 "intermediate-artifacts-as-first-class-citizens.tex" "intermediate-artifacts-as-first-class-citizens.pdf" "intermediate-artifacts-as-first-class-citizens" 1778238793.32465 0
+["pdflatex"] 1778515195.66998 "/Users/dev/Documents/GitHub/research-papers/intermediate-artifacts-as-first-class-citizens/intermediate-artifacts-as-first-class-citizens.tex" "intermediate-artifacts-as-first-class-citizens.pdf" "intermediate-artifacts-as-first-class-citizens" 1778515196.22757 0
+  "/Users/dev/Documents/GitHub/research-papers/intermediate-artifacts-as-first-class-citizens/intermediate-artifacts-as-first-class-citizens.tex" 1778515059.71395 55572 635d9ee0dd4e0ac461bd8d1a59829291 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -167,9 +168,9 @@
   "/usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1774209607 3636776 dc5fa9b6b1453b9d196cd42edf876004 ""
   "/usr/local/texlive/2026/texmf.cnf" 1774209515 577 648cd9f92f9c0eac486f4c71c85cfbbe ""
   "arxiv.sty" 1778164055.54709 7642 824ef14f3548279d54b419cf5e0f3098 ""
-  "intermediate-artifacts-as-first-class-citizens.aux" 1778238793.26832 12168 42f7ccfaabe4e17698b7722cc88ab6fc "pdflatex"
-  "intermediate-artifacts-as-first-class-citizens.out" 1778238793.26901 10904 45c494e7889ebe3cac789f3a76a2b400 "pdflatex"
-  "intermediate-artifacts-as-first-class-citizens.tex" 1778238788.86129 63980 02bf1cd1a1f7ff8c1705d7016ac74681 ""
+  "intermediate-artifacts-as-first-class-citizens.aux" 1778515196.18501 9295 87193ff9e365f93a10ba7c46750fd761 "pdflatex"
+  "intermediate-artifacts-as-first-class-citizens.out" 1778515196.18563 7094 69745137731ebec4c809620a6967a5ac "pdflatex"
+  "intermediate-artifacts-as-first-class-citizens.tex" 1778515059.71395 55572 635d9ee0dd4e0ac461bd8d1a59829291 ""
   (generated)
   "intermediate-artifacts-as-first-class-citizens.aux"
   "intermediate-artifacts-as-first-class-citizens.log"

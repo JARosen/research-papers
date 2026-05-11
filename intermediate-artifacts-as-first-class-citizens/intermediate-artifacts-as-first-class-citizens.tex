@@ -19,7 +19,7 @@
 }
 
 \title{Intermediate Artifacts as First-Class Citizens:\\
-A Data Model for Persistent LLM Reasoning}
+A Data Model for Durable Intermediate Artifacts in Agentic Systems}
 
 \author{
   Josh Rosen \\
@@ -34,47 +34,47 @@ A Data Model for Persistent LLM Reasoning}
 \maketitle
 
 \begin{abstract}
-Many long-lived LLM workflows produce final artifacts such as memos, plans, recommendations, and analyses. These artifacts are often treated as the primary durable output of the system. This paper argues that this is the wrong state boundary. Final artifacts are lossy projections over upstream workflow state: evidence selections, claim structures, criteria, plans, transformations, assumptions, and methods of synthesis. Important intermediate work may help produce a good result on a given run, yet still disappear before later humans or agents can inspect it, reuse it, or improve it.
+Many contemporary AI systems are organized around iterative loops in which models reason, call tools, observe results, and continue until a task is complete. These systems often produce final artifacts such as memos, plans, recommendations, and analyses, while the intermediate work that shaped those outputs remains ephemeral. This paper argues that the final artifact is the wrong durable state boundary. Final artifacts are lossy projections over upstream state: evidence selections, claim structures, criteria, plans, transformations, assumptions, and methods of synthesis. Important intermediate work may help produce a good result on a given run, yet still disappear before later humans or agents can inspect it, reuse it, or improve it.
 
-We argue that selected intermediate outputs should therefore be treated as first-class artifacts: typed, structured, addressable, versioned, dependency-aware, authoritative, and consumable by downstream computation. Some of these artifacts are published reasoning structures, such as decompositions, assumptions, evidence mappings, decision procedures, transformation rules, and reconstruction methods; others are planning, evidence, transformation, or synthesis artifacts. In all cases, they provide durable state boundaries for inspection, revision, reuse, and downstream consumption.
+We argue that selected intermediate outputs should therefore be treated as first-class artifacts: typed, structured, addressable, versioned, dependency-aware, authoritative, and consumable by downstream computation. Some of these artifacts are published reasoning structures, such as decompositions, assumptions, evidence mappings, decision procedures, transformation rules, and reconstruction methods; others are planning, evidence, transformation, or synthesis artifacts. In all cases, they provide durable state boundaries for inspection, revision, reuse, and downstream consumption. Only inspectable intermediate artifacts make it possible to improve final artifacts durably across iterative, long-horizon work; only lineage over those artifacts makes it possible to trace logic errors, incorrect assumptions, or false information back to the source where they entered the system.
 
-The contribution is a systems-level data model. We distinguish intermediate artifacts from transcripts, memory, hidden chain-of-thought, and final answers; formalize additive and superseding update semantics with explicit current-state resolution; and describe how artifact lineage supports maintained workflow state and longitudinal improvability in decomposed LLM workflows.
+The contribution is a systems-level data model. We distinguish intermediate artifacts from transcripts, memory, hidden chain-of-thought, and final answers; formalize additive and superseding update semantics with explicit current-state resolution; and describe how artifact lineage supports maintained artifact state and longitudinal improvability across runs, agents, and revisions. Without such state, final artifacts become opaque revision targets: they can be patched, but not reliably corrected at the source, which increases the risk of drift and hidden correctness failures over time.
 \end{abstract}
 
 \section{Introduction}
 
-Large language model systems are often used for work that unfolds across time: research, analysis, planning, drafting, revision, and coordination among humans and tools. In such settings, the central systems question is not only whether a model can produce a plausible answer now. It is whether the surrounding system preserves the state needed to inspect, diagnose, revise, and extend that work later.
+Many current AI systems are organized around iterative loops in which a model reasons, calls tools, observes results, and continues until it decides it is done. Such loops are powerful for one-off tasks. The central systems question for revisable work, however, is not only whether a model can produce a plausible answer now. It is whether the surrounding system preserves the state needed to inspect, diagnose, revise, and extend that work later.
 
-Most current LLM interfaces still privilege final answers. Recent models may expose narrated thinking that users can see, even though such narration may be post hoc or otherwise unfaithful to the model's internal process. Agent loops may likewise expose intermediate text. But this intermediate work is often ephemeral: it can be buried in transcripts, summarized into prose, overwritten at the next turn, or left only inside controller state. Even when users can read it, they typically do not get to preserve it as durable state, edit it directly, or make later work build from it explicitly. As a result, the parts of the process that most directly shaped a result often disappear after execution.
+Most current LLM interfaces still privilege final answers. Some systems expose narrated thinking or chain-of-thought-like text that users can see, even though such narration may be post hoc or otherwise unfaithful to the model's internal process. Other intermediate state may exist only in hidden model computation, controller state inside the harness, or accumulated chat history and transcript context. None of these surfaces is a reliable durable state boundary. Hidden state is not directly inspectable. Surfaced narration and chat history may be readable, but they are usually not preserved as typed, editable, authoritative intermediate objects that later work can consume directly. As a result, the parts of the process that most directly shaped a result often disappear after execution or remain visible only in weak, transcript-shaped form.
 
-A multi-step process that produces an evidence digest, claim matrix, criteria artifact, plan, and final memo is not well modeled as one prompt plus one answer. It produces maintained intermediate state. That intermediate work may be useful, careful, and even task-helpful on the run that produced it. The problem is not that such work is bad. The problem is that if it remains ephemeral, later work cannot inspect it, build on it, or improve it coherently.
+A multi-step process that produces an evidence digest, claim matrix, criteria artifact, plan, and final memo is not well modeled as one prompt plus one answer. That intermediate work may be useful, careful, and even task-helpful on the run that produced it. The problem is not that such work is bad. The problem is that if it remains ephemeral, later work cannot inspect it, build on it, or improve it coherently.
 
-Intermediate artifacts provide durable state at these decomposition boundaries. They preserve the evidence selections, decompositions, criteria, plans, transformations, and partial products from which later work should proceed. A final artifact is a lossy projection over those upstream choices, which means that once intermediate state is flattened into final prose, later improvement often requires reconstruction rather than inspection.
+Intermediate artifacts provide durable state at these decomposition boundaries. They preserve the evidence selections, decompositions, criteria, plans, transformations, and partial products from which later work should proceed. A final artifact is a lossy projection over those upstream choices, which means that once intermediate state is flattened into final prose, later improvement often requires reconstruction rather than inspection. If final artifacts are to improve durably over long-horizon work, the intermediate artifacts that shaped them must remain inspectable and editable.
 
-Intermediate artifacts are not the model's private chain-of-thought. They are durable workflow state. Some encode published reasoning structures: explicit decompositions, assumptions, evidence mappings, criteria, decision procedures, transformation rules, and reconstruction methods that the workflow chooses to preserve. The purpose is not to expose hidden reasoning traces, but to maintain workflow-relevant structures that later work can inspect, revise, and reuse.
+Intermediate artifacts are not the model's private chain-of-thought. They are durable maintained state. Some encode published reasoning structures: explicit decompositions, assumptions, evidence mappings, criteria, decision procedures, transformation rules, and reconstruction methods that the system chooses to preserve. The purpose is not to expose hidden reasoning traces, but to maintain intermediate structures that later work can inspect, revise, and reuse.
 
-This matters because a system that preserves intermediate artifacts exposes more durable loci of intervention than one that repeatedly revises only the final rendered output.
+This matters because a system that preserves intermediate artifacts exposes more durable loci of intervention than one that repeatedly revises only the final rendered output. It also makes error resolution source-directed rather than cosmetic: if a conclusion is wrong because of a false premise, a stale evidence digest, or a flawed decision rule, lineage over intermediate artifacts makes it possible to locate where that problem entered the work and correct it there.
 
 Prior work introduced \emph{execution lineage} as an execution model for AI-native work represented as deterministic graphs of artifact-producing computation. Its central question was: \emph{how should such work execute?} The present paper addresses the complementary question: \emph{what durable state should that execution produce?} The answer we defend is that selected intermediate artifacts should be treated as first-class citizens of the system. They are not merely logs, not only UI affordances, and not simply cached prompt fragments. They are maintained state.
 
-Although this paper often discusses reasoning-relevant artifacts, the proposed model is not limited to reasoning in the narrow sense. The same state problem appears whenever LLM work is decomposed into intermediate products: evidence digests, transformations, plans, criteria, partial drafts, decision matrices, implementation steps, or synthesis procedures. The common property is not that every artifact is ``reasoning,'' but that each artifact is a durable boundary in a larger workflow. Treating those boundaries as first-class state makes the workflow inspectable, revisable, reusable, and buildable over time.
+Although this paper often discusses reasoning-relevant artifacts, the proposed model is not limited to reasoning in the narrow sense. The same state problem appears whenever AI work is decomposed into intermediate products: evidence digests, transformations, plans, criteria, partial drafts, decision matrices, implementation steps, or synthesis procedures. The common property is not that every artifact is ``reasoning,'' but that each artifact is a durable boundary in a larger system. Treating those boundaries as first-class state makes the system inspectable, revisable, reusable, and buildable over time.
 
-This paper is a systems position paper and conceptual data-model proposal. Its claim is that long-lived, revisable LLM workflows require durable intermediate state if their outputs are to remain inspectable, diagnosable, improvable, and buildable over time.
+This paper is a systems position paper and conceptual data-model proposal. Its claim is that revisable LLM systems require durable intermediate state if their outputs are to remain inspectable, diagnosable, improvable, and buildable over time.
 
 Our thesis is:
 \begin{quote}
-Long-lived LLM systems should treat selected intermediate outputs as durable, addressable artifacts because final artifacts are lossy projections over upstream workflow state. Improving, diagnosing, or extending a final artifact often requires access to the intermediate objects where evidence, assumptions, criteria, transformations, plans, decision procedures, reconstruction methods, or partial products were introduced.
+LLM systems should treat selected intermediate outputs as durable, addressable artifacts because final artifacts are lossy projections over upstream state. Improving, diagnosing, or extending a final artifact often requires access to the intermediate objects where evidence, assumptions, criteria, transformations, plans, decision procedures, reconstruction methods, or partial products were introduced.
 \end{quote}
 
 Intermediate artifacts are the editable substrate of final-artifact quality. Reasoning artifacts are one important subtype; the broader model concerns durable intermediate state at decomposition boundaries.
 
-The paper makes four contributions. First, it formulates an artifact-centric data model for long-lived LLM workflows and defines the properties that make an artifact first-class, including authority and current-state resolution. Second, it distinguishes \emph{artifact lineage} from \emph{prompt lineage}, execution lineage, memory, and final outputs. Third, it introduces additive versus superseding update semantics as a mechanism for maintaining coherent intermediate state over time. Fourth, it argues that evaluating persistent systems requires attention to maintained-state quality and to the intervention surfaces preserved across revisions, not only final-output acceptability.
+The paper makes four contributions. First, it formulates an artifact-centric data model for revisable LLM systems and defines the properties that make an artifact first-class, including authority and current-state resolution. Second, it distinguishes \emph{artifact lineage} from \emph{prompt lineage}, execution lineage, memory, and final outputs. Third, it introduces additive versus superseding update semantics as a mechanism for maintaining coherent intermediate state over time. Fourth, it argues that evaluating persistent systems requires attention to maintained-state quality and to the intervention surfaces preserved across revisions, not only final-output acceptability.
 
 Our claim is deliberately narrow and system-level. We do not claim model-level determinism, nor do we claim that every task requires durable artifacts. Some short-horizon conversational tasks do not. We also do not claim that schemas or structured artifacts are free; they require discipline, publication boundaries, and explicit tradeoffs against flexibility. The claim is instead that once AI work becomes multi-step, revisable, and shared across time, persistent progress depends on intermediate artifacts that sit alongside transcripts, hidden reasoning, and final outputs as the maintainable state surface.
 
 \section{Motivating Example}
 
-Consider a policy-analysis workflow that produces a recommendation memo about telehealth expansion. A plausible execution includes source digests for utilization, reimbursement, operations, and access-cost tradeoffs; a claim matrix grounded in those sources; a tension analysis that preserves unresolved conflicts; a recommendation-criteria artifact; an implementation plan; and finally a memo.
+Consider a policy-analysis system that produces a recommendation memo about telehealth expansion. A plausible execution includes source digests for utilization, reimbursement, operations, and access-cost tradeoffs; a claim matrix grounded in those sources; a tension analysis that preserves unresolved conflicts; a recommendation-criteria artifact; an implementation plan; and finally a memo.
 
 Now suppose a year-one budget-neutrality constraint arrives after an initial draft. A weak final memo could have several distinct upstream causes. The evidence digest may have omitted budget facts. The claim matrix may have overstated access benefits relative to cost. The criteria artifact may have failed to encode year-one neutrality as a hard constraint. The tension analysis may have collapsed an access-versus-cost tradeoff too aggressively. The implementation plan may have assumed unrestricted rollout. The reconstruction procedure that synthesized the memo may have used the wrong priority order. A decision rule may have failed to distinguish hard constraints from preferences.
 
@@ -82,9 +82,9 @@ A transcript-centric system can rewrite the memo to mention budget neutrality, b
 
 Conversely, some of the most valuable prior work may deserve preservation. The original claim matrix may contain a useful access-equity framing. The tension analysis may preserve a valuable unresolved tradeoff. The prior plan may contain a viable phased-rollout sequence even if its recommendation logic needs revision. If those contributions exist only as transient reasoning or prose embedded in the final memo, the system must rediscover them later rather than build on them directly.
 
-The key point is that the relevant state here is not only the final memo. The maintained body of work is the substrate on which future revisions depend. A workflow that stores only a transcript plus a final answer has lost the very state required for reliable evolution.
+The key point is that the relevant state here is not only the final memo. The maintained body of work is the substrate on which future revisions depend. A system that stores only a transcript plus a final answer has lost the very state required for reliable evolution.
 
-Figure~\ref{fig:artifact-model} contrasts these two views. On the left, a loop collapses intermediate work into an answer-oriented transcript. On the right, an artifact-first workflow preserves typed intermediate state, supports revision via explicit supersession, and makes downstream dependencies addressable.
+Figure~\ref{fig:artifact-model} contrasts these two views. On the left, a loop collapses intermediate work into an answer-oriented transcript. On the right, an artifact-first system preserves typed intermediate state, supports revision via explicit supersession, and makes downstream dependencies addressable.
 
 \begin{figure}[H]
 \centering
@@ -110,7 +110,7 @@ Figure~\ref{fig:artifact-model} contrasts these two views. On the left, a loop c
 \draw[arrow] (loop) -- (answer);
 \draw[dashedarrow] (hidden.west) -- (loop.east);
 
-\node[font=\bfseries] at (10.5,0) {Artifact-first workflow};
+\node[font=\bfseries] at (10.5,0) {Artifact-first system};
 \node[artifact] (src) at (10.5,-0.9) {Source and context artifacts};
 \node[artifact] (claims) at (10.5,-2.1) {Claim matrix};
 \node[artifact] (tensions) at (14.0,-2.1) {Tension analysis};
@@ -130,7 +130,7 @@ Figure~\ref{fig:artifact-model} contrasts these two views. On the left, a loop c
 \draw[arrow] (plan) -- (memo);
 \node[state] at (15.2,-5.2) {downstream nodes\\consume typed artifacts\\with lineage and versioning};
 \end{tikzpicture}
-\caption{A final-answer loop collapses intermediate state into a transcript and answer. An artifact-first workflow preserves typed intermediate artifacts, allows explicit supersession, and keeps downstream dependencies addressable.}
+\caption{A final-answer loop collapses intermediate state into a transcript and answer. An artifact-first system preserves typed intermediate artifacts, allows explicit supersession, and keeps downstream dependencies addressable.}
 \label{fig:artifact-model}
 \end{figure}
 
@@ -142,25 +142,25 @@ Agentic LLM systems commonly interleave reasoning, tool use, and revision inside
 
 Work on chain-of-thought, scratchpads, self-refinement, and search further shows that intermediate reasoning can matter operationally \cite{nye2021scratchpads,wei2022cot,wang2022selfconsistency,zhou2022leasttomost,yao2023tree,shinn2023reflexion,madaan2023selfrefine,zhou2023lats}. This literature is directly relevant because it establishes the value of intermediate reasoning structures. At the same time, it generally treats such intermediates as execution-local support for a run rather than durable, addressable state for future revision. It is also important not to equate surfaced chain-of-thought narration with faithful access to the model's actual internal process: Turpin et al. \cite{turpin2023unfaithful} show that chain-of-thought explanations can be plausible yet misleading and can omit features that actually drove the prediction. Our claim is not that raw chain-of-thought should be persisted. It is that selected reasoning structures should be published as maintainable artifacts.
 
-\subsection{Harnesses, Workflow Memory, and Execution Substrates}
+\subsection{Harnesses, Memory, and Execution Substrates}
 
-Recent work increasingly treats the agent harness itself as an object of study. Natural-Language Agent Harnesses \cite{pan2026nlah} and modular harness research \cite{zhang2025harness} argue that important behavior lives in controller logic, memory, and interfaces around the model. Memory-oriented systems such as Agent Workflow Memory \cite{wang2024awm}, WorkflowLLM \cite{fan2024workflowllm}, LEGOMem \cite{han2025legomem}, Memory-R1 \cite{yan2025memoryr1}, and Memori \cite{borro2026memori} likewise recognize that long-lived AI work depends on persistent state and retrieval.
+Recent work increasingly treats the agent harness itself as an object of study. Natural-Language Agent Harnesses \cite{pan2026nlah} and modular harness research \cite{zhang2025harness} argue that important behavior lives in controller logic, memory, and interfaces around the model. Memory-oriented systems such as Agent Workflow Memory \cite{wang2024awm}, WorkflowLLM \cite{fan2024workflowllm}, LEGOMem \cite{han2025legomem}, Memory-R1 \cite{yan2025memoryr1}, and Memori \cite{borro2026memori} likewise recognize that sustained agentic work depends on persistent state and retrieval.
 
 These lines of work are complementary to ours but not identical. A memory system decides what can be retained and later retrieved. An artifact model specifies what state should be published as authoritative, how that state is revised or superseded, and how downstream computation should consume it. In that sense, our focus is less on retrieval policy than on maintained-state representation.
 
-\subsection{DAG Workflows, Data Lineage, and Provenance}
+\subsection{Dependency Graphs, Lineage, and Provenance}
 
-Workflow and data systems have long relied on explicit dependency graphs, materialized intermediates, and lineage-aware recomputation. Dryad \cite{isard2007dryad}, Spark \cite{zaharia2016spark}, Airflow \cite{airflowdocs}, and dbt \cite{dbtdocs} all reflect a mature systems lesson: once work becomes staged and collaborative, hidden dependencies and ephemeral outputs become liabilities. The same general lesson appears in data provenance research, including why/where provenance \cite{buneman2001why} and scientific-workflow provenance systems such as VisTrails \cite{freire2006vistrails}. Provenance-aware LLM-agent work in scientific workflows \cite{souza2025provenance} extends that concern into the agent era.
+Dependency-graph and data systems have long relied on explicit dependencies, materialized intermediates, and lineage-aware recomputation \cite{isard2007dryad,zaharia2016spark,airflowdocs,dbtdocs}. The same general lesson appears in data provenance research \cite{buneman2001why,freire2006vistrails} and in provenance-aware LLM-agent work \cite{souza2025provenance}: once work becomes staged and collaborative, hidden dependencies and ephemeral outputs become liabilities.
 
-Our proposal differs in target object. Classical provenance systems usually record how deterministic data products were produced. LLM workflows add stochastic generation, prompt-conditioned steps, and richer intermediate semantics. The need for lineage remains, but the durable state is not only tables and files; it includes intermediate analytical artifacts intended for both humans and downstream model steps. Provenance records how an output was produced; artifact lineage also specifies which intermediate state is current, superseded, reusable, or authoritative for future work.
+Our proposal differs in target object. Classical provenance systems usually record how deterministic data products were produced. Agentic LLM systems add stochastic generation, prompt-conditioned steps, and richer intermediate semantics. The need for lineage remains, but the durable state is not only tables and files; it includes intermediate analytical artifacts intended for both humans and downstream model steps. Provenance records how an output was produced; artifact lineage also specifies which intermediate state is current, superseded, reusable, or authoritative for future work.
 
 \subsection{Notebooks, Literate Workflows, and Intermediate Representations}
 
-The importance of preserving intermediate work is not unique to AI systems. Literate programming \cite{knuth1984literate} and notebooks \cite{kluyver2016jupyter} both treat intermediate computational state as a meaningful object of inspection and revision rather than a hidden implementation detail. Similarly, compiler design depends on explicit intermediate representations because they create analyzable, transformable, and optimizable boundaries between stages \cite{lattner2021mlir}. These traditions matter here because they provide precedents for two claims we make: first, that intermediate state is often more useful than an opaque end product; and second, that good systems expose explicit intermediate forms instead of forcing downstream work to parse free-form history. LLM workflows, however, require additional semantics for stochastic generation, prose artifacts, supersession, published reasoning structures, and maintained workflow state.
+The importance of preserving intermediate work is not unique to AI systems. Literate programming \cite{knuth1984literate} and notebooks \cite{kluyver2016jupyter} both treat intermediate computational state as a meaningful object of inspection and revision rather than a hidden implementation detail. Similarly, compiler design depends on explicit intermediate representations because they create analyzable, transformable, and optimizable boundaries between stages \cite{lattner2021mlir}. These traditions matter here because they show the value of explicit intermediate forms. Agentic LLM systems, however, require additional semantics for stochastic generation, prose artifacts, supersession, published reasoning structures, and maintained artifact state.
 
 \subsection{Why Knowledge Graphs and Wikis Are Not Enough}
 
-Knowledge graphs and wikis preserve facts and relations, and they are valuable long-term memory surfaces. But they are not sufficient as a general substrate for decomposed LLM workflows. Knowledge-graph systems usually capture static semantic relationships rather than execution identity, procedural dependencies, or invalidation semantics \cite{hogan2021knowledgegraphs}. Wikis can store notes, but they do not ordinarily specify which downstream outputs should be recomputed when an upstream artifact changes. An artifact-centric system therefore needs not only stored knowledge but also regeneration structure and authority semantics.
+Knowledge graphs and wikis preserve facts and relations, and they are valuable long-term memory surfaces. But they are not sufficient as a general substrate for agentic systems. Knowledge-graph systems usually capture static semantic relationships rather than execution identity, procedural dependencies, or invalidation semantics \cite{hogan2021knowledgegraphs}. Wikis can store notes, but they do not ordinarily specify which downstream outputs should be recomputed when an upstream artifact changes. An artifact-centric system therefore needs not only stored knowledge but also regeneration structure and authority semantics.
 
 Table~\ref{tab:surface-comparison} summarizes the distinction between adjacent state surfaces.
 
@@ -176,46 +176,46 @@ Chain-of-thought / scratchpad & Execution-local reasoning trace & How did the mo
 Memory & Retrieved prior context & What should be remembered? & Weak authority and revision semantics \\
 Provenance & Production history & How was this produced? & Does not necessarily define current state \\
 Knowledge graph / wiki & Facts and relations & What is known? & Weak procedural lineage and invalidation semantics \\
-Intermediate artifact model & Maintained workflow state & What exists now, what replaced what, and what depends on it? & Requires schema and publication discipline \\
+Intermediate artifact model & Maintained artifact state & What exists now, what replaced what, and what depends on it? & Requires schema and publication discipline \\
 \bottomrule
 \end{tabular}
-\caption{Adjacent state surfaces answer different questions. The artifact model is aimed at maintained workflow state rather than only history, retrieval, or factual storage.}
+\caption{Adjacent state surfaces answer different questions. The artifact model is aimed at maintained artifact state rather than only history, retrieval, or factual storage.}
 \label{tab:surface-comparison}
 \end{table}
 
 \section{Problem Formulation}
 
-We focus on workflows whose outputs are revised over time rather than consumed only once. Let a workflow be a directed acyclic graph $G=(V,E)$ in which each node or step produces some output that may be consumed later. The usual question is how to execute $G$ reproducibly. Here we ask a different question: what should be persisted at each boundary so that the workflow's state can be inspected, reused, updated, and recomputed coherently?
+We focus on systems whose outputs are revised over time rather than consumed only once. The central question is not only how such a system executes, but what state it leaves behind so that later work can inspect, reuse, update, and recompute it coherently.
 
-Transcript-centric systems implicitly answer: persist the conversation history, perhaps a summary, and perhaps the final answer. This answer is insufficient because it leaves the workflow with weak maintained state. Downstream consumers must heuristically reconstruct the relevant object from prose. Revision operates on rendered surfaces rather than upstream causes. Evaluation can look favorable at the final-output layer even while the underlying state becomes stale or contradictory.
+Transcript-centric systems implicitly answer: persist the conversation history, perhaps a summary, and perhaps the final answer. This answer is insufficient because it leaves the system with weak maintained state. Downstream consumers must heuristically reconstruct the relevant object from prose. Revision operates on rendered surfaces rather than upstream causes. Evaluation can look favorable at the final-output layer even while the underlying state becomes stale or contradictory. Over longer horizons, this makes improvement fragile: a system can keep editing the visible answer while losing the ability to determine which assumption, inference, artifact, or transformation should actually be corrected.
 
 The underlying issue is a mismatch between execution structure and state structure. A graph execution model creates nodes, dependencies, replay boundaries, and recomputation scope. But if the outputs of those nodes are flattened back into prompt context, then the graph exists only at execution time. The durable state remains transcript-shaped. This undermines the very benefits the graph was meant to provide.
 
-We use persistent reasoning as the motivating case, but the underlying systems property is broader: maintained intermediate state. In a decomposed workflow, selected outputs at workflow boundaries should be represented as durable artifacts with explicit semantics for identity, dependency, authority, and revision. Chain-of-thought is the model's transient internal reasoning trace; intermediate artifacts are the workflow's durable state.
+We use reasoning-relevant artifacts as a motivating case, but the underlying systems property is broader: maintained intermediate state. In a decomposed system, selected outputs at intermediate state boundaries should be represented as durable artifacts with explicit semantics for identity, dependency, authority, and revision. Chain-of-thought is the model's transient internal reasoning trace; intermediate artifacts are the system's durable maintained state.
 
 \subsection{Final Artifacts as Lossy Projections}
 
-A final artifact is not the full workflow state of a workflow. It is a rendered synthesis over prior artifacts. Its prose may contain conclusions, but it usually does not preserve in directly inspectable form where evidence entered, where criteria were selected, where alternatives were rejected, where uncertainty was compressed, where constraints were applied, where tensions were collapsed or preserved, which reconstruction method was applied, or which decision procedure produced the recommendation.
+A final artifact is not the full maintained state of a system. It is a rendered synthesis over prior artifacts. Its prose may contain conclusions, but it usually does not preserve in directly inspectable form where evidence entered, where criteria were selected, where alternatives were rejected, where uncertainty was compressed, where constraints were applied, where tensions were collapsed or preserved, which reconstruction method was applied, or which decision procedure produced the recommendation.
 
 The problem is not that a final artifact contains no information about its upstream reasoning. The problem is that it contains that information in compressed, entangled, and non-authoritative form. A model or human may later reconstruct a plausible rationale, but a reconstructed rationale is not the same as preserved lineage.
 
-If intermediate artifacts are not persisted, later revision is forced to operate on a flattened projection. This makes improvement harder to localize. It also increases the chance that a future revision will preserve the prose of a conclusion while silently changing or losing the reasoning structures that originally justified it.
+If intermediate artifacts are not persisted, later revision is forced to operate on a flattened projection. This makes improvement harder to localize. It also increases the chance that a future revision will preserve the prose of a conclusion while silently changing or losing the reasoning structures that originally justified it. The result is an opaque correction process in which each patch risks introducing drift, masking the true source of an error, or layering new correctness problems on top of old ones.
 
-\subsection{Failure Modes of Final-Output-Centric Revision}
+\subsection{Maintained-State Degradation}
 
 These failures can be grouped under maintained-state degradation. Three recurring forms are state flattening, layered revision debt, and reasoning provenance loss.
 
-\paragraph{State flattening.} Upstream workflow state is compressed into a final output without preserving the intermediate objects needed to inspect, revise, or reuse it.
+\paragraph{State flattening.} Upstream intermediate state is compressed into a final output without preserving the intermediate objects needed to inspect, revise, or reuse it.
 
-\paragraph{Layered revision debt.} Systems repeatedly patch rendered outputs while leaving underlying workflow state unavailable, stale, or unauthoritative.
+\paragraph{Layered revision debt.} Systems repeatedly patch rendered outputs while leaving underlying intermediate state unavailable, stale, or unauthoritative.
 
 \paragraph{Reasoning provenance loss.} Useful decompositions, criteria, transformations, decision procedures, reconstruction methods, or tradeoff analyses are not published as durable artifacts and therefore cannot be built upon in later revisions.
 
 These failures may remain invisible when the current final artifact looks acceptable; they matter because they degrade the state surface on which future improvement depends.
 
-\section{Artifact-Centric Reasoning Model}
+\section{Artifact-Centric Data Model}
 
-\subsection{Artifacts as First-Class State}
+\subsection{First-Class Artifact Properties}
 
 An artifact-centric system treats intermediate outputs as first-class state when they satisfy seven properties.
 
@@ -233,15 +233,15 @@ An artifact-centric system treats intermediate outputs as first-class state when
 
 \paragraph{Consumable downstream.} The artifact is not persisted only for audit. It is an operational dependency surface for other nodes or steps.
 
-Together these properties define a first-class artifact as more than a saved message. It is a typed unit of maintained workflow state with an explicit currentness boundary.
+Together these properties define a first-class artifact as more than a saved message. It is a typed unit of maintained artifact state with an explicit currentness boundary.
 
 \subsection{Intermediate Versus Final Artifacts}
 
-An artifact-centric model distinguishes final artifacts from intermediate artifacts, but it does not treat the final answer as the only durable object. The final answer is often a projection over maintained state: a synthesis of upstream evidence, criteria, tensions, transformations, and plan. By contrast, intermediate artifacts preserve the workflow substrate on which future work depends.
+An artifact-centric model distinguishes final artifacts from intermediate artifacts, but it does not treat the final answer as the only durable object. The final answer is often a projection over maintained state: a synthesis of upstream evidence, criteria, tensions, transformations, and plan. By contrast, intermediate artifacts preserve the durable state substrate on which future work depends.
 
-This distinction has methodological consequences. If evaluation measures only the final answer, then a workflow that rewrites its memo convincingly but leaves stale criteria, an outdated decision procedure, or inconsistent plan artifacts may appear successful. Yet its maintained state is already degraded. Long-lived AI work therefore requires evaluation of \emph{maintained-state quality}, not only final-output acceptability.
+This distinction has methodological consequences. If evaluation measures only the final answer, then a system that rewrites its memo convincingly but leaves stale criteria, an outdated decision procedure, or inconsistent plan artifacts may appear successful. Yet its maintained state is already degraded. Agentic systems whose intermediate products continue to shape later action therefore require evaluation of \emph{maintained-state quality}, not only final-output acceptability.
 
-\subsection{Artifact Payloads and Deliberate Publication}
+\subsection{Deliberate Publication Boundary}
 
 First-class artifacts should be published deliberately. A system may internally generate candidate drafts, narration, or step-local traces, but only selected artifacts become authoritative downstream state. This publication boundary matters. It distinguishes a durable artifact from raw private reasoning. It also separates two concerns that are often conflated:
 
@@ -252,13 +252,13 @@ First-class artifacts should be published deliberately. A system may internally 
 
 The first may remain private, partial, or non-canonical. The second must be reviewable and fit for downstream use.
 
-As noted above, artifact publication is selective: it preserves workflow-relevant structures, including reasoning structures, without requiring raw chain-of-thought to become durable state.
+As noted above, artifact publication is selective: it preserves intermediate structures, including reasoning structures, without requiring raw chain-of-thought to become durable state.
 
-Artifact payloads need not be final prose. They may encode evidence maps, claim graphs, criteria, assumptions, plans, partial products, decision procedures, transformation rules, reconstruction methods, unresolved tensions, or other workflow-relevant structures. Published reasoning structures are one important class of artifact payload, not the entire artifact model.
+Artifact payloads need not be final prose. They may encode evidence maps, claim graphs, criteria, assumptions, plans, partial products, decision procedures, transformation rules, reconstruction methods, unresolved tensions, or other agent-accessible structures. Published reasoning structures are one important class of artifact payload, not the entire artifact model.
 
 \section{Artifact Lineage and Supersession Semantics}
 
-\subsection{Three Forms of Lineage}
+\subsection{Prompt, Execution, and Artifact Lineage}
 
 Prior work on execution lineage established the lineage of computation that produced an output under explicit graph execution. For the present paper, it is useful to distinguish three related but non-identical kinds of lineage.
 
@@ -266,13 +266,13 @@ Prior work on execution lineage established the lineage of computation that prod
 
 \paragraph{Execution lineage.} Execution lineage records what node or step executed, under what resolved inputs and dependency identities, and what computation was replayed or recomputed.
 
-\paragraph{Artifact lineage.} Artifact lineage records what durable state was produced, consumed, revised, or superseded. It is concerned with maintained objects rather than prompts or runs alone.
+\paragraph{Artifact lineage.} Artifact lineage records what durable state was produced, consumed, revised, or superseded. It is concerned with maintained state objects rather than prompts or runs alone.
 
 These lineages answer different questions. Prompt lineage answers ``what text led to this?'' Execution lineage answers ``what computation ran?'' Artifact lineage answers ``what durable state exists now, what did it replace, and what downstream state depends on it?''
 
 \subsection{Additive Versus Superseding Semantics}
 
-Persistent workflow systems need a clear distinction between additive and superseding updates.
+Agentic systems need a clear distinction between additive and superseding updates.
 
 \paragraph{Additive semantics.} Some steps produce new artifacts without invalidating earlier ones. A new research note, an additional scenario branch, or a fresh evidence extract may coexist with prior artifacts. In additive updates, earlier artifacts remain valid and addressable.
 
@@ -286,17 +286,17 @@ This distinction is especially important when artifacts are structured payloads 
 
 The additive-versus-superseding distinction also clarifies why state quality deserves separate evaluation. A system can often repair the visible final answer even when it has lost track of which intermediate objects are still current. For example, a loop may incorporate a new budget-neutrality constraint into the final memo while leaving an older implementation plan or recommendation-criteria note effectively active in surrounding state. The human may not notice immediately because the final answer looks coherent in isolation. Yet the system has already accumulated state debt: later revisions inherit artifacts whose authority is ambiguous.
 
-This is the artifact-centric analogue of stale cache invalidation in other computing systems. The main difference is that the stale objects here are workflow-state objects that future humans or models may read as if they were still current. A serious evaluation framework must therefore test not only whether the final artifact changed appropriately, but whether the maintained artifact set now reflects a coherent current state after revision.
+This is the artifact-centric analogue of stale cache invalidation in other computing systems. The main difference is that the stale objects here are maintained artifact-state objects that future humans or models may read as if they were still current. A serious evaluation framework must therefore test not only whether the final artifact changed appropriately, but whether the maintained artifact set now reflects a coherent current state after revision.
 
 \subsection{Formal Intuition}
 
-Let $A$ be the set of artifacts in a workflow state. Each artifact $a \in A$ has at least:
+Let $A$ be the set of artifacts in a system state. Each artifact $a \in A$ has at least:
 \begin{equation}
 a = (\iota, r, \tau, p, D, s, L, \alpha)
 \end{equation}
 where $\iota$ is an identity, $r$ is a role, $\tau$ is a type, $p$ is the payload, $D$ is a dependency set, $s \in \{\mathrm{active},\mathrm{historical},\mathrm{superseded}\}$ is status, $L$ is lineage metadata, and $\alpha$ is an authority scope.
 
-The payload $p$ may contain a final-renderable object, a workflow-relevant structure, or a reasoning-relevant structure such as a claim matrix, evidence map, decision rule, transformation procedure, or reconstruction method.
+The payload $p$ may contain a final-renderable object, an agent-relevant structure, or a reasoning-relevant structure such as a claim matrix, evidence map, decision rule, transformation procedure, or reconstruction method.
 
 Let $\mathrm{supersedes}(a_{\mathrm{new}}, a_{\mathrm{old}})$ denote that $a_{\mathrm{new}}$ replaces $a_{\mathrm{old}}$ as current state in some role and authority scope. Let $\mathrm{active}(r,\alpha)$ return the authoritative artifact or set of artifacts for role $r$ under scope $\alpha$. Downstream consumers resolve against $\mathrm{active}(r,\alpha)$ unless explicitly pinned to a historical artifact.
 
@@ -316,52 +316,27 @@ Artifact lineage should therefore record at least four relations:
 
 This is the durable-state counterpart to execution-lineage replay. Execution lineage tells the runtime when to reuse or recompute work. Artifact lineage tells operators and downstream nodes what maintained state is current, historical, or affected by revision.
 
-\section{System Design}
-
-\subsection{Artifact Publication Boundary}
-
-The model does not require preserving every token of private reasoning. It requires publishing selected intermediate outputs that the workflow intends to maintain, inspect, revise, or consume downstream. Artifact publication is the boundary at which workflow-relevant material, including reasoning-relevant structures, becomes part of the workflow's maintained state.
-
-This publication boundary is selective by design. Some local reasoning may remain transient. Some draft material may remain private. The important step is that selected decompositions, criteria, evidence mappings, plans, transformations, partial products, and reconstruction procedures become durable objects rather than disappearing into transcript state.
-
-\subsection{From Blocks and Steps to Artifacts}
-
-Reference implementation note. ThruWire implements one instance of this abstraction using authored blocks, ordered steps, materialized dependencies, and typed artifact payloads. The paper's claim, however, is about the underlying state model rather than any particular implementation.
-
-A runtime that already has explicit blocks, steps, and dependency keys should persist the outputs of those boundaries as structured artifacts rather than collapse them back into transcript state.
+\section{System Design Implications}
 
 \subsection{Dependency References and Input-Sensitive Materialization}
 
-One practical lesson is that dependency references should be input-sensitive. A reference to an upstream block is not enough if that block can run under different resolved inputs. The runtime therefore materializes dependencies against a dependency key that includes both the upstream block identifier and an input hash. The broader abstraction is important for this paper: artifact identity and dependency identity should track the actual state surface consumed downstream, not only an abstract stage name.
+One implementation of this model may use authored blocks, ordered steps, materialized dependencies, and typed artifact payloads; however, the proposed model is independent of any particular runtime.
+
+Dependency references should be input-sensitive. A reference to an upstream computation boundary is not enough if that boundary can run under different resolved inputs. Artifact identity and dependency identity should therefore track the actual state surface consumed downstream, not only an abstract stage name.
 
 This reduces two failure modes common in prompt-centric systems. First, it prevents accidental aliasing of two distinct upstream executions that happen to share a logical name. Second, it prevents downstream reuse from becoming a fuzzy similarity judgment over prompts or prose. If the upstream state changed in a way that matters to the artifact's dependency surface, then the downstream system should know that it is consuming a new object, not merely ``roughly the same'' context.
 
 \subsection{Authority and Current-State Resolution}
 
-Artifact identity alone is not enough. The system must also resolve which artifacts are current. Some workflows require a single active criteria artifact for a recommendation. Others may allow several active scenario artifacts. Currentness is therefore a first-class systems concern, not a presentation detail.
+Artifact identity alone is not enough. The system must also resolve which artifacts are current. Some roles require a single active criteria artifact for a recommendation. Others may allow several active scenario artifacts. Currentness is therefore a first-class systems concern, not a presentation detail.
 
-This is where authority and supersession semantics matter. A workflow that persists multiple versions without indicating which one is current forces downstream consumers to reconstruct authority heuristically. An artifact-centric system instead makes current-state resolution explicit.
+This is where authority and supersession semantics matter. A system that persists multiple versions without indicating which one is current forces downstream consumers to reconstruct authority heuristically. An artifact-centric system instead makes current-state resolution explicit.
 
-\subsection{Artifact Roles, Types, and Renderer Surfaces}
+\subsection{Structured Payloads and Renderer Surfaces}
 
-The underlying abstraction is compatible with multiple payload representations. The key point is that the publication boundary for an artifact is renderer- and downstream-facing, not merely conversational.
+The underlying abstraction is compatible with multiple payload representations. The important point is that an artifact boundary should support stable parsing, partial validation, human inspection, downstream model consumption, replay, exact restoration, and later supersession. A free-form transcript surface is usually too weak for all of these at once.
 
-This matters because the same intermediate artifact may need to support several operations:
-\begin{itemize}
-\item human inspection
-\item downstream model consumption
-\item validation against a schema or expected sections
-\item replay and exact restoration
-\item supersession by a later artifact
-\end{itemize}
-
-A free-form transcript surface is usually too weak for all of these at once.
-
-\subsection{Structured Payloads Beyond Plain Text}
-
-The same system may expose artifact payloads in several structured forms. In practice, these may include sectioned markdown, XML-like tagged payloads, key-value structures, or JSON-shaped render payloads. The important point is not allegiance to one serialization format. It is that the artifact boundary should support stable parsing, partial validation, and unambiguous downstream consumption. If one step emits ``criteria'' and another consumes ``criteria,'' the consumer should not have to infer where that object begins and ends by rereading a conversation.
-
-This is one reason artifact-first systems can tolerate both human-readable and machine-readable forms. A claim matrix might be displayed as prose for a user while remaining internally addressable as a structured object with claim identifiers, evidence references, exclusions, and status metadata. A recommendation artifact might be rendered as readable text while still preserving explicit slots for constraints, rollout gates, and open questions. The design goal is not maximal formalism. It is preserving enough structure that downstream use and later revision are deliberate rather than heuristic.
+In practice, artifact payloads may be sectioned markdown, XML-like tagged payloads, key-value structures, or JSON-shaped render payloads. The design goal is not maximal formalism. It is preserving enough structure that downstream use and later revision are deliberate rather than heuristic.
 
 \paragraph{Example 1: decision criteria artifact.}
 
@@ -405,55 +380,9 @@ This is one reason artifact-first systems can tolerate both human-readable and m
 
 The value of these objects is not merely persistence; it is that they provide editable, inspectable, authoritative state boundaries.
 
-\subsection{Streaming and Partial State}
+\section{Evaluation Implications}
 
-Artifact-centric systems also change how streaming should be understood. If intermediate artifacts are first-class state, then incremental emission is not only a UI flourish. It is partial construction of a durable object. If a platform chooses to surface streamed artifact construction as part of its execution contract, it should treat that surface as reconstructable publication behavior rather than disposable output noise.
-
-\subsection{Why Knowledge Storage Alone Is Insufficient}
-
-It might appear that a knowledge base, wiki, or vector store could satisfy the need for persistence. These systems do preserve information, but they usually do not preserve execution identity or invalidation semantics. A wiki entry may say that telehealth expansion should stay budget-neutral; it does not ordinarily say that the implementation-plan artifact and final memo are downstream of a revised criteria artifact and should therefore be recomputed. A knowledge graph can encode semantic relations, but unless it also carries procedural lineage, authority, and supersession rules, it is not a complete workflow substrate.
-
-\subsection{Complementarity With Private Chain-of-Thought}
-
-The artifact model also clarifies an important boundary in LLM systems: maintaining durable intermediate state does not require exposing private chain-of-thought, nor does it compete with it. The system can preserve deliberate intermediate artifacts while still allowing the model to use raw internal reasoning traces during execution.
-
-\section{Implications for Evaluating Persistent LLM Systems}
-
-\subsection{Why Evaluation Must Change}
-
-The central claim is that when work is long-lived and revisable, final-output acceptability alone is insufficient because maintained-state quality matters. A suitable evaluation frame should therefore distinguish at least two axes:
-\begin{itemize}
-\item the visible acceptability of the final artifact
-\item the quality of the maintained artifact state under change
-\end{itemize}
-
-The expected distinction is structural: artifact-centric systems expose revision and inspection operations that final-output-centric systems do not represent explicitly. These conditions illustrate distinct state surfaces, not measured performance results.
-
-\subsection{Illustrative Conditions}
-
-To make the distinction concrete, consider three broad classes of systems:
-
-\begin{itemize}
-\item \textbf{Final-answer-only loop.} A loop-centric update that receives the prior final memo and current sources, then produces a revised memo.
-\item \textbf{Loop with manually provided intermediates.} A loop update that also receives prior working notes or manually surfaced intermediates, but still lacks explicit dependency and supersession semantics.
-\item \textbf{Artifact-first DAG workflow.} A workflow with declared stage dependencies, persisted intermediate artifacts, execution identity, and selective recomputation.
-\end{itemize}
-
-The artifact-first condition is not just a prompt variant. It differs at the systems level because graph state itself becomes the maintained artifact substrate under evaluation.
-
-\subsection{Illustrative Update Cases}
-
-Two generic update cases are especially relevant:
-
-\paragraph{Unrelated-branch update.} An adjacent branch changes, but that branch is not upstream of the final output. Correct behavior is to preserve unaffected artifacts exactly and avoid contaminating downstream results with unrelated state.
-
-\paragraph{Intermediate-artifact edit.} An upstream decision artifact is revised. Correct behavior is to preserve valid upstream evidence artifacts, supersede the revised intermediate artifact, propagate the change to affected downstream artifacts, and preserve unaffected artifacts.
-
-These tasks expose two distinct state-maintenance capabilities: no-op preservation under irrelevant change, and coherent superseding propagation under relevant intermediate change.
-
-\subsection{Metrics}
-
-The evaluation emphasizes maintained-state quality. The most relevant metrics are:
+Final-output acceptability is insufficient for agentic systems whose intermediate products continue to shape later action. A system can produce an acceptable final answer while leaving stale, contradictory, or unauthoritative intermediate state behind. The relevant evaluation criteria are therefore properties of maintained artifact state:
 \begin{itemize}
 \item traceability of final claims to intermediate artifacts
 \item authority correctness
@@ -463,80 +392,29 @@ The evaluation emphasizes maintained-state quality. The most relevant metrics ar
 \item stale artifact detection
 \item revision localization
 \item preservation of reusable intermediate work
-\item preservation of reasoning- and workflow-relevant structures
+\item preservation of reasoning- and agent-relevant structures
 \item preservation of partial products, valid transformation outputs, and plans
 \item number and quality of durable intervention points
-\item ability to revise upstream workflow causes rather than final-output symptoms
+\item ability to revise upstream causes rather than final-output symptoms
 \end{itemize}
 
-These metrics are appropriate for the thesis of this paper because they operationalize quality of the maintained state rather than only acceptability of the final memo.
-
-\subsection{What Such Evaluation Should Reveal}
-
-Table~\ref{tab:eval-summary} summarizes the represented capabilities.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{p{0.23\linewidth}p{0.31\linewidth}p{0.34\linewidth}}
-\toprule
-Condition & Unrelated-branch update & Intermediate-artifact edit \\
-\midrule
-Final-answer-only loop & No explicit state boundary for proving unaffected preservation & No explicit supersession relation for revised intermediate state \\
-Loop with manual intermediates & Some prior context is available, but authority and invalidation remain implicit & Notes may guide revision, but currentness remains heuristic \\
-Artifact-first DAG workflow & Represents unaffected preservation as a dependency/state property & Represents supersession and downstream affectedness explicitly \\
-\bottomrule
-\end{tabular}
-\caption{Represented capabilities across conditions. The central difference is whether the system models intermediate state, currentness, and affectedness explicitly.}
-\label{tab:eval-summary}
-\end{table}
-
-\subsection{Why Final-Artifact Acceptability Alone Is Insufficient}
-
-If a workflow is evaluated only on its final memo, then a system that rewrites the memo well but leaves stale or inconsistent intermediate state will score too highly. For long-lived AI work, maintained-state quality matters because future revisions depend on the state that survives the current revision.
-
-In practical terms, this means evaluation should ask not only:
-\begin{itemize}
-\item Did the final artifact reflect the new constraint?
-\end{itemize}
-but also:
-\begin{itemize}
-\item Which upstream artifact introduced the relevant claim or assumption?
-\item Which artifacts changed?
-\item Which artifacts remained stable?
-\item Was a revised intermediate artifact clearly marked as superseding the prior one?
-\item Which downstream outputs are now affected?
-\item Can the user revise the upstream artifact rather than patch the final prose?
-\item Can the system localize recomputation instead of globally rewriting work?
-\end{itemize}
-
-\subsection{Implications for Longer-Horizon Benchmarks}
-
-As agent evaluations increasingly move toward persistent, tool-using, multi-turn settings, they should distinguish \emph{task success at the current turn} from \emph{health of maintained state across turns}. An artifact-centric benchmark would therefore track the state graph itself over time: whether a revised artifact superseded the correct predecessor, whether unaffected branches remained stable, whether downstream artifacts were updated exactly where necessary, and whether the system could enumerate the affected dependents of an upstream change.
+These criteria operationalize the maintained-state implications of the data model rather than promising a separate benchmark contribution.
 
 \section{Discussion}
 
-\subsection{Longitudinal Improvability}
+\subsection{Longitudinal Improvability and Reuse}
 
-In a final-output-centric workflow, improvement is usually expressed as another rewrite of the rendered answer. In an artifact-centric workflow, improvement can occur at the level where the weakness or opportunity originated: an evidence digest can be corrected, a claim matrix can be reorganized, a criterion can be sharpened, a transformation can be revised, or a plan can be recomposed. Durable intermediate artifacts provide more precise and reusable surfaces for iterative improvement.
+A system can improve not only by rewriting the final answer, but by editing the intermediate artifact where the weakness originated. An evidence digest can be corrected, a claim matrix can be reorganized, a criterion can be sharpened, a transformation can be revised, or a plan can be recomposed. The same durable substrate also preserves progress: in many settings, the most valuable output of a model run is not the final prose but an intermediate framing, decomposition, comparison, plan, transformation, reconstruction method, decision procedure, partial product, or unresolved tension that later humans or agents should build upon.
 
-\subsection{Capturing Good Intermediate Work}
+\subsection{Graph Execution Requires an Artifact Model}
 
-The artifact model is not only defensive. It is also a way to preserve progress. In many workflows, the most valuable output of a model run is not the final prose but an intermediate framing, decomposition, comparison, plan, transformation, reconstruction method, decision procedure, partial product, or unresolved tension that future work should build upon. If such material exists only as transient narration or execution-local scratchpad state, the system has no durable object to reuse or strengthen.
+Work on execution lineage argues that explicit dependencies improve replay, recomputation, and update locality. The present paper adds that such an execution model is incomplete without a corresponding artifact model. Execution lineage alone tells the runtime what ran. Artifact lineage tells the system what durable state was produced, which of it is current, and what downstream work depends on it. Without artifacts as first-class state, the graph becomes an execution-time convenience rather than a maintained artifact substrate.
 
-\subsection{A Graph Execution Model Requires an Artifact Model}
+This is why replay and recomputation should not be framed only as execution optimizations. They are state-management operations. A replay hit says that the prior published artifact remains the correct current state under unchanged dependencies. A selective recompute says that a subset of the maintained artifact state has been invalidated and must be republished.
 
-Work on execution lineage argues that deterministic graphs with explicit dependencies improve replay, recomputation, and update locality. The present paper adds that such a graph execution model is incomplete without a corresponding artifact model. Execution lineage alone tells the runtime what ran. Artifact lineage tells the system what durable state was produced, which of it is current, and what downstream work depends on it. Without artifacts as first-class state, the graph becomes an execution-time convenience rather than a maintained workflow substrate.
+\subsection{Human-AI Collaboration}
 
-This is why replay and recomputation should not be framed only as execution optimizations. They are state-management operations. A replay hit says that the prior published artifact remains the correct current state under unchanged dependencies. A selective recompute says that a subset of the maintained artifact graph has been invalidated and must be republished. Once phrased this way, the data-model question is unavoidable.
-
-\subsection{Why This Matters for Human-AI Collaboration}
-
-Although the paper is not primarily a collaboration paper, the artifact model has obvious collaboration implications. Humans can inspect and edit meaningful intermediate boundaries instead of rephrasing high-level instructions into a loop. Other agents can consume the same state with clear expectations about what is authoritative and what has been superseded.
-
-\subsection{Published Reasoning Structures}
-
-Treating intermediate artifacts as first-class state does not require exposing raw chain-of-thought. It creates a publication boundary for reasoning-relevant structures within the broader workflow state. A workflow may publish a decomposition, a decision rule, an evidence map, a transformation procedure, or a reconstruction method. These objects are explicit, reviewable structures for future work, not claims about the model's internal trace.
+Although the paper is not primarily a collaboration paper, the artifact model has clear collaboration implications. Humans can inspect and edit meaningful intermediate boundaries instead of rephrasing high-level instructions into a loop. Other agents can consume the same state with clear expectations about what is authoritative and what has been superseded.
 
 \section{Limitations}
 
@@ -544,26 +422,26 @@ The proposal has several important limitations.
 
 \begin{itemize}
 \item \textbf{Schema discipline.} Typed artifacts require schema design, publication rules, and discipline. Poor schemas can create brittle systems or encourage superficial structure.
-\item \textbf{Granularity choices.} Artifact boundaries are design decisions. Too coarse, and the system loses update locality. Too fine, and the workflow becomes over-fragmented and costly to manage.
+\item \textbf{Granularity choices.} Artifact boundaries are design decisions. Too coarse, and the system loses update locality. Too fine, and the state model becomes over-fragmented and costly to manage.
 \item \textbf{Deliberate publication.} The model depends on deliberate publication. It does not require, and should not encourage, preserving every token of private reasoning or every transient draft.
 \item \textbf{Artifact quality.} A persisted artifact can still be incomplete, misleading, or wrong. Durability does not imply truth. A wrong artifact can still be wrong even if it is typed, versioned, and addressable.
 \item \textbf{Authority risk.} Treating artifacts as durable state can create a false sense of authority if status, lineage, and supersession semantics are weak.
-\item \textbf{Exploratory fluidity.} Some exploratory workflows may benefit from temporary fluidity before artifact boundaries are chosen. Excessive formalization can reduce flexibility early in the work.
+\item \textbf{Exploratory fluidity.} Some exploratory tasks may benefit from temporary fluidity before artifact boundaries are chosen. Excessive formalization can reduce flexibility early in the work.
 \item \textbf{Stochastic content.} Even when execution identity is explicit, model-generated artifact content remains sensitive to model behavior and runtime conditions. This is a system-level state model, not a claim of universal model determinism.
 \item \textbf{Partial abstraction.} Published reasoning structures are abstractions over reasoning, not complete records of the model's internal computation. A reconstruction method may itself be wrong, underspecified, or stale.
 \item \textbf{Not every task needs it.} Short-horizon tasks, disposable chats, and lightweight ideation may not benefit from durable artifact state.
 \item \textbf{Intervention quality.} More intervention surfaces do not guarantee better interventions. Longitudinal improvability is a structural property that still requires useful judgment, validation, and revision practices.
 \end{itemize}
 
-The evaluative discussion is also limited. The examples here are intended to clarify what an artifact-centric evaluation should measure, not to establish universal performance claims across all agentic workflows.
+The evaluative discussion is also limited. The examples here are intended to clarify what artifact-centric evaluation should measure, not to establish universal performance claims across agentic systems.
 
 \section{Conclusion}
 
-This paper provides the corresponding data model for lineage-aware graph execution. If execution lineage answers how the work runs, the artifact model answers what durable state that execution should leave behind.
+This paper provides the corresponding data model for lineage-aware graph execution. If execution lineage answers how the work runs, the artifact model answers what durable state it leaves behind.
 
-The central claim is not that intermediate artifacts make models smarter. It is that they make AI work maintainable. First-class intermediate artifacts provide the state surface on which long-lived AI work can be inspected, traced, strengthened, superseded, and extended.
+The central claim is not that intermediate artifacts make models smarter. It is that they make AI work maintainable. First-class intermediate artifacts provide the state surface on which AI work can be inspected, traced, strengthened, superseded, and extended. Only when those artifacts remain inspectable can final outputs be improved durably across iterative, long-horizon work; only when their lineage is preserved can logic errors, incorrect assumptions, and false information be traced back to the source where they were introduced.
 
-The relevant state is not raw chain-of-thought alone, but the published intermediate structures a workflow chooses to maintain: decompositions, evidence mappings, plans, criteria, transformation rules, decision procedures, reconstruction methods, and partial products. This is the basis for longitudinal improvability in decomposed LLM workflows.
+The relevant state is not raw chain-of-thought alone, but the published intermediate structures a system chooses to maintain: decompositions, evidence mappings, plans, criteria, transformation rules, decision procedures, reconstruction methods, and partial products. Without that state, final artifacts become opaque objects that can be edited but not reliably corrected at the source. With it, systems gain the durable intervention surfaces needed to maintain coherence and correctness over time.
 
 \begin{thebibliography}{99}
 
