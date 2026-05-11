@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 MAY 2026 16:18
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 MAY 2026 16:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -611,62 +611,73 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
 
-{/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc}] [2] [3
+{/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc}]
+Overfull \hbox (4.59558pt too wide) in paragraph at lines 126--127
+ [][] 
+ []
+
+[2] [3
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.151 \subsection
-                 {Notebooks, Literate Workflows, and Intermediate Representa...]
-Underfull \hbox (badness 10000) in paragraph at lines 173--173
+l.147 O
+       ur proposal differs in target object. Classical provenance systems us...]
+Underfull \hbox (badness 10000) in paragraph at lines 171--171
 []\OT1/ptm/m/n/9 Chain-of-thought /
  []
 
 
-Underfull \hbox (badness 3838) in paragraph at lines 173--173
+Underfull \hbox (badness 3838) in paragraph at lines 171--171
 []\OT1/ptm/m/n/9 Execution-local rea-son-ing
  []
 
 
-Underfull \hbox (badness 6893) in paragraph at lines 174--174
+Underfull \hbox (badness 6893) in paragraph at lines 172--172
 []\OT1/ptm/m/n/9 What should be re-mem-
  []
 
 
-Underfull \hbox (badness 1331) in paragraph at lines 174--175
+Underfull \hbox (badness 1331) in paragraph at lines 172--173
 []\OT1/ptm/m/n/9 Weak au-thor-ity and re-vi-sion se-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--176
+Underfull \hbox (badness 10000) in paragraph at lines 174--174
 []\OT1/ptm/m/n/9 Knowledge graph /
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 177--177
+Underfull \hbox (badness 10000) in paragraph at lines 175--175
 []\OT1/ptm/m/n/9 Intermediate ar-ti-fact
  []
 
-[4
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.191 
-      ] [5]
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 249.
+l.186 T
+       ranscript-centric systems often answer: persist the conversation hist...]
+Underfull \vbox (badness 6725) has occurred while \output is active []
+
+ [5]
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 247.
  (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [6] [7] [8] [9] [10] [11] [12]
-Underfull \hbox (badness 1005) in paragraph at lines 597--598
+Underfull \hbox (badness 1005) in paragraph at lines 573--574
 []\OT1/ptm/m/n/9 Two cri-te-ria ar-ti-facts re-main ac-tive and
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 597--598
+Underfull \hbox (badness 10000) in paragraph at lines 573--574
 \OT1/ptm/m/n/9 down-stream con-sumers re-solve them
  []
 
 
-Underfull \hbox (badness 2529) in paragraph at lines 598--598
+Underfull \hbox (badness 2529) in paragraph at lines 574--574
 []\OT1/ptm/m/n/9 Whether re-vi-sions dis-place the right
  []
 
@@ -677,9 +688,9 @@ Underfull \vbox (badness 5460) has occurred while \output is active []
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.636 \item \textbf
-                   {Authority-swap edits:} introduce a new criterion or poli...] [15] [16]
-Underfull \hbox (badness 2409) in paragraph at lines 770--773
+l.617 \section
+              {Discussion}] [15] [16]
+Underfull \hbox (badness 2409) in paragraph at lines 743--746
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu-big.  Agent Work-flow Mem-ory.
  []
 
@@ -689,21 +700,21 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `intermediate-artifacts-as-first-class-citizens.out' has not changed.
-(rerunfilecheck)             Checksum: A354F55666FA81C1A2C3EE672F376E5D;8894.
+(rerunfilecheck)             Checksum: F8B9C56C67021FFE320E5475D7803036;8557.
  ) 
 Here is how much of TeX's memory you used:
- 22423 strings out of 467525
- 419040 string characters out of 5418982
- 828768 words of memory out of 5000000
- 50823 multiletter control sequences out of 15000+600000
+ 22406 strings out of 467525
+ 418840 string characters out of 5418982
+ 828050 words of memory out of 5000000
+ 50816 multiletter control sequences out of 15000+600000
  648998 words of font info for 83 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,13n,104p,1177b,820s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on intermediate-artifacts-as-first-class-citizens.pdf (18 pages, 181268 bytes).
+Output written on intermediate-artifacts-as-first-class-citizens.pdf (18 pages, 180140 bytes).
 PDF statistics:
- 452 PDF objects out of 1000 (max. 8388607)
- 411 compressed objects within 5 object streams
- 145 named destinations out of 1000 (max. 500000)
- 341 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 432 PDF objects out of 1000 (max. 8388607)
+ 392 compressed objects within 4 object streams
+ 135 named destinations out of 1000 (max. 500000)
+ 325 words of extra memory for PDF output out of 10000 (max. 10000000)
 
