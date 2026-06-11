@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 16:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 16:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -801,7 +801,10 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
+)
+Underfull \vbox (badness 2426) has occurred while \output is active []
+
+ [1
 
 
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
@@ -812,44 +815,44 @@ LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [2]
-Underfull \hbox (badness 10000) in paragraph at lines 153--154
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
 []\OT1/ptm/b/n/10 Selection. \OT1/ptm/m/n/10 Through MCP, the loop searches or 
 se-lects the cur-rent com-piled struc-ture for
  []
 
 
-Underfull \hbox (badness 1776) in paragraph at lines 153--154
+Underfull \hbox (badness 1776) in paragraph at lines 151--152
 \OT1/cmtt/m/n/10 competitor[]risk[]assessment\OT1/ptm/m/n/10 : a con-text pat-t
 ern, graph re-gion, out-put con-tract, and rel-e-vant ar-ti-fact
  []
 
 [3]
-Underfull \hbox (badness 10000) in paragraph at lines 182--182
+Underfull \hbox (badness 10000) in paragraph at lines 180--180
 []\OT1/ptm/m/n/7 Markdown pages, sum-maries,
  []
 
 
-Underfull \hbox (badness 2460) in paragraph at lines 183--184
+Underfull \hbox (badness 2460) in paragraph at lines 181--182
 []\OT1/ptm/m/n/7 Semantic current-state res-o-lu-tion
  []
 
 
-Underfull \hbox (badness 2753) in paragraph at lines 183--184
+Underfull \hbox (badness 2753) in paragraph at lines 181--182
 \OT1/ptm/m/n/7 for LLM-native ar-ti-facts as the
  []
 
 
-Underfull \hbox (badness 1558) in paragraph at lines 184--185
+Underfull \hbox (badness 1558) in paragraph at lines 182--183
 \OT1/ptm/m/n/7 su-per-s-es-sion as pri-mary ab-strac-
  []
 
 
-Underfull \hbox (badness 2205) in paragraph at lines 185--186
-\OT1/ptm/m/n/7 af-fect-ed-ness as pri-mary ab-strac-
+Underfull \hbox (badness 2856) in paragraph at lines 183--184
+[]\OT1/ptm/m/n/7 Executable con-text pat-terns and
  []
 
 
-Underfull \hbox (badness 3568) in paragraph at lines 186--186
+Underfull \hbox (badness 3568) in paragraph at lines 184--184
 \OT1/ptm/m/n/7 state, re-view struc-ture, run-time
  []
 
@@ -858,41 +861,41 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [4]
 [5]
-Underfull \hbox (badness 1466) in paragraph at lines 243--244
+Underfull \hbox (badness 1466) in paragraph at lines 241--242
 []\OT1/ptm/m/n/9 Multiple sum-maries, rubrics, or anal-y-ses are treated as cur
 -rent be-cause no
  []
 
 [6] [7] [8] [9]
-Underfull \hbox (badness 1127) in paragraph at lines 436--437
+Underfull \hbox (badness 1127) in paragraph at lines 434--435
 []\OT1/ptm/m/n/9 Maintained-state se-man-tics un-less backed
  []
 
-[10] [11] [12]
-Underfull \hbox (badness 1490) in paragraph at lines 588--591
+[10] [11] [12] [13]
+Underfull \hbox (badness 1490) in paragraph at lines 586--589
 []\OT1/ptm/m/n/10 Model Con-text Pro-to-col.  Spec-i-fi-ca-tion 2025-06-18: Too
 ls.  []$\OT1/cmtt/m/n/10 https : / / modelcontextprotocol . io /
  []
 
-[13]
-Underfull \hbox (badness 1478) in paragraph at lines 648--651
+
+Underfull \hbox (badness 1478) in paragraph at lines 646--649
 \OT1/ptm/m/n/10 P. Mur-phy.  Au-to-Har-ness: Im-prov-ing LLM Agents by Au-to-ma
 t-i-cally Syn-the-siz-ing a Code Har-ness.
  []
 
 
-Underfull \hbox (badness 2409) in paragraph at lines 658--661
+Underfull \hbox (badness 2409) in paragraph at lines 656--659
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu
 -big.  Agent Work-flow Mem-ory.
  []
 
-
-Underfull \hbox (badness 4217) in paragraph at lines 688--692
+[14]
+Underfull \hbox (badness 4217) in paragraph at lines 686--690
 []\OT1/ptm/m/n/10 Andrej Karpa-thy.  LLM Wiki.  GitHub Gist, 2026.  []$\OT1/cmt
 t/m/n/10 https : / / gist . github . com / karpathy /
  []
 
-[14] [15]
+[15]
 (./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
 ps.aux)
  ***********
@@ -901,16 +904,16 @@ L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `the-stewardship-pattern-maintaining-executab
 le-intelligence-across-agent-loops.out' has not changed.
-(rerunfilecheck)             Checksum: EF9FADF75ACD44F3775820D40980C1C3;6485.
+(rerunfilecheck)             Checksum: F369B39D2DC07F40B66A95A6C65DCD7C;6558.
  ) 
 Here is how much of TeX's memory you used:
  22865 strings out of 467525
  427532 string characters out of 5418982
- 839798 words of memory out of 5000000
+ 840789 words of memory out of 5000000
  51289 multiletter control sequences out of 15000+600000
  652821 words of font info for 87 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,12n,104p,1432b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,104p,1242b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><
 /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
@@ -922,7 +925,7 @@ l/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
 2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf
 -dist/fonts/type1/urw/times/utmri8a.pfb>
 Output written on the-stewardship-pattern-maintaining-executable-intelligence-a
-cross-agent-loops.pdf (15 pages, 187278 bytes).
+cross-agent-loops.pdf (15 pages, 187467 bytes).
 PDF statistics:
  412 PDF objects out of 1000 (max. 8388607)
  371 compressed objects within 4 object streams
