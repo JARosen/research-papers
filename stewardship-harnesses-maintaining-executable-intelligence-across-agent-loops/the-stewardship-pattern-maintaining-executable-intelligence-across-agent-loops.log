@@ -1,12 +1,12 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 13:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 16:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.
-tex
+**the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loop
+s.tex
 
-(./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
-.tex
+(./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
+ps.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
 (/usr/local/texlive/2026/texmf-dist/tex/latex/base/article.cls
@@ -669,10 +669,10 @@ File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count338
 )
-(./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
-.aux)
-\openout1 = `stewardship-harnesses-maintaining-executable-intelligence-across-a
-gent-loops.aux'.
+(./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
+ps.aux)
+\openout1 = `the-stewardship-pattern-maintaining-executable-intelligence-across
+-agent-loops.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
 LaTeX Font Info:    ... okay on input line 34.
@@ -783,13 +783,13 @@ e
 ))
 Package hyperref Info: Link coloring OFF on input line 34.
 
-(./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
-.out)
-(./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
-.out)
+(./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
+ps.out)
+(./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
+ps.out)
 \@outlinefile=\write4
-\openout4 = `stewardship-harnesses-maintaining-executable-intelligence-across-a
-gent-loops.out'.
+\openout4 = `the-stewardship-pattern-maintaining-executable-intelligence-across
+-agent-loops.out'.
 
 LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
 
@@ -807,49 +807,49 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc}]
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
-7.
+9.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [2]
-Underfull \hbox (badness 10000) in paragraph at lines 131--132
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
 []\OT1/ptm/b/n/10 Selection. \OT1/ptm/m/n/10 Through MCP, the loop searches or 
 se-lects the cur-rent com-piled struc-ture for
  []
 
 
-Underfull \hbox (badness 1776) in paragraph at lines 131--132
+Underfull \hbox (badness 1776) in paragraph at lines 153--154
 \OT1/cmtt/m/n/10 competitor[]risk[]assessment\OT1/ptm/m/n/10 : a con-text pat-t
 ern, graph re-gion, out-put con-tract, and rel-e-vant ar-ti-fact
  []
 
 [3]
-Underfull \hbox (badness 10000) in paragraph at lines 160--160
+Underfull \hbox (badness 10000) in paragraph at lines 182--182
 []\OT1/ptm/m/n/7 Markdown pages, sum-maries,
  []
 
 
-Underfull \hbox (badness 2460) in paragraph at lines 161--162
+Underfull \hbox (badness 2460) in paragraph at lines 183--184
 []\OT1/ptm/m/n/7 Semantic current-state res-o-lu-tion
  []
 
 
-Underfull \hbox (badness 2753) in paragraph at lines 161--162
+Underfull \hbox (badness 2753) in paragraph at lines 183--184
 \OT1/ptm/m/n/7 for LLM-native ar-ti-facts as the
  []
 
 
-Underfull \hbox (badness 1558) in paragraph at lines 162--163
+Underfull \hbox (badness 1558) in paragraph at lines 184--185
 \OT1/ptm/m/n/7 su-per-s-es-sion as pri-mary ab-strac-
  []
 
 
-Underfull \hbox (badness 2205) in paragraph at lines 163--164
+Underfull \hbox (badness 2205) in paragraph at lines 185--186
 \OT1/ptm/m/n/7 af-fect-ed-ness as pri-mary ab-strac-
  []
 
 
-Underfull \hbox (badness 3568) in paragraph at lines 164--164
+Underfull \hbox (badness 3568) in paragraph at lines 186--186
 \OT1/ptm/m/n/7 state, re-view struc-ture, run-time
  []
 
@@ -857,68 +857,60 @@ Underfull \hbox (badness 3568) in paragraph at lines 164--164
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [4]
-Underfull \hbox (badness 1466) in paragraph at lines 221--222
+[5]
+Underfull \hbox (badness 1466) in paragraph at lines 243--244
 []\OT1/ptm/m/n/9 Multiple sum-maries, rubrics, or anal-y-ses are treated as cur
 -rent be-cause no
  []
 
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [5]
 [6] [7] [8] [9]
-Underfull \hbox (badness 1127) in paragraph at lines 414--415
+Underfull \hbox (badness 1127) in paragraph at lines 436--437
 []\OT1/ptm/m/n/9 Maintained-state se-man-tics un-less backed
  []
 
-
-Underfull \hbox (badness 2111) in paragraph at lines 415--415
-[]\OT1/ptm/m/n/9 Shared stew-ard-ship har-
- []
-
 [10] [11] [12]
-Underfull \hbox (badness 1490) in paragraph at lines 565--568
+Underfull \hbox (badness 1490) in paragraph at lines 588--591
 []\OT1/ptm/m/n/10 Model Con-text Pro-to-col.  Spec-i-fi-ca-tion 2025-06-18: Too
 ls.  []$\OT1/cmtt/m/n/10 https : / / modelcontextprotocol . io /
  []
 
 [13]
-Underfull \hbox (badness 1478) in paragraph at lines 625--628
+Underfull \hbox (badness 1478) in paragraph at lines 648--651
 \OT1/ptm/m/n/10 P. Mur-phy.  Au-to-Har-ness: Im-prov-ing LLM Agents by Au-to-ma
 t-i-cally Syn-the-siz-ing a Code Har-ness.
  []
 
 
-Underfull \hbox (badness 2409) in paragraph at lines 635--638
+Underfull \hbox (badness 2409) in paragraph at lines 658--661
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu
 -big.  Agent Work-flow Mem-ory.
  []
 
 
-Underfull \hbox (badness 4217) in paragraph at lines 665--669
+Underfull \hbox (badness 4217) in paragraph at lines 688--692
 []\OT1/ptm/m/n/10 Andrej Karpa-thy.  LLM Wiki.  GitHub Gist, 2026.  []$\OT1/cmt
 t/m/n/10 https : / / gist . github . com / karpathy /
  []
 
 [14] [15]
-(./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
-.aux)
+(./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
+ps.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-Package rerunfilecheck Info: File `stewardship-harnesses-maintaining-executable
--intelligence-across-agent-loops.out' has not changed.
-(rerunfilecheck)             Checksum: 13F1C29E4E976D77573A2D33BF3F6DEC;6336.
+Package rerunfilecheck Info: File `the-stewardship-pattern-maintaining-executab
+le-intelligence-across-agent-loops.out' has not changed.
+(rerunfilecheck)             Checksum: EF9FADF75ACD44F3775820D40980C1C3;6485.
  ) 
 Here is how much of TeX's memory you used:
- 22861 strings out of 467525
- 427442 string characters out of 5418982
- 840645 words of memory out of 5000000
- 51287 multiletter control sequences out of 15000+600000
+ 22865 strings out of 467525
+ 427532 string characters out of 5418982
+ 839798 words of memory out of 5000000
+ 51289 multiletter control sequences out of 15000+600000
  652821 words of font info for 87 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,13n,104p,1228b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,104p,1432b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><
 /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
@@ -929,11 +921,11 @@ al/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/loca
 l/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
 2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf
 -dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on stewardship-harnesses-maintaining-executable-intelligence-acr
-oss-agent-loops.pdf (15 pages, 184854 bytes).
+Output written on the-stewardship-pattern-maintaining-executable-intelligence-a
+cross-agent-loops.pdf (15 pages, 187278 bytes).
 PDF statistics:
- 407 PDF objects out of 1000 (max. 8388607)
- 366 compressed objects within 4 object streams
- 107 named destinations out of 1000 (max. 500000)
+ 412 PDF objects out of 1000 (max. 8388607)
+ 371 compressed objects within 4 object streams
+ 109 named destinations out of 1000 (max. 500000)
  285 words of extra memory for PDF output out of 10000 (max. 10000000)
 
