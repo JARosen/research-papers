@@ -22,7 +22,8 @@
 }
 
 \title{The Stewardship Pattern:\\
-Maintaining Executable Intelligence Across Agent Loops}
+Maintaining Executable Intelligence\\
+Across Agent Loops}
 
 \author{
   Josh Rosen \\
@@ -39,34 +40,32 @@ Maintaining Executable Intelligence Across Agent Loops}
 \begin{abstract}
 Multi-agent AI systems increasingly consist of agents with their own task loops: they plan, call tools, delegate work, and produce outputs through interaction with external systems. Interoperability helps those agents communicate, but communication alone does not maintain the shared executable structure future agents inherit. In long-lived, dependency-bearing work, locally successful loops may accumulate cross-agent drift: stale assumptions, inconsistent artifacts, duplicated procedures, incompatible context selection, and final outputs that no longer agree with maintained upstream state.
 
-This paper specifies the stewardship pattern as a constructive systems architecture with operational state semantics for cross-agent drift in such systems. Agent harnesses couple their task loops to a shared inner stewardship harness that maintains durable shared executable structure they can consume and collectively steward. The inner stewardship harness is an MCP-accessible executable environment for versioned procedures and artifacts that future agents can run against: current artifacts, context patterns, authority, supersession, dependency-aware invalidation, and review of affected downstream work. Agent harnesses use this structure when it applies, ask the inner harness to execute relevant structure with task inputs, consume the resulting artifacts, and propose updates when their work reveals gaps.
+This paper specifies the stewardship pattern as a constructive systems architecture with operational state semantics for addressing cross-agent drift in such systems. In the stewardship pattern, agent harnesses couple their task loops to a shared inner stewardship harness that maintains durable shared executable structure they can consume and collectively steward. The inner stewardship harness is an MCP-accessible executable environment for versioned procedures and artifacts that future agents can run against: current artifacts, context patterns, authority, supersession, dependency-aware invalidation, and review of affected downstream work. Agent harnesses use this structure when it applies, ask the inner harness to execute relevant structure with task inputs, consume the resulting artifacts, and propose updates when their work reveals gaps.
 
 The contribution is a systems architecture and state model for maintained executable intelligence across agent loops. We define the stewardship pattern, the inner stewardship harness, executable context patterns, current-state resolution, stewardship update semantics, and downstream-impact handling; distinguish agent interoperability from maintained executable state; outline an MCP-accessible inner-harness interface; and specify an evaluation protocol for measuring cross-agent drift and maintained-state quality. The paper does not claim empirical improvements in final-answer quality; its claims are architectural and concern the maintained state that future agent loops inherit.
 \end{abstract}
 
 \section{Introduction}
 
-Agent loops are the familiar operating pattern of contemporary agents: they explore, call tools, recover from partial failure, and adapt to a task \cite{yao2023react,schick2023toolformer,wu2023autogen,li2023camel,hong2023metagpt,wang2023voyager}. These loops run in \emph{agent harnesses}: task-facing harnesses that manage prompting, tool calls, delegation, retries, local task state, and interaction with external systems. This paper distinguishes agent harnesses from a shared \emph{inner stewardship harness}: the executable environment that stores, runs, and maintains shared structure across many agent loops. We use \emph{outer loop} as this paper's label for the task-directed agent loop when it surrounds calls into the inner harness. That flexibility becomes a systems problem when many loops work over long-lived shared state. A locally successful loop may answer a task while leaving a criteria artifact stale, preserving a better procedure only in a transcript, or retrieving a different context bundle than a peer loop.
+Agent loops are the familiar operating pattern of contemporary agents: they explore, call tools, recover from partial failure, and adapt to a task \cite{yao2023react,schick2023toolformer,wu2023autogen,li2023camel,hong2023metagpt,wang2023voyager}. These loops run in \emph{agent harnesses}: task-facing harnesses that manage prompting, tool calls, delegation, retries, local task state, and interaction with external systems. This paper distinguishes agent harnesses from a shared \emph{inner stewardship harness}: the executable environment that stores, runs, and maintains shared structure across many agent loops. We use \emph{outer loop} as this paper's label for the task-directed agent loop when it surrounds calls into the inner harness. That flexibility becomes a systems problem when many loops work over long-lived shared state. A locally successful loop may complete a task while leaving a criteria artifact stale, preserving a better procedure only in a transcript, or retrieving a different context bundle than a peer loop.
 
 We call this \emph{cross-agent drift}: loss of coherence as agents assemble different context, preserve different assumptions, update different artifacts, and leave authority unresolved. Agent communication is not maintained executable shared state. Agents may exchange messages fluently while still disagreeing about which artifacts are current, which procedures should run, which outputs are stale, and which changes affect downstream work.
 
 In practice, long-lived, dependency-bearing multi-agent systems need a way for agent harnesses to use a shared executable environment while work is being performed. The stewardship pattern provides that structure: an MCP-accessible inner stewardship harness that stores, runs, and maintains executable context patterns, intermediate artifacts, supersession, current-state resolution, and downstream-impact tracking. \emph{Executable intelligence} is shorthand for durable shared executable structure that future agents can execute against, not merely read: context patterns, artifact contracts, authority rules, dependency structure, validation steps, and materialization behavior. Stewardship is not assigned solely to the shared inner harness; it is a pattern of cooperation between task-facing agent harnesses and the maintained structure they execute against. A stewardship-compliant loop asks at task selection time what structure already exists, uses the inner harness to materialize and execute relevant context patterns or graph regions, consumes the intermediate artifacts produced by that execution, and routes new observations back into maintained structure as they arise.
 
-We specify the stewardship pattern as a systems architecture and state-model specification with operational state semantics. The term \emph{pattern} is used in the software-architecture sense: a named reusable structure with participants, forces, solution mechanics, and consequences. The paper specifies the pattern's participants, maintained state objects, execution-control responsibilities, context-pattern semantics, MCP-facing interface, lifecycle, limitations, and evaluation protocol.
+We specify the stewardship pattern as a software-architecture pattern and state-model specification. Its reference realization is an inner stewardship harness, and the paper defines the maintained objects, execution semantics, interface surface, lifecycle, limitations, and evaluation protocol.
 
-This framing builds on prior ThruWire work on execution lineage and first-class intermediate artifacts \cite{rosen2026lineage,rosen2026artifacts}. A2A-style interoperability helps agents find and delegate to other agents \cite{a2a2026spec}; MCP provides a schema-described tool and context interface to the inner harness \cite{mcp2025intro,mcp2025tools,mcp2025resources,mcp2025prompts}. The novelty is not shared state, versioning, provenance, memory, or orchestration individually; it is the agent-facing expectation that task loops consume and update maintained executable state during work, with artifact authority, context-pattern execution, and downstream-impact handling as first-class protocol obligations.
+This framing builds on prior ThruWire work on execution lineage and first-class intermediate artifacts \cite{rosen2026lineage,rosen2026artifacts}. A2A-style interoperability helps agents find and delegate to other agents \cite{a2a2026spec}; MCP provides a schema-described tool and context interface to the inner harness \cite{mcp2025intro,mcp2025tools,mcp2025resources,mcp2025prompts}.
 
 The paper makes four contributions:
-\begin{itemize}[leftmargin=*]
+\begin{itemize}[leftmargin=*, topsep=4pt, itemsep=3pt, parsep=0pt, partopsep=0pt]
 \item We define the stewardship pattern as the protocol expectation that existing agent harnesses consume current shared structure when it applies, select and run the relevant inner-harness block or graph region with task inputs, and keep the shared execution environment aligned with what the task discovers, or justify why no update was needed.
 \item We define the inner stewardship harness as the shared executable environment for maintained intelligence across many outer loops.
 \item We introduce executable context patterns as versioned procedures for assembling, omitting, generating, and validating the right artifacts and constraints for a class of task.
 \item We provide a reference architecture, MCP-accessible inner-harness interface, lifecycle model, limitations, and evaluation protocol for measuring cross-agent drift and stewardship quality.
 \end{itemize}
 
-\textbf{Nature of the contribution.} This paper specifies an architecture, state model, lifecycle, interface surface, and evaluation protocol for maintaining executable shared state across long-lived agent loops. The specification centers on current-state resolution, artifact authority, supersession, context-pattern execution, downstream-impact handling, and stewardship-update routing.
-
-\begin{table}[H]
+\begin{table}[t]
 \centering
 \small
 \begin{tabular}{p{0.22\linewidth}p{0.68\linewidth}}
@@ -168,7 +167,7 @@ A compact task trace makes the architecture operational:
                 >{\raggedright\arraybackslash}p{0.33\linewidth}
                 >{\raggedright\arraybackslash}p{0.33\linewidth}@{}}
 \toprule
-\textbf{Step} & \textbf{Event} & \textbf{Maintained state} & \textbf{Stewardship effect} \\
+\textbf{No.} & \textbf{Specified operation} & \textbf{Maintained-state update} & \textbf{Required semantic effect} \\
 \midrule
 1 & Commit initial structure & Competitor-risk context pattern v1; infrastructure risk criteria v1 & Establishes executable context selection, slots, and output contract. \\
 2 & Resolve Company X context & Company profile v2; technical-novelty artifact v1; infrastructure market map v3 & Binds runtime inputs and current artifact roles. \\
@@ -181,7 +180,7 @@ A compact task trace makes the architecture operational:
 9 & Future task resolves state & Infrastructure risk criteria v2; competitor-risk context pattern v2 & Future loops inherit current criteria and executable context structure. \\
 \bottomrule
 \end{tabular}
-\caption{Illustrative state-transition trace for the company-intelligence scenario. The table specifies maintained-state semantics, not experimental results.}
+\caption{Specified state-transition semantics for the company-intelligence scenario. This is a toy semantic trace for the architecture, not observed data or benchmark results.}
 \label{tab:lifecycle-trace}
 \end{table}
 
@@ -298,6 +297,7 @@ where:
 \item $C$ is the set of clients, agent harnesses, or outer loops accessing the inner harness through MCP.
 \item $\Pi$ is policy: permissions, approval, supersession, invalidation, validation, conflict handling, and review requirements.
 \end{itemize}
+The tuple is a compact index for the state model rather than a separate implementation requirement; the following sections expand these components into record semantics, context-pattern execution, interface operations, and lifecycle transitions.
 
 The inner stewardship harness is inner because many agent harnesses call into it while performing task-facing work. In the agent harness, the loop contains the task structure; in the inner stewardship harness, maintained executable structure contains the loops that future agents run against. It is a stewardship harness because it maintains the executable knowledge layer future loops inherit. In consumer mode, a loop resolves the relevant context pattern, artifacts, graph nodes, compiled version, and slots, then asks the inner harness to run the selected block or graph region with task inputs. In steward mode, the loop returns observations, evidence, and proposed changes to criteria, dependencies, context patterns, or validation steps; the inner harness applies, routes, or rejects those changes through its compiled review and publication structure.
 
@@ -447,9 +447,9 @@ Context-pattern improvement should be reviewable. Bad context patterns can propa
 
 \subsection{Harness Surface}
 
-MCP is a convenient exposure mechanism because it lets heterogeneous agent harnesses access the same inner harness without sharing one internal architecture. The stewardship pattern does not depend on MCP specifically and could be implemented through another schema-described API. The important point is not that the inner harness exposes a large collection of isolated tools, but that the interface exposes a maintained executable system: projects, blocks, executable steps, folders, compiled versions, executable graph state, runs, event streams, artifacts, and review or publication steps.
+MCP is a convenient exposure mechanism because it lets heterogeneous agent harnesses access the same inner harness without sharing one internal architecture. The stewardship pattern does not depend on MCP specifically and could be implemented through another schema-described API. What matters is that the interface exposes a maintained executable system: projects, blocks, executable steps, folders, compiled versions, executable graph state, runs, event streams, artifacts, and review or publication steps.
 
-The exact tool names are implementation-specific. An inner harness may expose semantic operations directly, or realize them through lower-level project, block, version, run, and artifact operations. The useful surface groups capabilities by function:
+Exact tool names are implementation-specific. The useful surface groups capabilities by function:
 \begin{itemize}[leftmargin=*]
 \item \textbf{Discovery and selection:} list projects, folders, blocks, context patterns, graph nodes, and available artifacts; search compiled structure when the loop does not know the exact block to run.
 \item \textbf{Authoring and mutation:} read, create, edit, move, rename, or delete raw blocks and folders through the inner harness's authoring surface; propose graph or context-pattern changes as structured mutations rather than transcript notes.
@@ -458,7 +458,7 @@ The exact tool names are implementation-specific. An inner harness may expose se
 \item \textbf{Observation and integration:} stream or poll run events, inspect produced artifacts, record observations, run review or publication blocks, mark affected state stale, and execute the stewardship-integration structure for the task.
 \end{itemize}
 
-The interface has one central design requirement: a loop can discover or select an existing executable graph region, run it with task-specific inputs and slots, consume the resulting context and artifacts, and integrate observations or proposed edits into maintained structure through schema-described operations. In some implementations, high-level materialization or integration operations may be exposed directly. In others, those semantics emerge from compiling a graph, running selected blocks, resolving artifacts, inspecting run events, and executing review or publication steps encoded in the graph. Both are inner-harness designs, not merely tool collections.
+The interface has one central design requirement: a loop can discover or select an existing executable graph region, run it with task-specific inputs and slots, consume the resulting context and artifacts, and integrate observations or proposed edits into maintained structure through schema-described operations. These semantics may be exposed as high-level materialization operations or emerge from lower-level project, block, version, run, artifact, and review operations.
 
 \subsection{Harness Operation Sketches}
 
@@ -608,6 +608,10 @@ Continuing the lifecycle trace in Table~\ref{tab:lifecycle-trace}, a company-int
 \end{itemize}
 
 The perturbation states: ``Infrastructure risk criteria must distinguish research-heavy companies from services-heavy companies.'' Gold stewardship behavior follows the transition in Table~\ref{tab:lifecycle-trace}: supersede the criteria, update the context pattern, mark dependent risk and customer-implication artifacts stale, preserve unrelated artifacts such as founder background, and record review or no-update-needed state where applicable. This is a benchmark specification, not measured performance.
+
+\subsection{Benchmark Construction Guidelines}
+
+Benchmark instances should vary the number of maintained artifacts, graph depth, fan-out, number of independent agent harnesses, and perturbation frequency. Small instances can contain a few dozen artifacts and one perturbation; larger instances can contain hundreds of artifacts, multiple context patterns, and several interleaved criteria or source changes. Gold current-state sets can be constructed by authoring the dependency graph and authority scopes directly, then applying perturbations whose affected artifacts are known from the graph. Gold downstream-impact sets should include both positive cases, where recomputation or review is required, and negative cases, where unrelated artifacts must remain current. The benchmark should also specify which agents receive which task requests, so that independent loops, shared wiki or repository baselines, memory baselines, A2A-only delegation, and inner-harness implementations are tested against the same task sequence.
 
 \subsection{Comparison Conditions}
 
