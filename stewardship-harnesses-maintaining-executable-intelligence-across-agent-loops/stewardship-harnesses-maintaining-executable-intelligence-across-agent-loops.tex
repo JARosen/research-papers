@@ -4,7 +4,7 @@
 \usepackage{amsmath, amsfonts, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
-\hypersetup{hypertexnames=false}
+\hypersetup{hypertexnames=false,hidelinks}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{float}
@@ -60,6 +60,8 @@ The paper makes four contributions:
 \item We introduce executable context patterns as versioned procedures for assembling, omitting, generating, and validating the right artifacts and constraints for a class of task.
 \item We provide a reference architecture, MCP-accessible harness interface, lifecycle model, limitations, and evaluation agenda for measuring cross-agent drift and stewardship quality.
 \end{itemize}
+
+The authors have built proprietary systems that motivate this abstraction. This paper does not open-source those systems, describe them in sufficient detail for reproduction, or rely on them as controlled empirical evidence. The public contribution is the abstraction, terminology, reference architecture, design requirements, and evaluation agenda.
 
 The claims are deliberately bounded. We do not claim that a shared harness replaces A2A, replaces communication, eliminates drift, guarantees better final answers, or belongs in every task. We propose an architecture and evaluation agenda for long-lived AI work where future agents depend on maintained structure.
 
@@ -153,16 +155,16 @@ LLM-maintained wikis compound synthesized knowledge over time \cite{karpathy2026
 \scriptsize
 \begin{tabular}{p{0.16\linewidth}p{0.21\linewidth}p{0.26\linewidth}p{0.21\linewidth}}
 \toprule
-\textbf{Mechanism} & \textbf{Primary durable object} & \textbf{Good at} & \textbf{Usually lacks by default} \\
+\textbf{Mechanism} & \textbf{Primary durable object} & \textbf{Good at} & \textbf{Not primary unless extended} \\
 \midrule
-LLM-maintained wiki & Markdown pages, summaries, links, indexes & Shared accumulated knowledge and synthesis & Runtime slots, artifact authority, invalidation, recomputation \\
-Git repository & Versioned files, commits, branches, diffs, pull requests & Shared review, history, rollback, CI integration & Semantic current-state resolution for LLM-native artifacts \\
-Vector memory & Embeddings and retrieved memories & Recall and similarity-based reuse & Explicit dependency structure and supersession \\
-Knowledge graph & Entities and relations & Structured factual and relational knowledge & Executable context procedures and affectedness \\
+LLM-maintained wiki & Markdown pages, summaries, links, indexes & Shared accumulated knowledge and synthesis & Runtime slots, artifact authority, invalidation, recomputation as first-class protocol semantics \\
+Git repository & Versioned files, commits, branches, diffs, pull requests & Shared review, history, rollback, CI integration & Semantic current-state resolution for LLM-native artifacts as the agent-facing protocol \\
+Vector memory & Embeddings and retrieved memories & Recall and similarity-based reuse & Explicit dependency structure and supersession as primary abstractions \\
+Knowledge graph & Entities and relations & Structured factual and relational knowledge & Executable context procedures and affectedness as primary abstractions \\
 Stewardship harness & Context patterns, artifacts, graph state, review structure, runtime records & Maintained executable intelligence across loops & Requires schema, governance, and stewardship discipline \\
 \bottomrule
 \end{tabular}
-\caption{Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves provide execution-control semantics.}
+\caption{Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves define the agent-facing stewardship protocol proposed here unless extended with additional semantics.}
 \label{tab:shared-state-mechanisms}
 \end{table}
 
@@ -188,7 +190,7 @@ where $y_i$ is an isolated task output. Isolated completion does not imply maint
 
 \subsection{Architectural Objective}
 
-The architectural objective is to reduce drift accumulation across repeated tasks while preserving task-completion performance. In long-lived workloads with dependency-bearing artifacts, executable stewardship should improve maintained-state quality: fewer stale current artifacts, fewer duplicated procedures, more consistent context materialization, and more accurate affectedness after changes. This is structural, not a claim that the harness makes models smarter. Future evaluations should measure both drift reduction and the added latency, review burden, and proposal noise.
+The architectural objective is to reduce drift accumulation across repeated tasks while preserving task-completion performance. In long-lived workloads with dependency-bearing artifacts, the hypothesis is that executable stewardship improves maintained-state quality: fewer stale current artifacts, fewer duplicated procedures, more consistent context materialization, and more accurate affectedness after changes. This is structural, not a claim that the harness makes models smarter. Future evaluations should measure both drift reduction and the added latency, review burden, and proposal noise.
 
 \subsection{Cross-Agent Drift}
 
@@ -406,11 +408,11 @@ A2A routes work among agents; MCP exposes the shared harness to those agents; th
 \small
 \begin{tabular}{p{0.20\linewidth}p{0.34\linewidth}p{0.34\linewidth}}
 \toprule
-\textbf{Layer} & \textbf{Solves} & \textbf{Does not solve by itself} \\
+\textbf{Layer} & \textbf{Solves} & \textbf{Boundary} \\
 \midrule
-A2A & Agent discovery, delegation, task exchange, and message-level interoperability. & Shared maintained intelligence, artifact authority, or dependency-aware invalidation. \\
-MCP & Schema-described access to harness operations, resources, runs, artifacts, and context. & The maintained-state semantics unless backed by a harness. \\
-Shared stewardship harness & Current state, durable artifacts, executable context patterns, compiled versions, runs, supersession, and propagation. & General communication, social negotiation, or all agent-to-agent coordination. \\
+A2A & Agent discovery, delegation, task exchange, and message-level interoperability. & Shared maintained intelligence, artifact authority, or dependency-aware invalidation as its primary abstraction. \\
+MCP & Schema-described access to harness operations, resources, runs, artifacts, and context. & Maintained-state semantics unless backed by a harness or equivalent application layer. \\
+Shared stewardship harness & Current state, durable artifacts, executable context patterns, compiled versions, runs, supersession, and propagation. & General communication, social negotiation, or all agent-to-agent coordination as its primary role. \\
 \bottomrule
 \end{tabular}
 \caption{A2A, MCP, and the shared stewardship harness operate at complementary layers.}
