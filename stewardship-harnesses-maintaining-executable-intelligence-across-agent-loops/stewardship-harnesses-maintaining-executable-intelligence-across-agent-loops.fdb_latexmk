@@ -1,6 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1778177952.89163 "/Users/dev/Documents/GitHub/research-papers/shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration/shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.tex" "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.pdf" "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration" 1778177953.58521 0
-  "/Users/dev/Documents/GitHub/research-papers/shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration/shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.tex" 1778177397.79839 60198 e039999e66c71ab1ae703fd670dbf58a ""
+["pdflatex"] 1781184178.39461 "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.tex" "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.pdf" "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops" 1781184179.32976 0
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -33,7 +32,6 @@
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1248133631 32762 224316ccc9ad3ca0423a14971cfa7fc1 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1248133631 32716 08e384dc442464e7285e891af9f45947 ""
-  "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb" 1248133631 32442 c975af247b6702f7ca0c299af3616b80 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb" 1248133631 31099 c85edf1dd5b9e826d67c9c7293b6786c ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb" 1136849748 44729 811d6c62865936705a31c797a1d5dada ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb" 1136849748 46026 6dab18b61c907687b520c72847215a68 ""
@@ -75,6 +73,7 @@
   "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex" 1673816307 22012 81b34a0aa8fa1a6158cc6220b00e4f10 ""
   "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex" 1601326656 8893 e851de2175338fdf7c17f3e091d94618 ""
   "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarycalc.code.tex" 1601326656 15929 463535aa2c4268fead6674a75c0e8266 ""
+  "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryfit.code.tex" 1673816307 3626 2d87dc681257fa32d07a8b3934b10f88 ""
   "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex" 1601326656 3937 3f208572dd82c71103831da976d74f1a ""
   "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.geometric.code.tex" 1601326656 339 be0fe46d92a80e3385dd6a83511a46f2 ""
   "/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex" 1608933718 11518 738408f795261b70ce8dd47459171309 ""
@@ -127,6 +126,7 @@
   "/usr/local/texlive/2026/texmf-dist/tex/latex/base/article.cls" 1748806692 20144 b966087dda3b194755eb460d32e2ef75 ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/base/size10.clo" 1748806692 8448 686612a86f0e04f41ea577f5ec7e83d8 ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty" 1579038678 6078 f1cb470c9199e7110a27851508ed7a5c ""
+  "/usr/local/texlive/2026/texmf-dist/tex/latex/enumitem/enumitem.sty" 1738874546 52272 63d293bc0d496619edb57585740861a2 ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1579991033 13886 d1306dcf79a944f6988e688c1785f9ce ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/etoolbox/etoolbox.sty" 1759437024 46885 8953c67ffba03252c6090aa19568b8ba ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty" 1739048179 31715 19e60610b63819fe670dfa1cd84a4e94 ""
@@ -171,12 +171,12 @@
   "/usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1774209607 3636776 dc5fa9b6b1453b9d196cd42edf876004 ""
   "/usr/local/texlive/2026/texmf.cnf" 1774209515 577 648cd9f92f9c0eac486f4c71c85cfbbe ""
   "arxiv.sty" 1778164055.54912 7642 824ef14f3548279d54b419cf5e0f3098 ""
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.aux" 1778177953.54051 11932 971a28a90291821845ff5aba2579a6a2 "pdflatex"
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.out" 1778177953.54108 10140 4e03e88cbf841d51cc44a09f51ca87d7 "pdflatex"
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.tex" 1778177397.79839 60198 e039999e66c71ab1ae703fd670dbf58a ""
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.aux" 1781184179.24134 11569 ddeeddacd16ac09e0242b0ca686cea92 "pdflatex"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.out" 1781184179.244 9000 2803c1e1a7b52344a0967658c6d7cba5 "pdflatex"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.tex" 1781184169.56585 72092 29293ccc1afcf2a04b5cdb1155d82d7b ""
   (generated)
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.aux"
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.log"
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.out"
-  "shared-execution-graphs-a-substrate-for-multi-agent-and-human-ai-collaboration.pdf"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.aux"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.log"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.out"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.pdf"
   (rewritten before read)
