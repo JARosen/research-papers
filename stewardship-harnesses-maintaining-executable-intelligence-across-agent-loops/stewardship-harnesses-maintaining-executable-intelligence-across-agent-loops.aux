@@ -16,18 +16,12 @@
 \citation{mcp2025tools}
 \citation{mcp2025resources}
 \citation{mcp2025prompts}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Motivating Example: Company Intelligence and Strategy Analysis}{3}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Concrete Lifecycle Trace}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Motivating Example: Company Intelligence and Strategy Analysis}{2}{section.2}\protected@file@percent }
 \citation{a2a2026spec}
 \citation{mcp2025intro}
 \citation{mcp2025tools}
 \citation{mcp2025resources}
 \citation{mcp2025prompts}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Outer loops consume shared executable structure through MCP, use the resulting artifacts to complete tasks, and then close the stewardship loop by proposing improvements, validating affectedness, and leaving future loops better structure to inherit.}}{4}{figure.1}\protected@file@percent }
-\newlabel{fig:harness-architecture}{{1}{4}{Outer loops consume shared executable structure through MCP, use the resulting artifacts to complete tasks, and then close the stewardship loop by proposing improvements, validating affectedness, and leaving future loops better structure to inherit}{figure.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Background and Related Work}{4}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}A2A and Agent Interoperability}{4}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}MCP and Tool/Context Access}{4}{subsection.3.2}\protected@file@percent }
 \citation{pan2026nlah}
 \citation{ning2026codeharness}
 \citation{lou2026autoharness}
@@ -38,13 +32,16 @@
 \citation{han2025legomem}
 \citation{yan2025memoryr1}
 \citation{borro2026memori}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Outer loops use shared executable structure through MCP while the task is being performed. The harness materializes context, executes graph regions, produces or registers artifacts, and integrates observations or proposed changes so future loops inherit improved maintained state.}}{3}{figure.4}\protected@file@percent }
+\newlabel{fig:harness-architecture}{{1}{3}{Outer loops use shared executable structure through MCP while the task is being performed. The harness materializes context, executes graph regions, produces or registers artifacts, and integrates observations or proposed changes so future loops inherit improved maintained state}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Concrete Lifecycle Trace}{3}{subsection.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Background and Related Work}{3}{section.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Interoperability and Tool/Context Access}{3}{subsection.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Harnesses and Procedural Memory}{3}{subsection.15}\protected@file@percent }
 \citation{karpathy2026llmwiki}
 \citation{wen2026knowledgecompounding}
 \citation{chacon2014progit}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Agent Harnesses}{5}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Procedural Memory, Workflow Memory, and Collaborative Memory}{5}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}LLM-Maintained Wikis, Shared Repositories, and Knowledge Compounding}{5}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Why a Repository Alone Is Not a Stewardship Harness}{5}{subsection.3.6}\protected@file@percent }
+\citation{hogan2021knowledgegraphs}
 \citation{nii1986blackboard}
 \citation{isard2007dryad}
 \citation{zaharia2010spark}
@@ -52,68 +49,53 @@
 \citation{dbtdocs}
 \citation{buneman2001why}
 \citation{freire2008provenance}
-\citation{rosen2026lineage}
-\citation{hogan2021knowledgegraphs}
 \citation{li2023camel}
 \citation{wu2023autogen}
 \citation{hong2023metagpt}
 \citation{wang2023voyager}
 \citation{fourney2024magenticone}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves provide execution-control semantics.}}{6}{table.1}\protected@file@percent }
-\newlabel{tab:shared-state-mechanisms}{{1}{6}{Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves provide execution-control semantics}{table.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Blackboard Systems}{6}{subsection.3.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Workflow DAGs, Provenance, and Execution Lineage}{6}{subsection.3.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Knowledge Graphs, Vector Stores, Wikis, and Multi-Agent Frameworks}{6}{subsection.3.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Problem Formulation}{6}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Outer Loops}{6}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Architectural Objective}{6}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Cross-Agent Drift}{7}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Observed Failure Patterns}{7}{subsection.4.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Illustrative failure patterns that a stewardship harness is intended to make visible and measurable.}}{7}{table.2}\protected@file@percent }
-\newlabel{tab:failure-patterns}{{2}{7}{Illustrative failure patterns that a stewardship harness is intended to make visible and measurable}{table.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Why Shared Memory and A2A Are Insufficient Alone}{7}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Shared Stewardship Harness}{7}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Definition}{7}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Shared Knowledge and Repository Mechanisms}{4}{subsection.16}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves provide execution-control semantics.}}{4}{table.18}\protected@file@percent }
+\newlabel{tab:shared-state-mechanisms}{{1}{4}{Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves provide execution-control semantics}{table.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Blackboards, Workflow DAGs, Provenance, and Multi-Agent Frameworks}{4}{subsection.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Problem Formulation}{4}{section.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Outer Loops}{4}{subsection.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Architectural Objective}{5}{subsection.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Cross-Agent Drift}{5}{subsection.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Observed Failure Patterns}{5}{subsection.25}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Illustrative failure patterns that a stewardship harness is intended to make visible and measurable.}}{5}{table.27}\protected@file@percent }
+\newlabel{tab:failure-patterns}{{2}{5}{Illustrative failure patterns that a stewardship harness is intended to make visible and measurable}{table.27}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Why Shared Memory and A2A Are Insufficient Alone}{5}{subsection.28}\protected@file@percent }
 \citation{rosen2026artifacts}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Execution Control Plane}{8}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Artifacts, Current State, and Supersession}{8}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Invalidation and Propagation}{9}{subsection.5.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Minimum Viable Stewardship Harness}{9}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Executable Context Patterns}{9}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Definition}{9}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Example}{10}{subsection.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}How Patterns Improve}{10}{subsection.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}MCP as the Harness Interface}{10}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Tool Surface}{10}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Compact Operation Sketches}{11}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}MCP Resources and Prompts}{11}{subsection.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Relationship to A2A}{12}{subsection.8.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces A2A, MCP, and the shared stewardship harness operate at complementary layers.}}{12}{table.3}\protected@file@percent }
-\newlabel{tab:layers}{{3}{12}{A2A, MCP, and the shared stewardship harness operate at complementary layers}{table.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Example Workflow}{12}{subsection.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9}Stewardship Lifecycle}{12}{section.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Before the Task}{12}{subsection.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}During the Task}{12}{subsection.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}After the Task}{12}{subsection.9.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Stewardship closure turns a local task into maintained state. The loop first consumes matching executable structure, then either records that no shared update is needed or proposes a change, after which affectedness analysis and validation determine what can be published as current.}}{13}{figure.2}\protected@file@percent }
-\newlabel{fig:stewardship-closure}{{2}{13}{Stewardship closure turns a local task into maintained state. The loop first consumes matching executable structure, then either records that no shared update is needed or proposes a change, after which affectedness analysis and validation determine what can be published as current}{figure.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Validation and Future Inheritance}{13}{subsection.9.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}Evaluation Agenda}{13}{section.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Metrics}{14}{subsection.10.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Context-pattern quality.}{14}{section*.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Artifact-state quality.}{14}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Stewardship behavior.}{14}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Wiki and repository comparison.}{14}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Proposed Benchmark Design}{15}{subsection.10.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Benchmark-Style Task Families}{15}{subsection.10.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.4}Evaluation Hypotheses}{15}{subsection.10.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11}Limitations}{15}{section.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Shared Stewardship Harness}{6}{section.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Definition}{6}{subsection.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Execution Control Plane}{6}{subsection.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Artifacts, Current State, and Supersession}{6}{subsection.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Invalidation and Propagation}{7}{subsection.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Minimum Viable Stewardship Harness}{7}{section.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Executable Context Patterns}{7}{section.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Definition}{7}{subsection.38}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Example}{8}{subsection.40}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}How Patterns Improve}{8}{subsection.41}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}MCP as the Harness Interface}{8}{section.42}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Harness Surface}{8}{subsection.43}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Harness Operation Sketches}{9}{subsection.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Relationship to A2A}{9}{subsection.45}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces A2A, MCP, and the shared stewardship harness operate at complementary layers.}}{9}{table.47}\protected@file@percent }
+\newlabel{tab:layers}{{3}{9}{A2A, MCP, and the shared stewardship harness operate at complementary layers}{table.47}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Stewardship is integrated into task execution. The outer loop selects and runs harness structure early, consumes generated artifacts while doing the work, and routes observations through affectedness, review, and integration steps before current state is accepted.}}{10}{figure.50}\protected@file@percent }
+\newlabel{fig:stewardship-integration}{{2}{10}{Stewardship is integrated into task execution. The outer loop selects and runs harness structure early, consumes generated artifacts while doing the work, and routes observations through affectedness, review, and integration steps before current state is accepted}{figure.50}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Integrated Stewardship Lifecycle}{10}{section.48}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Evaluation Agenda}{11}{section.51}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Metrics}{11}{subsection.52}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Proposed Benchmark Design}{11}{subsection.53}\protected@file@percent }
 \bibcite{rosen2026lineage}{1}
 \bibcite{rosen2026artifacts}{2}
-\@writefile{toc}{\contentsline {section}{\numberline {12}Conclusion}{16}{section.12}\protected@file@percent }
 \bibcite{a2a2026spec}{3}
 \bibcite{mcp2025intro}{4}
 \bibcite{mcp2025tools}{5}
+\@writefile{toc}{\contentsline {section}{\numberline {11}Limitations}{12}{section.54}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12}Conclusion}{12}{section.55}\protected@file@percent }
 \bibcite{mcp2025resources}{6}
 \bibcite{mcp2025prompts}{7}
 \bibcite{yao2023react}{8}
@@ -144,4 +126,4 @@
 \bibcite{buneman2001why}{33}
 \bibcite{freire2008provenance}{34}
 \bibcite{hogan2021knowledgegraphs}{35}
-\gdef \@abspage@last{18}
+\gdef \@abspage@last{14}

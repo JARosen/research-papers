@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 09:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 12:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -297,7 +297,9 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 84.
 )
 \Hy@SectionHShift=\skip70
-) (/usr/local/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty
+)
+Package hyperref Info: Option `hypertexnames' set `false' on input line 7.
+ (/usr/local/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \heavyrulewidth=\dimen172
 \lightrulewidth=\dimen173
@@ -658,7 +660,7 @@ s/tikzlibraryfit.code.tex
 File: tikzlibraryfit.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 3
-3.
+4.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
@@ -672,24 +674,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \openout1 = `stewardship-harnesses-maintaining-executable-intelligence-across-a
 gent-loops.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -779,7 +781,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 33.
+Package hyperref Info: Link coloring OFF on input line 34.
 
 (./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
 .out)
@@ -789,136 +791,98 @@ Package hyperref Info: Link coloring OFF on input line 33.
 \openout4 = `stewardship-harnesses-maintaining-executable-intelligence-across-a
 gent-loops.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 36.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
 
  (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 36.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
 
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-Underfull \hbox (badness 1033) in paragraph at lines 42--43
-[]\OT1/ptm/m/n/10 A shared stew-ard-ship har-ness is an MCP-accessible ex-e-cu-
-tion con-trol plane that main-tains
- []
-
-[1
+) [1
 
 
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc}]
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 6
-8.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
+7.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-)
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [2]
-Underfull \hbox (badness 4872) in paragraph at lines 145--146
-[]\OT1/ptm/b/n/10 Current-state res-o-lu-tion. \OT1/ptm/m/n/10 The har-ness re-
-solves cur-rent ar-ti-facts for \OT1/cmtt/m/n/10 company[]profile\OT1/ptm/m/n/1
-0 , \OT1/cmtt/m/n/10 funding\OT1/ptm/m/n/10 ,
+) [2]
+Underfull \hbox (badness 10000) in paragraph at lines 129--130
+[]\OT1/ptm/b/n/10 Selection. \OT1/ptm/m/n/10 Through MCP, the loop searches or 
+se-lects the cur-rent com-piled struc-ture for
  []
 
-[3] [4
-pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) ha
-s been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.167 T
-       he distinction is layer-specific. A2A connects agents to agents. MCP ...
-]
-Underfull \hbox (badness 10000) in paragraph at lines 198--198
+
+Underfull \hbox (badness 1776) in paragraph at lines 129--130
+\OT1/cmtt/m/n/10 competitor[]risk[]assessment\OT1/ptm/m/n/10 : a con-text pat-t
+ern, graph re-gion, out-put con-tract, and rel-e-vant ar-ti-fact
+ []
+
+[3]
+Underfull \hbox (badness 10000) in paragraph at lines 158--158
 []\OT1/ptm/m/n/7 Markdown pages, sum-maries,
  []
 
 
-Underfull \hbox (badness 2460) in paragraph at lines 199--200
+Underfull \hbox (badness 2460) in paragraph at lines 159--160
 []\OT1/ptm/m/n/7 Semantic current-state res-o-lu-tion
  []
 
 
-Underfull \vbox (badness 4805) has occurred while \output is active []
+Underfull \hbox (badness 3568) in paragraph at lines 162--162
+\OT1/ptm/m/n/7 state, re-view struc-ture, run-time
+ []
 
- [5]
-[6
-pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
- been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.238 
-      ]
-Underfull \hbox (badness 1466) in paragraph at lines 265--266
+[4]
+Underfull \hbox (badness 1466) in paragraph at lines 219--220
 []\OT1/ptm/m/n/9 Multiple sum-maries, rubrics, or anal-y-ses are treated as cur
 -rent be-cause no
  []
 
-[7
-pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has
- been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.292 \item $
-             A$ is maintained artifact state: intermediate and final artifac...
-] [8] [9]
-Underfull \hbox (badness 10000) in paragraph at lines 418--419
-[]\OT1/cmtt/m/n/10 record[]context[]pattern[]observation(pattern[]id, task[]id,
- outcome, missing[]context,
+[5] [6] [7] [8]
+Underfull \hbox (badness 10000) in paragraph at lines 412--413
+[]\OT1/ptm/m/n/9 The maintained-state se-man-tics un-less
  []
 
-[10] [11]
-Underfull \hbox (badness 2111) in paragraph at lines 481--481
+
+Underfull \hbox (badness 2111) in paragraph at lines 413--413
 []\OT1/ptm/m/n/9 Shared stew-ard-ship har-
  []
 
 
-Underfull \hbox (badness 2035) in paragraph at lines 492--493
-\OT1/ptm/m/n/10 and finds an ex-ist-ing competitor-risk con-text pat-tern and r
-isk-assessment ar-ti-fact con-tract. It then calls
- []
+Underfull \vbox (badness 1331) has occurred while \output is active []
 
-[12
-pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
- been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.548 \item s
-             tale markings or recomputation requests,] [13
-pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
-s been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.566 \paragraph
-                {Context-pattern quality.}] [14] [15] [16]
-Underfull \hbox (badness 1490) in paragraph at lines 707--710
+ [9]
+[10] [11]
+Underfull \hbox (badness 1490) in paragraph at lines 560--563
 []\OT1/ptm/m/n/10 Model Con-text Pro-to-col.  Spec-i-fi-ca-tion 2025-06-18: Too
 ls.  []$\OT1/cmtt/m/n/10 https : / / modelcontextprotocol . io /
  []
 
-
-Underfull \hbox (badness 1478) in paragraph at lines 767--770
+[12]
+Underfull \hbox (badness 1478) in paragraph at lines 620--623
 \OT1/ptm/m/n/10 P. Mur-phy.  Au-to-Har-ness: Im-prov-ing LLM Agents by Au-to-ma
 t-i-cally Syn-the-siz-ing a Code Har-ness.
  []
 
 
-Underfull \hbox (badness 2409) in paragraph at lines 777--780
+Underfull \hbox (badness 2409) in paragraph at lines 630--633
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu
 -big.  Agent Work-flow Mem-ory.
  []
 
-[17]
-Underfull \hbox (badness 4217) in paragraph at lines 807--811
+[13]
+Underfull \hbox (badness 4217) in paragraph at lines 660--664
 []\OT1/ptm/m/n/10 Andrej Karpa-thy.  LLM Wiki.  GitHub Gist, 2026.  []$\OT1/cmt
 t/m/n/10 https : / / gist . github . com / karpathy /
  []
 
-[18]
+[14]
 (./stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops
 .aux)
  ***********
@@ -927,16 +891,16 @@ L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `stewardship-harnesses-maintaining-executable
 -intelligence-across-agent-loops.out' has not changed.
-(rerunfilecheck)             Checksum: 2803C1E1A7B52344A0967658C6D7CBA5;9000.
+(rerunfilecheck)             Checksum: 13F1C29E4E976D77573A2D33BF3F6DEC;6336.
  ) 
 Here is how much of TeX's memory you used:
- 22892 strings out of 467525
- 427908 string characters out of 5418982
- 840562 words of memory out of 5000000
- 51300 multiletter control sequences out of 15000+600000
+ 22860 strings out of 467525
+ 427435 string characters out of 5418982
+ 841179 words of memory out of 5000000
+ 51287 multiletter control sequences out of 15000+600000
  652821 words of font info for 87 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,13n,104p,1057b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,13n,104p,1228b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><
 /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
@@ -948,10 +912,10 @@ l/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
 2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf
 -dist/fonts/type1/urw/times/utmri8a.pfb>
 Output written on stewardship-harnesses-maintaining-executable-intelligence-acr
-oss-agent-loops.pdf (18 pages, 197764 bytes).
+oss-agent-loops.pdf (14 pages, 183674 bytes).
 PDF statistics:
- 478 PDF objects out of 1000 (max. 8388607)
- 433 compressed objects within 5 object streams
- 125 named destinations out of 1000 (max. 500000)
- 389 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 403 PDF objects out of 1000 (max. 8388607)
+ 363 compressed objects within 4 object streams
+ 106 named destinations out of 1000 (max. 500000)
+ 285 words of extra memory for PDF output out of 10000 (max. 10000000)
 

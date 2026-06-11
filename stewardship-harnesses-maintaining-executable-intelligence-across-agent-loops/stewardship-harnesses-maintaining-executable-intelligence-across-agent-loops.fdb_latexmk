@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1781184178.39461 "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.tex" "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.pdf" "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops" 1781184179.32976 0
+["pdflatex"] 1781194922.08837 "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.tex" "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.pdf" "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops" 1781194925.58623 0
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -171,9 +171,9 @@
   "/usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1774209607 3636776 dc5fa9b6b1453b9d196cd42edf876004 ""
   "/usr/local/texlive/2026/texmf.cnf" 1774209515 577 648cd9f92f9c0eac486f4c71c85cfbbe ""
   "arxiv.sty" 1778164055.54912 7642 824ef14f3548279d54b419cf5e0f3098 ""
-  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.aux" 1781184179.24134 11569 ddeeddacd16ac09e0242b0ca686cea92 "pdflatex"
-  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.out" 1781184179.244 9000 2803c1e1a7b52344a0967658c6d7cba5 "pdflatex"
-  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.tex" 1781184169.56585 72092 29293ccc1afcf2a04b5cdb1155d82d7b ""
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.aux" 1781194925.46623 9347 41442124cf33401518b92afcb44ad37f "pdflatex"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.out" 1781194925.46719 6336 13f1c29e4e976d77573a2d33bf3f6dec "pdflatex"
+  "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.tex" 1781194913.77856 58311 4b12ec05576c5599e953779e220294e0 ""
   (generated)
   "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.aux"
   "stewardship-harnesses-maintaining-executable-intelligence-across-agent-loops.log"

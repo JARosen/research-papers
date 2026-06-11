@@ -4,6 +4,7 @@
 \usepackage{amsmath, amsfonts, amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\hypersetup{hypertexnames=false}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{float}
@@ -35,61 +36,45 @@ Maintaining Executable Intelligence Across Agent Loops}
 \maketitle
 
 \begin{abstract}
-Multi-agent AI systems are increasingly organized as collections of looping agents that plan, call tools, delegate work, and produce local outputs. Interoperability protocols help such agents discover one another, advertise capabilities, and exchange tasks or artifacts. Yet communication alone does not solve a deeper systems problem: each outer loop is usually optimized to complete the task in front of it, not to preserve and improve the shared structure future agents will inherit. As many locally successful agents operate over time, they can accumulate cross-agent drift: stale assumptions, inconsistent intermediate artifacts, duplicated procedures, incompatible context-selection practices, and final outputs that no longer agree with maintained upstream state.
+Multi-agent AI systems increasingly consist of agents with their own task loops: they plan, call tools, delegate work, and produce outputs through interaction with external systems. Interoperability helps those agents communicate, but communication alone does not maintain the shared structure future agents inherit. In long-lived, dependency-bearing work, locally successful loops can accumulate cross-agent drift: stale assumptions, inconsistent artifacts, duplicated procedures, incompatible context selection, and final outputs that no longer agree with maintained upstream state.
 
-We hypothesize that long-lived, dependency-bearing multi-agent systems need outer loops to act as stewards of shared executable intelligence. By \emph{executable intelligence}, we mean durable, versioned procedures and artifacts that future agents can run against: context patterns, artifact contracts, current-state resolution rules, dependency structure, validation gates, and affectedness semantics. An outer loop is not merely a task solver or message participant. It is also a consumer of shared structure: when a task matches an existing procedure, the loop should ask the shared harness to execute that structure with task-specific inputs and parameters, consume the resulting artifacts or context bundle, and publish through existing artifact contracts. When the task reveals a gap, the loop should improve the shared structure future agents will inherit.
+We hypothesize that such systems need shared executable intelligence that these agent loops can consume and collectively steward: durable, versioned procedures and artifacts that future agents can run against. A shared stewardship harness is an MCP-accessible execution control plane that maintains current artifacts, executable context patterns, supersession, authority, dependency-aware invalidation, affectedness, and stewardship integration. Outer loops use this structure when it applies, ask the harness to execute relevant structure with task inputs, consume the resulting artifacts, and propose updates when their work reveals gaps.
 
-A shared stewardship harness is an MCP-accessible execution control plane that maintains dependency-aware artifacts, executable context patterns, supersession semantics, current-state resolution, and propagation rules. A context pattern is not merely a prompt template or retrieval query; it is an executable procedure that determines which artifacts, inputs, slots, constraints, and generated intermediates should be loaded, omitted, generated, or refreshed for a class of task. The harness makes these patterns durable and improvable, while outer loops are responsible for observing when a pattern is incomplete, overloaded, stale, or reusable in a stronger form.
-
-The contribution is a systems abstraction and reference architecture rather than an empirical benchmark. We distinguish agent interoperability from maintained intelligence, define the stewardship harness and executable context patterns, describe how MCP-mediated outer loops can execute against existing structure and improve it after acting, and outline evaluation criteria for future work. The central architectural claim is that some multi-agent systems need not only better ways for agents to talk, but explicit mechanisms for maintaining the executable shared state that future loops inherit. Whether such mechanisms reduce drift or improve downstream work is an empirical question for future evaluation.
+The contribution is a systems abstraction and reference architecture, not an empirical benchmark. We define the shared stewardship harness and executable context patterns, distinguish agent interoperability from maintained executable state, outline an MCP-accessible harness interface, and propose evaluation criteria for future work. Whether such mechanisms reduce drift or improve downstream work remains an empirical question.
 \end{abstract}
 
 \section{Introduction}
 
-Outer agent loops are effective local problem solvers. A coding agent can inspect a repository, patch files, run tests, and report a result. A research agent can gather sources, synthesize a memo, and hand off an answer. A planning agent can decompose a goal, call tools, and delegate subtasks. These loops are useful because they are flexible: they can explore, recover from partial failure, revise plans, and adapt to the task in front of them \cite{yao2023react,schick2023toolformer,wu2023autogen,li2023camel,hong2023metagpt,wang2023voyager}.
+Agent loops are the familiar operating pattern of contemporary agents: they explore, call tools, recover from partial failure, and adapt to a task \cite{yao2023react,schick2023toolformer,wu2023autogen,li2023camel,hong2023metagpt,wang2023voyager}. We use \emph{outer loop} as a local architectural term for this task-directed agent loop when it surrounds calls into the shared stewardship harness. The term is meant to distinguish the agent's open-ended task loop from the inner graph nodes, materialization steps, validation checks, and recomputation paths executed by the harness. The same flexibility becomes a systems problem when many loops work over long-lived shared state. A locally successful loop may answer a task while leaving the maintained criteria artifact stale, invent a better procedure but preserve it only in a transcript, or retrieve a different context bundle than a peer loop. Across many agents, local task success can compound global drift.
 
-The same flexibility becomes a systems problem when many loops operate over long-lived shared work. Each outer loop is commonly rewarded for completing its visible task, not for improving the maintained execution environment that future loops will inherit. A locally successful agent may patch a final memo while leaving the upstream criteria artifact stale. Another may invent a better analysis procedure but preserve it only in a transcript. A third may retrieve a different mixture of prior context and reach an incompatible conclusion. Across many agents, local task success can compound global drift.
+We call this \emph{cross-agent drift}: loss of coherence as agents assemble different context, preserve different assumptions, update different artifacts, and leave authority unresolved. Agent communication is not maintained executable shared state. Agents may exchange messages fluently while still disagreeing about which artifacts are current, which procedures should run, which outputs are stale, and which changes affect downstream work.
 
-We call this failure mode \emph{cross-agent drift}: loss of coherence across many loops as agents assemble different context, preserve different assumptions, update different artifacts, and leave authority unresolved. The central distinction is that agent communication is not the same as maintained executable shared state. A set of agents may exchange messages fluently while still disagreeing about which artifacts are current, which procedures should run, which outputs are stale, and which changes affect downstream work.
+This paper proposes a shared stewardship harness for long-lived, dependency-bearing multi-agent systems: an MCP-accessible execution control plane that maintains executable context patterns, intermediate artifacts, supersession, current-state resolution, and affectedness. \emph{Executable intelligence} is the part of shared state that future agents can run against: context patterns, artifact contracts, authority structure, dependency structure, validation steps, and materialization behavior learned over time. Outer loops are both consumers and maintainers of this structure. A stewardship-compliant loop does not first produce an independent final answer and then ask how to clean up. It asks at task selection time what structure already exists, uses the harness to materialize and execute relevant context patterns or graph regions, consumes the intermediate artifacts produced by that execution, and routes new observations back into maintained structure as they arise.
 
-This paper proposes a shared stewardship harness for long-lived, dependency-bearing multi-agent systems: an MCP-accessible execution control plane that enables outer loops to maintain executable context patterns, durable intermediate artifacts, supersession semantics, current-state resolution, and dependency-aware propagation. The harness runs alongside outer agent loops as a shared coprocessor for durable responsibilities. The outer loop remains flexible, exploratory, and task-directed. The harness owns shared structure: artifact lineage, executable graph state, context-pattern registries, invalidation, replay, and current-state resolution.
-
-Executable intelligence is the part of shared state that future agents can run against: context patterns, artifact contracts, current-state resolution rules, dependency structure, validation gates, and affectedness semantics. It differs from ordinary workflow definitions because it also includes authority semantics, supersession, dependency propagation, and context-materialization behavior learned over time. Outer loops are both consumers and stewards of this structure. When a task matches existing structure, a loop can ask the harness to execute that structure with task-specific inputs and parameters, consume the resulting artifacts or context bundle, and publish through existing artifact contracts before inventing a new local procedure. After acting, the loop should leave behind better artifacts, better context-selection procedures, better dependency structure, better validation rules, or explicit evidence that no shared update was needed.
-
-A simple contrast makes the systems requirement concrete. A locally complete loop finishes a competitive-risk memo, notes that services-heavy companies require different criteria, and exits. A stewardship-compliant loop completes the memo, proposes a criteria-artifact update, adds a context-pattern slot for company type, marks affected downstream artifacts stale, validates that unrelated branches remain unchanged, and records why the change should be reused. Stewardship is not merely writing memory. It is maintaining the structure that future agents will execute against.
-
-This framing builds on two earlier ThruWire papers. The first established execution lineage: explicit directed acyclic graph (DAG) structure, stable execution identities, dependency-aware replay, and the distinction between final answer quality and maintained-state quality \cite{rosen2026lineage}. The second established intermediate artifacts as first-class state: typed, structured, addressable, versioned, dependency-aware, authoritative, and consumable by downstream computation, with additive and superseding semantics \cite{rosen2026artifacts}. The present paper asks a different question: when many outer loops operate over time, what shared execution environment lets them improve the intelligence future loops inherit?
-
-The answer is not a generic multi-agent collaboration framework. A2A-style interoperability helps agents discover one another, delegate tasks, exchange messages, and return artifacts \cite{a2a2026spec}. It is complementary, but it does not by itself define maintained artifact authority, context-pattern learning, dependency-aware invalidation, or current-state resolution. MCP provides a better interface to the shared harness because it standardizes how AI applications access external tools, resources, prompts, and schema-described operations \cite{mcp2025intro,mcp2025tools,mcp2025resources,mcp2025prompts}. In the architecture proposed here, A2A may connect agents to agents; MCP connects outer loops to the stewardship harness.
-
-LLM-maintained wikis and shared repositories illustrate why this problem is timely. A wiki maintained by agents can accumulate summaries, entity pages, links, and contradiction notes so later agents reuse prior synthesis rather than repeatedly reprocessing raw sources. A Git repository can give humans and agents a versioned shared workspace with branches, diffs, review, and rollback. Both are valuable shared-state mechanisms. The question addressed here is what they do not provide by default: executable context patterns, role- and scope-specific artifact authority, supersession, affectedness, runtime slot binding, and validation that an outer loop left shared executable intelligence in a better state than it found it.
+This framing builds on prior ThruWire work on execution lineage and first-class intermediate artifacts \cite{rosen2026lineage,rosen2026artifacts}. The present paper asks how many outer loops can maintain the executable structure future loops inherit. A2A-style interoperability helps agents find and delegate to other agents \cite{a2a2026spec}; MCP provides a schema-described tool and context interface to the harness \cite{mcp2025intro,mcp2025tools,mcp2025resources,mcp2025prompts}. LLM-maintained wikis and Git repositories are also valuable shared-state mechanisms, but the question here is what provides executable context patterns, authority, supersession, affectedness, and stewardship validation.
 
 The paper makes four contributions:
 \begin{itemize}[leftmargin=*]
-\item We define outer-loop stewardship as the protocol expectation that a loop consume current shared structure when it applies, execute matching task work through that structure, and leave the shared execution environment in a better state than it was found, or justify why no update was needed.
+\item We define outer-loop stewardship as the protocol expectation that existing agent loops consume current shared structure when it applies, select and run the relevant harness-managed block or graph region with task inputs, and keep the shared execution environment aligned with what the task discovers, or justify why no update was needed.
 \item We define the shared stewardship harness as an execution control plane for maintained intelligence across many outer loops.
 \item We introduce executable context patterns as versioned procedures for assembling, omitting, generating, and validating the right artifacts and constraints for a class of task.
-\item We provide a reference architecture, MCP tool surface, lifecycle model, limitations, and evaluation agenda for measuring cross-agent drift and stewardship quality.
+\item We provide a reference architecture, MCP-accessible harness interface, lifecycle model, limitations, and evaluation agenda for measuring cross-agent drift and stewardship quality.
 \end{itemize}
 
-The claims are deliberately bounded. We do not claim that a shared harness replaces A2A, replaces communication, eliminates drift, guarantees better final answers, or belongs in every task. We propose a systems abstraction for long-lived, dependency-bearing AI work where future agents depend on the maintained structure left by prior loops.
+The claims are deliberately bounded. We do not claim that a shared harness replaces A2A, replaces communication, eliminates drift, guarantees better final answers, or belongs in every task. We propose an architecture and evaluation agenda for long-lived AI work where future agents depend on maintained structure.
 
 \section{Motivating Example: Company Intelligence and Strategy Analysis}
 
-Consider a company-intelligence workflow executed over months by many humans and agents. One agent researches founders. Another updates funding and stage. A third studies technical novelty. A fourth performs competitive-risk assessment. A human analyst edits the criteria for evaluating defensibility. A strategy agent later generates customer implications for a specific market category.
+Consider company intelligence executed over months by multiple humans and agents: founder research, funding updates, technical novelty assessments, competitive-risk memos, criteria edits, and customer-implication reports. Each task may appear successful while the shared state degrades. One loop treats a stale market map as current; another uses a superseded rubric; another updates a final memo but leaves the technical novelty artifact unchanged.
 
-In a loop-centric system, each task can look successful. The founder agent produces a useful summary. The funding agent records a recent round. The technical agent writes a novelty assessment. The risk agent retrieves some prior notes, some web context, and some old market-map fragments, then produces a plausible risk judgment. Yet the system degrades over time because each loop reconstructs context differently. One loop treats a stale market-map version as current. Another uses an old risk rubric. Another updates the final competitive-risk memo but leaves the technical novelty artifact unchanged. Another discovers that services-heavy companies should be evaluated differently from research-heavy companies, but preserves that insight only in a final paragraph.
+The failure is not absence of text or memory. It is absence of maintained executable structure: a durable procedure for deciding what context to materialize, which artifacts are authoritative, which versions are superseded, which downstream artifacts depend on a criteria artifact, and what must be reviewed after change. The procedure can also encode how the task should think, not only what it should load. For company intelligence, the harness can require a fan-out of sealed perspective artifacts: technical read, founder and incentive read, company-stage read, market-category read, product-pattern read, narrative read, competitive-threat read, and an explicit noise or overfit check. It can require at least one artifact to argue the contrary position: why the target may not matter, why vocabulary overlap is not substance, what not to overreact to, and what evidence would change the decision.
 
-The failure is not absence of text. There may be many transcripts, notes, documents, and memory entries. The failure is absence of maintained executable structure. The system lacks a durable procedure for deciding what context should be materialized for a competitor-risk assessment, which artifacts are authoritative, which versions are superseded, which downstream artifacts depend on the criteria artifact, and what should be recomputed when the criteria changes.
-
-With a shared stewardship harness, the risk assessment begins differently. The outer loop asks the harness for an executable context pattern:
+With a shared stewardship harness, the risk-assessment loop asks for an executable context pattern:
 \begin{quote}
-For a competitor-risk assessment, load the company profile, founder and stage artifact, funding artifact, technical novelty artifact, comparable-company pattern artifact, and current risk criteria; omit stale market-map versions and unrelated prior summaries; materialize current risk criteria at runtime; bind the peer-set and market-category slots from the task.
+For a competitor-risk assessment, bind the target company, reference company, peer set, market category, and stage band; load the current company model, founder and stage artifact, funding artifact, technical novelty artifact, competitive landscape, strategic priorities, open questions, and current risk criteria; omit stale market-map versions and superseded rubrics; materialize independent technical, market, product, narrative, threat, and noise-check artifacts; require the final judgment to weigh strongest evidence against strongest counterargument.
 \end{quote}
 
-The harness materializes a context bundle from current artifacts and runtime slots. The outer loop performs the analysis. During the task, it observes that technical novelty needs different criteria for research-heavy and services-heavy companies. After the task, the loop should not merely mention the distinction in the final memo. It should propose a criteria-artifact update, improve the context pattern, or record explicit evidence that the existing pattern remains adequate. The next agent then inherits not just a memory of a prior insight, but a changed executable procedure for assembling and evaluating future work.
-
-Figure~\ref{fig:harness-architecture} sketches the architecture. Outer loops communicate through MCP with a shared stewardship harness. The harness exposes an execution control plane over graph structure, artifact state, context patterns, policy, and runtime records. Future context materialization improves when prior loops act as stewards.
+The harness materializes current artifacts and runtime slots, then executes the reusable perspective structure as part of producing the final brief. If the loop discovers that technical novelty needs different criteria for research-heavy and services-heavy companies, stewardship means routing that observation into a context-pattern or criteria change for harness-mediated execution, not merely mentioning the distinction in the final memo. If the contrary read shows that the target was mostly noise, the loop should still leave useful maintained state through the harness: a no-action rationale, future revisit conditions, or a deduplication note that helps future agents avoid rediscovering the same non-signal. Figure~\ref{fig:harness-architecture} sketches the architecture.
 
 \begin{figure}[t]
 \centering
@@ -112,11 +97,11 @@ Figure~\ref{fig:harness-architecture} sketches the architecture. Outer loops com
 \node[store] (g) at (12.6,2.55) {executable\\graph};
 \node[store] (a) at (12.6,1.50) {artifact\\store};
 \node[store] (p) at (12.6,0.45) {context-pattern\\registry};
-\node[store] (pol) at (12.6,-0.60) {policy and\\validation};
-\node[action] (out) at (7.8,-0.75) {consume\\outputs};
-\node[action] (obs) at (0,-2.35) {observe\\gap};
-\node[action] (prop) at (3.6,-2.35) {propose\\update};
-\node[action] (val) at (7.2,-2.35) {validate\\stewardship};
+\node[store] (pol) at (12.6,-0.60) {review and\\validation};
+\node[action] (out) at (7.8,-0.75) {consume\\artifacts};
+\node[action] (obs) at (0,-2.35) {observe during\\work};
+\node[action] (prop) at (3.6,-2.35) {route\\update};
+\node[action] (val) at (7.2,-2.35) {integrate\\state};
 \node[action] (future) at (10.8,-2.35) {future loop\\inherits};
 
 \draw[arr] (loop.east) -- (mcp.west);
@@ -132,61 +117,36 @@ Figure~\ref{fig:harness-architecture} sketches the architecture. Outer loops com
 \draw[dasharr] (val.east) -- (future.west);
 \draw[dasharr] (val.north east) -- (pol.south west);
 \end{tikzpicture}
-\caption{Outer loops consume shared executable structure through MCP, use the resulting artifacts to complete tasks, and then close the stewardship loop by proposing improvements, validating affectedness, and leaving future loops better structure to inherit.}
+\caption{Outer loops use shared executable structure through MCP while the task is being performed. The harness materializes context, executes graph regions, produces or registers artifacts, and integrates observations or proposed changes so future loops inherit improved maintained state.}
 \label{fig:harness-architecture}
 \end{figure}
 
 \subsection{Concrete Lifecycle Trace}
 
-A complete task trace makes the proposed architecture operational:
+A compact task trace makes the architecture operational:
 \begin{enumerate}[leftmargin=*]
 \item \textbf{Input task.} An outer loop receives: ``Reassess competitive risk for Company X in the infrastructure-software market.''
-\item \textbf{Pattern match.} Through MCP, the loop calls \texttt{match\_task\_structure}. The harness matches the task to \texttt{competitor\_risk\_assessment}.
-\item \textbf{Current-state resolution.} The harness resolves current artifacts for \texttt{company\_profile}, \texttt{funding}, \texttt{technical\_novelty}, and \texttt{risk\_criteria} under the scope \texttt{Company X}.
-\item \textbf{Exclusion.} The harness excludes stale market maps, superseded risk rubrics, and prior summaries outside the market-category slot.
-\item \textbf{Materialization.} The harness binds runtime slots such as \texttt{peer\_set}, \texttt{market\_category}, and \texttt{stage\_band}; it returns a context bundle and artifact contract for the risk assessment.
-\item \textbf{Task execution.} The loop produces an updated risk assessment and publishes it through the expected artifact contract.
-\item \textbf{Observation.} During the task, the loop observes that the current criteria do not distinguish research-heavy companies from services-heavy companies.
-\item \textbf{Proposed update.} The loop proposes a criteria-artifact update and a context-pattern diff adding a \texttt{company\_type} slot and branch-specific technical-novelty criteria.
-\item \textbf{Affectedness.} The harness computes downstream dependents and marks customer-implication artifacts that consumed the old criteria as stale.
-\item \textbf{Stewardship closure.} The harness validates that the loop consumed current artifacts, published the expected output, recorded evidence for the criteria change, and either committed or routed the pattern diff for review.
+\item \textbf{Selection.} Through MCP, the loop searches or selects the current compiled structure for \texttt{competitor\_risk\_assessment}: a context pattern, graph region, output contract, and relevant artifact roles.
+\item \textbf{Materialization.} The harness resolves current company, funding, technical-novelty, competitive-landscape, and risk-criteria artifacts; excludes stale maps and superseded rubrics; binds \texttt{peer\_set}, \texttt{market\_category}, and \texttt{stage\_band}; and returns a context bundle plus output contract.
+\item \textbf{Perspective execution.} The harness executes or materializes independent lens artifacts: technical fit, product implications, strategic implications, competitive threat, narrative implications, and a contrary noise or overfit check.
+\item \textbf{Task execution.} The loop consumes those artifacts, performs the open-ended judgment, and asks the harness to produce or register an updated risk-assessment artifact that states both the strongest evidence and strongest counterargument.
+\item \textbf{Stewardship update.} If the task reveals a reusable criteria distinction, missing lens, or better contrary check, the loop records the observation and proposes a criteria or context-pattern change.
+\item \textbf{Affectedness and integration.} The harness applies or routes the proposed change through review or publication steps, marks affected downstream artifacts stale, and validates that the task execution consumed current artifacts, produced the expected output through the artifact contract, and routed the pattern change for review if required.
 \end{enumerate}
 
 \section{Background and Related Work}
 
-\subsection{A2A and Agent Interoperability}
+\subsection{Interoperability and Tool/Context Access}
 
-The Agent2Agent (A2A) protocol is an open protocol for communication and interoperability among independent agentic applications. Its specification emphasizes capability discovery, modality negotiation, collaborative task management, secure information exchange, long-running tasks, streaming, and protocol bindings such as JSON-RPC, HTTP/REST, and gRPC \cite{a2a2026spec}. Agent Cards advertise capabilities. Tasks and messages carry work. Artifacts represent outputs of task interactions.
+A2A defines an interoperability layer for independent agents: discovery, task delegation, messages, artifacts, streaming, and protocol bindings \cite{a2a2026spec}. MCP connects AI applications to external systems through schema-described tools, resources, resource templates, and prompts \cite{mcp2025intro,mcp2025tools,mcp2025resources,mcp2025prompts}. In this paper, A2A routes work among agents, MCP exposes the harness to outer loops, and the shared stewardship harness supplies execution-control semantics.
 
-A2A is complementary to this paper's proposal. It helps route work to agents and exchange outputs across agent boundaries. It does not, by itself, define current-state resolution, context-pattern evolution, or dependency-aware invalidation. A2A agents could use the shared stewardship harness through MCP.
+\subsection{Harnesses and Procedural Memory}
 
-\subsection{MCP and Tool/Context Access}
+Agent harness work treats the harness around a model as an object of study. Natural-Language Agent Harnesses externalize control logic as editable executable artifacts with contracts, durable artifacts, and adapters \cite{pan2026nlah}; related surveys and systems emphasize planning, tool use, memory, verification, state, and control \cite{ning2026codeharness,lou2026autoharness,zhang2025harness}. Procedural-memory and workflow-memory systems preserve reusable guidance: procedures, trajectories, decompositions, and experiences that help later agents plan or act more effectively \cite{wang2024awm,fang2025memp,fan2024workflowllm,han2025legomem,yan2025memoryr1,borro2026memori}. The stewardship harness is different because it is stateful over the work products themselves. It maintains intermediate and final artifacts, graph or block execution state, run records, lineage, and context patterns as shared executable state. Procedural memory can suggest how a future loop should proceed; the harness determines what maintained artifacts and executable structures that loop should run against, update, or leave unchanged.
 
-The Model Context Protocol (MCP) is an open standard for connecting AI applications to external systems, including data sources, tools, and workflows \cite{mcp2025intro}. MCP servers expose schema-described tools, resources, resource templates, and prompts \cite{mcp2025tools,mcp2025resources,mcp2025prompts}. These affordances make MCP a natural interface for a shared stewardship harness: context materialization, artifact inspection, graph mutation, validation, and affectedness explanation can all be exposed as operations accessible to heterogeneous outer loops.
+\subsection{Shared Knowledge and Repository Mechanisms}
 
-The distinction is layer-specific. A2A connects agents to agents. MCP connects agents to tools and context surfaces. The shared stewardship harness is the maintained execution environment exposed through MCP.
-
-\subsection{Agent Harnesses}
-
-Agent harness research treats the harness around a model as a first-class object of study. Natural-Language Agent Harnesses externalize high-level control logic as editable executable artifacts and use a runtime with contracts, durable artifacts, and adapters \cite{pan2026nlah}. Recent surveys and systems similarly emphasize infrastructure for planning, tool use, memory, verification, state, and control \cite{ning2026codeharness,lou2026autoharness,zhang2025harness}. This paper shifts the harness question from controlling one loop to maintaining shared executable state across many loops.
-
-\subsection{Procedural Memory, Workflow Memory, and Collaborative Memory}
-
-Procedural-memory and workflow-memory systems preserve reusable procedures, trajectories, task decompositions, and experiences for future agents \cite{wang2024awm,fang2025memp,fan2024workflowllm,han2025legomem,yan2025memoryr1,borro2026memori}. Collaborative-memory systems preserve information across sessions, agents, and users. These systems recognize that useful knowledge is often procedural. The distinction here is execution semantics: memory asks what should be remembered and retrieved; the stewardship harness asks what future agents should execute, which artifacts are current, and which downstream objects require recomputation or review.
-
-\subsection{LLM-Maintained Wikis, Shared Repositories, and Knowledge Compounding}
-
-Karpathy's LLM Wiki pattern proposes an LLM-maintained markdown knowledge layer between immutable raw sources and later queries \cite{karpathy2026llmwiki}. Such a wiki can maintain pages, summaries, entity records, cross-links, contradiction notes, indexes, and maintenance instructions so later agents consult accumulated synthesis rather than reconstructing context from raw sources. Recent work on knowledge compounding formalizes a similar intuition: persistent structured knowledge can amortize repeated task cost because later tasks reuse accumulated synthesis \cite{wen2026knowledgecompounding}.
-
-A shared Git repository is a parallel pattern for coordinated agent work. Repositories provide versioned files, commits, branches, diffs, pull requests, review, blame, rollback, and integration hooks \cite{chacon2014progit}. They can host prompts, markdown knowledge pages, workflow definitions, tests, schemas, and context-pattern files, and may be useful authoring or review interfaces for a stewardship harness.
-
-These patterns are complementary. LLM-maintained wikis compound knowledge; shared repositories coordinate versioned files; stewardship harnesses maintain executable intelligence. The claim is not that wikis or repositories are weak, but that knowledge compounding and file versioning do not by default provide executable affectedness: deciding which rubric is current, which context patterns should use it, which downstream artifacts consumed the old rubric, and which future tasks should bind new runtime slots because of the change.
-
-\subsection{Why a Repository Alone Is Not a Stewardship Harness}
-
-A natural objection is that Git plus structured files, metadata, code review, and CI may provide much of the proposed functionality. A repository can indeed be an effective storage and review layer for context patterns, artifact schemas, tests, and policy files. In some implementations, the stewardship harness may compile such files from a repository and route proposed changes through pull requests.
-
-The difference is operational semantics. Suppose a pull request changes \texttt{risk\_rubric.md} from \texttt{risk\_criteria:v1} to \texttt{risk\_criteria:v2}. Git can represent the patch, branch, reviewer, commit history, and rollback point. CI can run tests attached to repository files. The repository alone does not automatically know that \texttt{risk\_criteria:v2} is now current for a particular role and scope, that a prior customer-implication artifact consumed \texttt{risk\_criteria:v1}, that competitor-risk assessments should now bind a \texttt{company\_type} slot, or that stale downstream artifacts should be reviewed before reuse. Those semantics can be encoded in files, but they are executed by a harness, compiler, workflow engine, or application runtime. In this paper, the stewardship harness names that execution-control layer rather than the storage medium.
+LLM-maintained wikis compound synthesized knowledge over time \cite{karpathy2026llmwiki,wen2026knowledgecompounding}. Git repositories coordinate versioned files, review, rollback, attribution, and CI hooks \cite{chacon2014progit}. Knowledge graphs, vector stores, and wikis preserve shared facts, relations, notes, or retrieved memories \cite{hogan2021knowledgegraphs}. These mechanisms may store or review harness inputs, but storage is not execution semantics. If \texttt{risk\_rubric.md} changes from \texttt{risk\_criteria:v1} to \texttt{risk\_criteria:v2}, Git can represent the patch and CI can run tests; the harness determines whether the new rubric is current for a role and scope, which context patterns use it, and which downstream artifacts consumed the old rubric.
 
 \begin{table}[H]
 \centering
@@ -199,42 +159,36 @@ LLM-maintained wiki & Markdown pages, summaries, links, indexes & Shared accumul
 Git repository & Versioned files, commits, branches, diffs, pull requests & Shared review, history, rollback, CI integration & Semantic current-state resolution for LLM-native artifacts \\
 Vector memory & Embeddings and retrieved memories & Recall and similarity-based reuse & Explicit dependency structure and supersession \\
 Knowledge graph & Entities and relations & Structured factual and relational knowledge & Executable context procedures and affectedness \\
-Stewardship harness & Context patterns, artifacts, graph state, policies, runtime records & Maintained executable intelligence across loops & Requires schema, governance, and stewardship discipline \\
+Stewardship harness & Context patterns, artifacts, graph state, review structure, runtime records & Maintained executable intelligence across loops & Requires schema, governance, and stewardship discipline \\
 \bottomrule
 \end{tabular}
 \caption{Adjacent shared-state mechanisms can support a stewardship harness, but do not by themselves provide execution-control semantics.}
 \label{tab:shared-state-mechanisms}
 \end{table}
 
-\subsection{Blackboard Systems}
+\subsection{Blackboards, Workflow DAGs, Provenance, and Multi-Agent Frameworks}
 
-Blackboard architectures provide a historical analogy: multiple knowledge sources contribute partial solutions through a shared working store \cite{nii1986blackboard}. They identify the value of shared intermediate state. The proposed harness adds execution identity, artifact supersession, authority scope, executable context patterns, and affectedness under change.
+Blackboard systems identify the value of a shared workspace where multiple specialists contribute partial results \cite{nii1986blackboard}. They are a useful historical analogy for agent systems because they separate local specialist behavior from shared intermediate state. The stewardship harness differs by making the shared state executable, versioned, and dependency-bearing rather than only a posted working memory.
 
-\subsection{Workflow DAGs, Provenance, and Execution Lineage}
+Workflow systems such as Dryad, Spark, Airflow, and dbt use dependency structure, materialized intermediates, and lineage-aware execution \cite{isard2007dryad,zaharia2010spark,airflowdocs,dbtdocs}; provenance research studies why and where outputs arise from prior state \cite{buneman2001why,freire2008provenance}. These systems are closest to the paper's execution-lineage foundation, but they usually coordinate data or software workflows rather than agent loops that discover and revise context patterns while performing open-ended work.
 
-Workflow systems such as Dryad, Spark, Airflow, and dbt use explicit dependency structure, materialized intermediates, and lineage-aware execution \cite{isard2007dryad,zaharia2010spark,airflowdocs,dbtdocs}. Provenance research studies why and where outputs arise from prior state \cite{buneman2001why,freire2008provenance}. The first ThruWire paper adapts these concerns to AI-native work through stable execution identity and dependency-aware replay \cite{rosen2026lineage}. This paper relies on those mechanics but shifts the focus to multi-loop stewardship.
-
-\subsection{Knowledge Graphs, Vector Stores, Wikis, and Multi-Agent Frameworks}
-
-Knowledge graphs, vector stores, and wikis preserve shared knowledge \cite{hogan2021knowledgegraphs}. Multi-agent frameworks such as CAMEL, AutoGen, MetaGPT, Voyager, and Magentic-One organize agents into roles, conversations, planners, tool users, and orchestrated workflows \cite{li2023camel,wu2023autogen,hong2023metagpt,wang2023voyager,fourney2024magenticone}. Together with A2A, MCP, memory, blackboards, and repositories, these systems show that communication, knowledge, files, and memory can be shared. The distinct object in this paper is executable affectedness: current-state resolution, context-pattern evolution, supersession, and downstream propagation.
+Multi-agent frameworks such as CAMEL, AutoGen, MetaGPT, Voyager, and Magentic-One organize agents into roles, conversations, planners, and tool users \cite{li2023camel,wu2023autogen,hong2023metagpt,wang2023voyager,fourney2024magenticone}. They help structure agent teams and task execution. The stewardship harness addresses a different layer: the maintained executable state those agents consume, update, and validate across many runs.
 
 \section{Problem Formulation}
 
 \subsection{Outer Loops}
 
-An \emph{outer loop} is an agentic loop or task harness that plans, calls tools, reasons, delegates, observes, and completes a task. It may be a coding agent, research agent, reviewer, planner, analyst, or orchestrator. It may contain inner loops, retries, tool calls, and exploratory reasoning. We treat the outer loop as the accountable unit because it is the system component that consumes task context, acts, and decides what to publish back to the shared execution environment.
+An \emph{outer loop} is the paper's term for the agentic task loop surrounding the shared stewardship harness. In common agent terminology, this is simply an agent loop: it plans, calls tools, reasons, delegates, observes, and completes a task. We treat it as the accountable unit because it consumes task context, acts, and decides what observations, inputs, or proposed structural changes should be returned to the shared execution environment.
 
-Let $C=\{c_1,\ldots,c_n\}$ be clients or outer loops. Each loop $c_i$ receives a local task objective $\tau_i$ and a materialized context bundle $b_i$. It performs local work and may produce messages, tool calls, artifacts, or proposed mutations. Without a shared stewardship protocol, the loop's natural optimization target is local completion:
+Let $C=\{c_1,\ldots,c_n\}$ be clients or outer loops. Each loop $c_i$ receives a task objective $\tau_i$ and a materialized context bundle $b_i$. It performs open-ended work and may produce messages, tool calls, draft judgments, observations, or proposed mutations. Maintained artifacts are created or registered by the harness according to artifact contracts and compiled review or publication structure. Without a shared stewardship protocol, the loop's natural optimization target is isolated task completion:
 \begin{equation}
 c_i: (\tau_i, b_i) \rightarrow y_i
 \end{equation}
-where $y_i$ is a local output. Local completion does not imply maintained shared state.
+where $y_i$ is an isolated task output. Isolated completion does not imply maintained shared state.
 
 \subsection{Architectural Objective}
 
-The architectural objective is to reduce drift accumulation across repeated tasks while preserving local task completion performance. Informally, a stewardship harness tries to minimize the rate at which shared state becomes stale, contradictory, duplicated, or procedurally inconsistent as outer loops complete tasks. The hypothesis is not that every task benefits from additional coordination, but that in long-lived workloads with dependency-bearing artifacts, executable stewardship can improve maintained-state quality: fewer stale current artifacts, fewer duplicated procedures, more consistent context materialization, and more accurate affectedness after changes.
-
-This objective is intentionally structural rather than a claim about model intelligence. The harness does not make a model smarter directly. It changes the maintained environment the next loop runs against. Future evaluations should therefore measure both sides of the tradeoff: whether drift decreases, and whether the added latency, annotation burden, review burden, or proposal noise outweighs that reduction for a given workload.
+The architectural objective is to reduce drift accumulation across repeated tasks while preserving task-completion performance. In long-lived workloads with dependency-bearing artifacts, executable stewardship should improve maintained-state quality: fewer stale current artifacts, fewer duplicated procedures, more consistent context materialization, and more accurate affectedness after changes. This is structural, not a claim that the harness makes models smarter. Future evaluations should measure both drift reduction and the added latency, annotation burden, review burden, and proposal noise.
 
 \subsection{Cross-Agent Drift}
 
@@ -244,10 +198,10 @@ Cross-agent drift occurs when many locally successful loops cause shared state t
 \item \textbf{Artifact drift:} final outputs are updated while upstream intermediate artifacts remain stale.
 \item \textbf{Procedure drift:} loops evolve incompatible task procedures or criteria.
 \item \textbf{Authority drift:} multiple artifacts are treated as current without explicit resolution.
-\item \textbf{Evaluation drift:} loops optimize local final outputs without maintaining reusable structure.
+\item \textbf{Evaluation drift:} loops optimize isolated task outputs without maintaining reusable structure.
 \end{itemize}
 
-These failures can occur even when every loop appears competent. The missing element is not intelligence inside the local loop, but a maintained execution environment that makes shared state legible, current, and improvable.
+These failures can occur even when every loop appears competent. The missing element is a maintained execution environment that makes shared state legible, current, and improvable.
 
 \subsection{Observed Failure Patterns}
 
@@ -261,11 +215,11 @@ The failure modes above are not experimental results in this paper. They are ill
 \textbf{Failure pattern} & \textbf{Typical behavior in loop-centric systems} \\
 \midrule
 Artifact drift & A final report is updated, but the criteria artifact or intermediate analysis it depends on remains stale. \\
-Procedure drift & Two agents independently evolve different evaluation rubrics for similar tasks and preserve them only in local outputs or transcripts. \\
+Procedure drift & Two agents independently evolve different evaluation rubrics for similar tasks and preserve them only in isolated outputs or transcripts. \\
 Authority drift & Multiple summaries, rubrics, or analyses are treated as current because no role/scope-specific resolver selects the active artifact. \\
 Context drift & Similar tasks materialize different context bundles because each loop performs ad hoc retrieval or uses a different memory fragment. \\
-Evaluation drift & Agents optimize the visible final answer but do not update reusable procedures, validation rules, or dependency structure. \\
-Stewardship noise & Many agents propose low-value artifact edits or pattern changes, increasing review burden without improving maintained state. \\
+Evaluation drift & Agents optimize the visible final answer but do not update reusable procedures, validation steps, or dependency structure. \\
+Stewardship noise & Many agents propose low-value observations, criteria edits, or pattern changes, increasing review burden without improving maintained state. \\
 \bottomrule
 \end{tabular}
 \caption{Illustrative failure patterns that a stewardship harness is intended to make visible and measurable.}
@@ -274,9 +228,7 @@ Stewardship noise & Many agents propose low-value artifact edits or pattern chan
 
 \subsection{Why Shared Memory and A2A Are Insufficient Alone}
 
-Shared memory can improve recall, but recall is not maintenance. A memory store may retrieve an old risk rubric; it does not necessarily know that the rubric was superseded, that a downstream memo consumed the older version, or that a new task should materialize a different peer-set slot. A2A can route a task to a capable risk-analysis agent; it does not necessarily define the artifact authority or context pattern the selected agent should inherit.
-
-The missing object is shared executable state: dependency-bearing artifacts, procedures that materialize context, current-state resolution, policy, and validation. In long-lived settings where later work depends on earlier maintained state, we hypothesize that loops need a layer where they can inspect and improve that state.
+Shared memory can improve recall, and A2A can route work to a capable agent, but neither by itself defines artifact authority, supersession, context materialization, or downstream affectedness. In long-lived settings, loops need a layer where they can inspect and improve shared executable state.
 
 \section{Shared Stewardship Harness}
 
@@ -296,11 +248,11 @@ where:
 \item $\Pi$ is policy: permissions, approval, supersession, invalidation, validation, conflict handling, and review requirements.
 \end{itemize}
 
-The harness is shared because many outer loops use it. It is a stewardship harness because its purpose is not merely to store data or dispatch work. It maintains the executable knowledge layer that future loops inherit. In consumer mode, a loop resolves the relevant context pattern, current artifacts, graph nodes, and runtime slots, asks the harness to execute the matched structure with its inputs and parameters, and consumes the resulting artifacts to accomplish the task. In steward mode, it proposes or commits changes when the task reveals that artifacts, graph dependencies, context patterns, or validation rules should change. A mature loop normally does both: consume first, then steward what it learns.
+The harness is shared because many outer loops use it. It is a stewardship harness because it maintains the executable knowledge layer future loops inherit. In consumer mode, a loop resolves the relevant pattern, artifacts, graph nodes, compiled version, and slots, then asks the harness to run the selected block or graph region with task inputs. In steward mode, the loop returns observations, evidence, and proposed changes to criteria, dependencies, context patterns, or validation steps; the harness applies, routes, or rejects those changes through its compiled review and publication structure.
 
 \subsection{Execution Control Plane}
 
-The \emph{execution control plane} is the policy and coordination layer that determines what is current, what is stale, what can be reused, what must be recomputed, what requires review, and which mutations are accepted into shared maintained state. It answers questions such as:
+The \emph{execution control plane} determines what is current, stale, reusable, recomputable, reviewable, or accepted into maintained state. It answers questions such as:
 \begin{itemize}[leftmargin=*]
 \item Which artifact is current for this role and scope?
 \item Which downstream artifacts become stale after this supersession?
@@ -310,49 +262,45 @@ The \emph{execution control plane} is the policy and coordination layer that det
 \item Which affected subgraph should be recomputed, reviewed, or left unchanged?
 \end{itemize}
 
-This layer is what distinguishes stewardship from passive storage. A wiki can preserve a note. A vector store can retrieve related text. The execution control plane resolves active state and affectedness.
-
 \subsection{Artifacts, Current State, and Supersession}
 
-Following artifact-centric state, artifacts in $A$ are typed, addressable, versioned, dependency-aware, and consumable by downstream computation \cite{rosen2026artifacts}. They are not chat transcripts, hidden model reasoning, or incidental final answers. Each artifact has a role, scope, lineage, status, and authority boundary. A superseding artifact can replace an earlier artifact as current for a given role and scope while preserving history for audit.
+Following artifact-centric state, artifacts in $A$ are typed, addressable, versioned, dependency-aware, and consumable by downstream computation \cite{rosen2026artifacts}. Each artifact has a role, scope, lineage, status, and authority boundary. A superseding artifact can replace an earlier artifact as current for a role and scope while preserving audit history.
 
 Current-state resolution is therefore a maintained operation:
 \begin{equation}
 \mathrm{current}(role, scope, t) \rightarrow a_k
 \end{equation}
-where $a_k$ is the artifact that the execution control plane considers active at time $t$ under policy $\Pi$. If no artifact is current, or if multiple candidates conflict, the harness should surface that condition rather than letting each outer loop infer authority locally.
+where $a_k$ is the artifact that the execution control plane considers active at time $t$ according to $\Pi$. If no artifact is current, or if multiple candidates conflict, the harness should surface that condition rather than letting each outer loop infer authority locally.
 
-The hard case is not lookup but authority resolution. Two artifacts may both claim to be current; two agents may submit competing supersessions; or an artifact may be current for one scope but not another. A harness can handle these cases deterministically when policy is explicit, for example by preferring an approved artifact over a proposed artifact, a higher-authority source over a lower-authority source, or a later accepted supersession over an earlier one. When policy cannot resolve the conflict, \texttt{current(role, scope, t)} should return a review-required state rather than a silent guess.
-
-This makes current-state resolution a policy boundary rather than a hidden oracle. Implementations may use human review, trust tiers, confidence thresholds, ownership rules, or domain-specific approval workflows. The key requirement is that ambiguity be represented in maintained state. If two agents supersede a rubric simultaneously, the harness should either apply a deterministic merge policy, preserve one active artifact and mark the other as proposed, or block downstream materialization until review closes the conflict.
+The hard case is authority resolution. Because maintained artifacts are produced or registered by harness execution, conflicts should not be modeled as arbitrary outer loops writing competing current artifacts. They arise when two harness runs, graph versions, criteria revisions, or review decisions could each make a different artifact current, or when an artifact is current for one scope but not another. Implementations may use human review, trust tiers, confidence thresholds, ownership metadata, or deterministic resolution steps such as preferring approved runs over draft runs. If the compiled review or publication structure cannot resolve the conflict, artifact reads and current-state queries should surface a structured unresolved or missing state rather than a silent guess.
 
 \subsection{Invalidation and Propagation}
 
-If artifact $a$ is superseded by $a'$, every downstream artifact whose execution identity depended on $a$ may require invalidation, recomputation, or review. The harness should distinguish:
+If artifact $a$ is superseded by $a'$, every downstream artifact whose execution identity depended on $a$ may require invalidation, recomputation, or review. The harness should support:
 \begin{itemize}[leftmargin=*]
 \item exact preservation of unaffected branches,
 \item stale marking before recomputation,
 \item selective recomputation of affected descendants,
-\item review gates for high-authority or high-risk updates,
+\item review nodes for high-authority or high-risk updates,
 \item publication of superseding artifacts when recomputation completes.
 \end{itemize}
 
-This preserves the execution-lineage distinction between final output quality and maintained-state quality. A loop that patches a final answer but leaves stale intermediates has not satisfied stewardship validation.
+This preserves the execution-lineage distinction between final output quality and maintained-state quality.
 
 \section{Minimum Viable Stewardship Harness}
 
-A full stewardship harness could include graph execution, policy engines, human review workflows, audit logs, and adapters to many storage systems. The smallest useful version is narrower. It should include:
+The smallest useful harness should include:
 \begin{itemize}[leftmargin=*]
 \item an artifact registry with role, scope, version, status, lineage, and authority metadata,
 \item a current-state resolver for \texttt{current(role, scope, t)},
-\item a context-pattern registry with versioned selection, exclusion, slot, and output-contract rules,
+\item a context-pattern registry with versioned selection, exclusion, slot, and output-contract declarations,
 \item a materialization function that binds inputs and slots and returns a context bundle with provenance,
 \item supersession and stale-marking operations,
-\item a validation checklist for task completion,
-\item an optional human review gate for high-authority changes.
+\item validation or integration steps for task completion,
+\item optional human review nodes for high-authority changes.
 \end{itemize}
 
-This minimum version deliberately excludes general agent-to-agent communication, broad social negotiation, full workflow orchestration, automatic proof that all dependencies were found, and automatic acceptance of agent-proposed pattern changes. Those responsibilities may be added by surrounding systems or later versions. The minimum claim is more modest: even a small harness should make current state explicit, make context materialization executable, record supersession, and support stewardship closure before treating long-lived shared work as complete.
+This minimum version excludes general agent-to-agent communication, broad social negotiation, full workflow orchestration, automatic proof that all dependencies were found, and automatic acceptance of agent-proposed pattern changes. Even a small harness should make current state explicit, make context materialization executable, record supersession, and support stewardship integration throughout task execution.
 
 \section{Executable Context Patterns}
 
@@ -369,10 +317,10 @@ where:
 \item $g$ is the goal type, such as competitor-risk assessment.
 \item $I$ is the input schema.
 \item $S$ is the slot schema for runtime bindings.
-\item $Q$ is the set of selection rules for artifacts, sources, and roles.
+\item $Q$ is the set of selection declarations for artifacts, sources, and roles.
 \item $M$ is the set of generation or materialization steps.
-\item $E$ is the set of exclusion rules.
-\item $V$ is the set of validation gates.
+\item $E$ is the set of exclusion declarations.
+\item $V$ is the set of validation steps or review nodes.
 \item $O$ is the output contract.
 \end{itemize}
 
@@ -385,89 +333,73 @@ For a company-risk assessment, a context pattern might be:
 \item \textbf{Goal type:} competitor-risk assessment.
 \item \textbf{Inputs:} target company, assessment date, requested risk lens.
 \item \textbf{Slots:} peer set, market category, prior thesis, stage band.
-\item \textbf{Selection rules:} load current company profile, founder/stage artifact, funding artifact, technical novelty artifact, comparable-company pattern artifact, and current risk criteria.
-\item \textbf{Exclusion rules:} omit stale market-map versions, superseded risk rubrics, unrelated prior summaries, and artifacts outside the target market category.
+\item \textbf{Selection declarations:} load current company profile, founder/stage artifact, funding artifact, technical novelty artifact, comparable-company pattern artifact, and current risk criteria.
+\item \textbf{Exclusion declarations:} omit stale market-map versions, superseded risk rubrics, unrelated prior summaries, and artifacts outside the target market category.
 \item \textbf{Generation steps:} materialize peer-set comparison and risk-criteria checklist at runtime.
-\item \textbf{Validation gates:} require current-state resolution for each authoritative artifact; flag missing technical novelty state.
-\item \textbf{Output contract:} publish a risk assessment artifact with role, scope, lineage, confidence, supersession target if any, and downstream dependents.
+\item \textbf{Validation steps:} resolve current state for each authoritative artifact; flag missing technical novelty state.
+\item \textbf{Output contract:} produce or register a risk assessment artifact with role, scope, lineage, confidence, supersession target if any, and downstream dependents.
 \end{itemize}
 
 This pattern encodes context precision: load these artifacts but not those artifacts; generate this intermediate only after slots are bound; reject or review the task if the authoritative criteria artifact is missing. The pattern is learned structure, not merely a longer prompt.
 
 \subsection{How Patterns Improve}
 
-Outer loops improve context patterns when they discover that a pattern is incomplete, overloaded, stale, too broad, too narrow, or reusable in a stronger form. For example, a loop may discover that research-heavy and services-heavy companies need different technical-novelty criteria. A weak loop only mentions this in a final memo. A stewarding loop proposes a criteria artifact update, adds a slot or branch to the context pattern, records evidence from the task, and validates that downstream risk assessments will materialize the improved distinction.
+Outer loops improve context patterns when they discover that a pattern is incomplete, overloaded, stale, too broad, too narrow, or reusable in a stronger form. The company-risk example in Section~2 illustrates the expected behavior: the loop turns a procedural discovery into a criteria update, slot, branch, or validation step rather than preserving it only in the final memo.
 
-Pattern improvement should be reviewable. Bad patterns can propagate mistakes by making future loops confidently load the wrong context. The harness therefore needs versioning, evidence, validation gates, rollback or supersession, and policy over who may commit pattern changes.
+Pattern improvement should be reviewable. Bad patterns can propagate mistakes by making future loops confidently load the wrong context. The harness therefore needs versioning, evidence, validation steps, rollback or supersession, and review or publication structure for pattern changes.
 
 \section{MCP as the Harness Interface}
 
-\subsection{Tool Surface}
+\subsection{Harness Surface}
 
-MCP is a natural interface because it lets heterogeneous outer loops access the same shared harness without sharing one internal architecture. The harness can expose tools such as:
+MCP is a natural interface because it lets heterogeneous outer loops access the same shared harness without sharing one internal architecture. The important point is not that the harness exposes a large collection of isolated tools. The MCP surface is a control surface for a maintained system: projects, blocks, folders, compiled versions, executable graph state, runs, event streams, artifacts, and review or publication steps. Ordinary-looking operations such as reading a block, compiling a version, running a block, polling run events, and reading an artifact become stewardship operations when they participate in compiled structure that carries lineage, authority, slots, cached context, and publication behavior.
+
+The exact tool names are implementation-specific. A harness may expose semantic operations directly, or realize them through lower-level project, block, version, run, and artifact operations. The useful surface groups capabilities by function:
 \begin{itemize}[leftmargin=*]
-\item \texttt{list\_context\_patterns(goal\_type)}
-\item \texttt{match\_task\_structure(goal\_type, inputs, slots)}
-\item \texttt{materialize\_context(pattern\_id, inputs, slots)}
-\item \texttt{execute\_matched\_structure(match\_id, inputs, slots)}
-\item \texttt{inspect\_artifact(artifact\_id)}
-\item \texttt{resolve\_current\_artifact(role, scope)}
-\item \texttt{propose\_artifact\_update(artifact\_id, patch, rationale)}
-\item \texttt{commit\_supersession(new\_artifact, supersedes, scope)}
-\item \texttt{propose\_graph\_mutation(add\_node, edit\_node, add\_dependency, remove\_dependency)}
-\item \texttt{record\_context\_pattern\_observation(pattern\_id, task\_id, outcome, missing\_context, overloaded\_context)}
-\item \texttt{improve\_context\_pattern(pattern\_id, diff, evidence)}
-\item \texttt{validate\_stewardship(task\_run\_id)}
-\item \texttt{explain\_affectedness(change\_id)}
-\item \texttt{mark\_stale}, \texttt{recompute}, and \texttt{review\_subgraph}
+\item \textbf{Discovery and selection:} list projects, folders, blocks, context patterns, graph nodes, and available artifacts; search compiled structure when the loop does not know the exact block to run.
+\item \textbf{Authoring and mutation:} read, create, edit, move, rename, or delete raw blocks and folders through the harness's authoring surface; propose graph or context-pattern changes as structured mutations rather than transcript notes.
+\item \textbf{Compilation and versioning:} compile raw structure into an immutable executable version; resolve the current compiled version; preserve prior versions for audit, rollback, and affectedness analysis.
+\item \textbf{Execution and materialization:} run a selected block or graph region with runtime inputs and slot bindings; materialize the context bundle, intermediate artifacts, final artifacts, and provenance implied by that run.
+\item \textbf{Observation and integration:} stream or poll run events, inspect produced artifacts, record observations, run review or publication blocks, mark affected state stale, and execute the stewardship-integration structure for the task.
 \end{itemize}
 
-The exact names are illustrative. The design requirement is that the loop can match a task to existing executable structure, ask the harness to execute that structure with task-specific inputs and parameters, consume the resulting context and artifacts, mutate shared state when needed, validate stewardship, and explain affectedness through schema-described operations.
+The design requirement is that a loop can discover or select an existing executable graph region, run it with task-specific inputs and slots, consume the resulting context and artifacts, and integrate observations or proposed edits into maintained structure through schema-described operations. In some implementations, high-level materialization or integration operations may be exposed directly. In others, those semantics emerge from compiling a graph, running selected blocks, resolving artifacts, inspecting run events, and executing review or publication steps encoded in the graph. Both are harness designs, not merely tool collections.
 
-\subsection{Compact Operation Sketches}
+\subsection{Harness Operation Sketches}
 
-The following sketches are illustrative rather than a required API. They show the kind of operational semantics the harness should expose:
+The following sketches are illustrative and use generic operations for a compiled-block harness: search compiled blocks, inspect the current DAG, read current artifacts, execute blocks, poll run events, edit raw blocks, and compile a new version. They should not be read as a separate rule engine or as a claim that every implementation exposes these exact names. Checks and constraints are expressed through executable blocks, compiled graph structure, artifact contracts, run events, and review or publication steps.
 
 \begin{verbatim}
-current(role, scope, t):
-  candidates = artifacts.where(role=role, scope=scope, valid_at=t)
-  active = policy.resolve_authority(candidates)
-  if active.conflict or active.missing:
-    return ReviewRequired(active.reason)
-  return active.artifact
+select_current_structure(goal, inputs):
+  matches = search_compiled_blocks(query=goal)
+  dag = get_current_dag()
+  return choose_block_or_graph_region(matches, dag, inputs)
 
-materialize_context(pattern_id, inputs, slots):
-  p = patterns.current(pattern_id)
-  bindings = bind(p.input_schema, p.slot_schema, inputs, slots)
-  selected = [current(r, s, now) for (r, s) in p.selection_rules(bindings)]
-  excluded = p.exclusion_rules(selected, bindings)
-  generated = run_steps(p.generation_steps, selected - excluded, bindings)
-  return ContextBundle(selected - excluded + generated, provenance=bindings)
+consume_current_artifact(block_id, inputs, slot_bindings):
+  result = read_current_artifact(block_id, inputs, slot_bindings)
+  if result.status == "success": return result.artifact
+  return result  // e.g., missing artifact or slot-binding guidance
 
-explain_affectedness(change_id):
-  change = changes.get(change_id)
-  touched = dependency_graph.descendants(change.superseded_artifacts)
-  return classify(touched, actions=[preserve, mark_stale, recompute, review])
+run_structured_work(block_id, inputs, slot_bindings):
+  accepted = run_block(block_id, inputs, slot_bindings)
+  events = poll_run_events(accepted.run_id)
+  return {run_id: accepted.run_id, events: events}
 
-validate_stewardship(task_run_id):
-  run = runtime_records.get(task_run_id)
-  checks = [
-    consumed_current_artifacts(run),
-    satisfied_output_contract(run),
-    recorded_observations_or_no_update_reason(run),
-    no_unresolved_authority_conflicts(run),
-    affected_dependents_marked_or_reviewed(run)
-  ]
-  return ValidationReport(checks)
+inspect_outputs(block_id, inputs, slot_bindings):
+  artifact = read_current_artifact(block_id, inputs, slot_bindings)
+  artifacts = list_current_artifacts()
+  return {artifact: artifact, project_artifacts: artifacts}
+
+steward_structure(block_path, revised_block):
+  existing = read_raw_block(block_path)
+  upsert_raw_block(block_path, revised_block)
+  compiled = compile_project_version()
+  return {previous: existing.revision, version: compiled.version_id}
 \end{verbatim}
-
-\subsection{MCP Resources and Prompts}
-
-The harness can expose artifact snapshots, graph views, context-pattern definitions, validation reports, and affected-subgraph explanations as MCP resources. It can expose prompt-like workflows for common stewardship actions, such as reviewing a proposed context-pattern diff or explaining why no shared update was needed. MCP does not dictate one user interface. This is useful because one loop may be a coding assistant, another may be a research agent, and another may be a human-in-the-loop review client.
 
 \subsection{Relationship to A2A}
 
-A2A is communication; stewardship is maintained intelligence. A2A solves interoperability among agents: discovery, delegation, task lifecycle, messages, artifacts, streaming, and cross-vendor communication. The shared stewardship harness solves a different layer: the maintained execution environment that agents use to keep context patterns, artifacts, lineage, and drift-prevention semantics coherent.
+A2A routes work among agents; MCP exposes the shared harness to those agents; the harness maintains execution semantics through its project, graph, version, run, artifact, and review/publication machinery. Table~\ref{tab:layers} summarizes the boundary.
 
 \begin{table}[H]
 \centering
@@ -477,41 +409,37 @@ A2A is communication; stewardship is maintained intelligence. A2A solves interop
 \textbf{Layer} & \textbf{Solves} & \textbf{Does not solve by itself} \\
 \midrule
 A2A & Agent discovery, delegation, task exchange, and message-level interoperability. & Shared maintained intelligence, artifact authority, or dependency-aware invalidation. \\
-MCP & Tool and context access through schema-described operations. & Stewardship policy, current-state semantics, or cross-task improvement obligations. \\
-Shared stewardship harness & Current state, durable artifacts, executable context patterns, supersession, and propagation. & General communication, social negotiation, or all agent-to-agent coordination. \\
+MCP & Schema-described access to harness operations, resources, runs, artifacts, and context. & The maintained-state semantics unless backed by a harness. \\
+Shared stewardship harness & Current state, durable artifacts, executable context patterns, compiled versions, runs, supersession, and propagation. & General communication, social negotiation, or all agent-to-agent coordination. \\
 \bottomrule
 \end{tabular}
 \caption{A2A, MCP, and the shared stewardship harness operate at complementary layers.}
 \label{tab:layers}
 \end{table}
 
-The two layers can compose. An A2A client may delegate a task to a specialized agent. That agent may then use MCP to materialize context from the shared harness, execute the task, publish artifacts, and validate stewardship before returning an A2A artifact. A2A helps route the task to the right agent. Context patterns help the selected agent inherit the right structure.
+The two layers can compose. An A2A client may delegate a task to a specialized agent. That agent may then use MCP to materialize context from the shared harness, execute the task with harness-produced intermediates, ask the harness to produce or register artifacts, and integrate stewardship updates before returning an A2A artifact. A2A helps route the task to the right agent. Context patterns help the selected agent inherit the right structure.
 
-\subsection{Example Workflow}
-
-A strategy agent receives a task to reassess competitive risk for a target company. It calls \texttt{match\_task\_structure} and finds an existing competitor-risk context pattern and risk-assessment artifact contract. It then calls \texttt{execute\_matched\_structure} with target-company and market-category inputs. The harness resolves current artifacts, excludes stale summaries, executes the applicable graph region or context pattern, and returns artifacts the agent can consume to complete the task. During the task, the agent discovers a missing services-heavy-company distinction and records an observation. After producing the risk assessment, it proposes an artifact supersession and a context-pattern diff. The harness validates affectedness, marks downstream customer-implication artifacts stale, and either commits the change or routes it for review under policy $\Pi$.
-
-\section{Stewardship Lifecycle}
+\section{Integrated Stewardship Lifecycle}
 
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
   font=\scriptsize,
   node distance=5mm,
-  closurestep/.style={draw, rounded corners, align=center, text width=30mm, minimum height=8mm, fill=black!3},
+  lifestep/.style={draw, rounded corners, align=center, text width=30mm, minimum height=8mm, fill=black!3},
   decision/.style={draw, diamond, aspect=2.2, align=center, text width=25mm, inner sep=1mm, fill=black!4},
   arr/.style={-{Stealth[length=2mm]}, thick}
 ]
-\node[closurestep] (task) {task};
-\node[closurestep, below=of task] (match) {match pattern};
-\node[closurestep, below=of match] (mat) {materialize context};
-\node[closurestep, below=of mat] (work) {perform work};
+\node[lifestep] (task) {task};
+\node[lifestep, below=of task] (match) {select structure};
+\node[lifestep, below=of match] (mat) {materialize context};
+\node[lifestep, below=of mat] (work) {execute with\\harness artifacts};
 \node[decision, below=of work] (obs) {observation?};
-\node[closurestep, below left=8mm and 11mm of obs] (justify) {record no-update\\justification};
-\node[closurestep, below right=8mm and 11mm of obs] (propose) {propose update};
-\node[closurestep, below=18mm of obs] (affect) {affectedness\\analysis};
-\node[closurestep, below=of affect] (validate) {validate\\stewardship};
-\node[closurestep, below=of validate] (publish) {publish current\\state};
+\node[lifestep, below left=8mm and 11mm of obs] (justify) {record no-update\\justification};
+\node[lifestep, below right=8mm and 11mm of obs] (propose) {route update};
+\node[lifestep, below=18mm of obs] (affect) {affectedness\\analysis};
+\node[lifestep, below=of affect] (validate) {run review or\\integration steps};
+\node[lifestep, below=of validate] (accept) {accept current\\state};
 
 \draw[arr] (task) -- (match);
 \draw[arr] (match) -- (mat);
@@ -522,38 +450,28 @@ A strategy agent receives a task to reassess competitive risk for a target compa
 \draw[arr] (justify) |- (affect);
 \draw[arr] (propose) |- (affect);
 \draw[arr] (affect) -- (validate);
-\draw[arr] (validate) -- (publish);
+\draw[arr] (validate) -- (accept);
 \end{tikzpicture}
-\caption{Stewardship closure turns a local task into maintained state. The loop first consumes matching executable structure, then either records that no shared update is needed or proposes a change, after which affectedness analysis and validation determine what can be published as current.}
-\label{fig:stewardship-closure}
+\caption{Stewardship is integrated into task execution. The outer loop selects and runs harness structure early, consumes generated artifacts while doing the work, and routes observations through affectedness, review, and integration steps before current state is accepted.}
+\label{fig:stewardship-integration}
 \end{figure}
 
-\subsection{Before the Task}
+At task selection time, the outer loop asks whether the harness already contains relevant executable structure: a context pattern, graph region, artifact contract, validation step, or recomputation path. If so, the loop asks the harness to run the selected structure with its inputs, parameters, and slots, then consumes the resulting artifacts, generated intermediates, validation warnings, and provenance. The resulting answer is therefore not purely local; it is produced by collaboration between the outer loop's open-ended reasoning and the harness's maintained executable structure.
 
-Before acting, the outer loop asks whether the task matches existing executable structure: a context pattern, graph region, artifact contract, validation rule, or recomputation path. If a match exists, the loop asks the harness to execute that structure with its inputs, parameters, and slots. It then consumes the resulting artifacts, generated intermediates, validation warnings, and provenance before falling back to open-ended exploration.
+During execution, the loop remains flexible: it may call tools, delegate subtasks, inspect artifacts, and explore. The harness remains active as the task proceeds by materializing intermediates, executing selected blocks, recording run events, resolving artifacts, and making missing context, overloaded context, stale artifacts, ambiguous authority, or reusable procedural discoveries available as candidate improvements rather than side notes.
 
-\subsection{During the Task}
-
-During execution, the loop remains flexible. It may call tools, delegate subtasks, inspect artifacts, and perform open-ended exploration. Stewardship tracking begins while acting: the loop should record missing context, overloaded context, stale artifacts, ambiguous authority, and reusable procedural discoveries. These observations are not side notes. They are candidate improvements to the shared execution environment.
-
-\subsection{After the Task}
-
-After producing a local output, the loop should close the stewardship loop. It may commit or propose:
+As work proceeds, the loop and harness should integrate evidence and proposed changes into maintained state:
 \begin{itemize}[leftmargin=*]
-\item intermediate artifact updates,
-\item final artifact supersessions,
+\item updated intermediate artifacts to be produced or registered through harness execution,
+\item final artifact supersessions to be accepted through review or publication structure,
 \item graph dependency edits,
 \item context-pattern improvements,
-\item validation-rule changes,
+\item validation-step changes,
 \item stale markings or recomputation requests,
-\item explicit ``no shared update needed'' justification.
+\item explicit ``no shared update needed'' justifications.
 \end{itemize}
 
-A completed task without this check can be locally useful but systemically incomplete.
-
-\subsection{Validation and Future Inheritance}
-
-The harness validates whether the task left stale state, created conflicting active artifacts, failed to update downstream dependents, or discovered reusable procedure improvements. Future loops then inherit the improved shared execution environment. Over time, useful intelligence is maintained not because models are directly changed, but because the executable structure surrounding them becomes better.
+A task that bypasses this integrated process can still be locally useful, but the produced answer may not be aligned with maintained state. The harness validates whether the task execution consumed current artifacts, left stale state, exposed unresolved authority conflicts, affected downstream dependents, or discovered reusable procedure improvements that should be routed into maintained structure. Future loops then inherit the revised shared execution environment.
 
 \section{Evaluation Agenda}
 
@@ -561,59 +479,17 @@ This paper does not report a new experiment and should not be read as empirical 
 
 \subsection{Metrics}
 
-Useful metrics fall into three groups.
-
-\paragraph{Context-pattern quality.}
-These metrics ask whether learned executable procedures are reused and improved rather than rediscovered:
+The metrics should evaluate maintained execution state, not only final prose quality:
 \begin{itemize}[leftmargin=*]
-\item context-pattern reuse rate,
-\item context-pattern improvement acceptance rate,
-\item context precision and recall for known task classes,
-\item duplicate procedure creation rate,
-\item future-agent lift from prior pattern improvements.
+\item \textbf{Context-pattern quality:} reuse rate, improvement acceptance rate, context precision and recall, duplicate procedure creation, and future-agent lift from prior pattern improvements.
+\item \textbf{Artifact-state quality:} stale artifact rate, authority conflicts, stale or superseded artifact consumption, invalidation correctness, propagation completeness, and cross-agent consistency.
+\item \textbf{Stewardship behavior:} useful update rate, no-update-needed justifications, human review burden, proposal acceptance and rejection, stewardship-noise rate, time to identify affected subgraphs, and drift accumulation over $N$ tasks.
+\item \textbf{Wiki and repository comparison:} stale page or file consumption, rediscovered procedures despite shared content, updates that become executable context-pattern changes, time to assess downstream impact, file changes without affectedness metadata, and future-loop use of the correct current artifact.
 \end{itemize}
-
-\paragraph{Artifact-state quality.}
-These metrics ask whether maintained state remains current and coherent:
-\begin{itemize}[leftmargin=*]
-\item stale artifact rate after task completion,
-\item artifact authority conflicts,
-\item rate at which outer loops consume stale or superseded artifacts,
-\item downstream invalidation correctness,
-\item propagation completeness,
-\item cross-agent consistency over repeated tasks.
-\end{itemize}
-
-\paragraph{Stewardship behavior.}
-These metrics ask whether outer loops behave as stewardship-compliant clients of the shared harness:
-\begin{itemize}[leftmargin=*]
-\item rate at which outer loops submit useful stewardship updates,
-\item percentage of completed tasks with explicit no-update-needed justification,
-\item human review burden,
-\item proposal acceptance rate and rejected-update rate,
-\item stewardship-noise rate, measured as low-value proposals per completed task,
-\item time to identify affected subgraph,
-\item drift accumulation over $N$ tasks.
-\end{itemize}
-
-\paragraph{Wiki and repository comparison.}
-These metrics ask what shared knowledge or shared files improve, and where execution-control semantics are still needed:
-\begin{itemize}[leftmargin=*]
-\item stale page consumption rate,
-\item stale file or reference consumption rate,
-\item repeated procedures rediscovered despite existing wiki or repository content,
-\item percentage of wiki or repository updates that become executable context-pattern changes,
-\item time to determine whether a wiki or repository update affects downstream artifacts,
-\item final outputs that cite updated wiki or repository content while upstream maintained artifacts remain stale,
-\item pull-request or file changes that lack affectedness metadata,
-\item rate at which future loops use the correct current artifact after a wiki or repository update.
-\end{itemize}
-
-These metrics evaluate the maintained execution environment, not only final prose quality.
 
 \subsection{Proposed Benchmark Design}
 
-A small benchmark can make the hypothesis falsifiable without requiring a full product-scale deployment. One design is a repeated company-intelligence or research-synthesis workload with evolving criteria. Each trial would run a sequence of tasks over the same domain, such as founder updates, funding updates, technical-novelty assessments, competitive-risk reassessments, and customer-implication memos. Midway through the sequence, the benchmark introduces a legitimate criteria change, such as a new distinction between research-heavy and services-heavy companies or a new inclusion criterion for research synthesis.
+A small benchmark can make the hypothesis falsifiable without requiring a full product-scale deployment. One design is a repeated company-intelligence or research-synthesis workload with evolving criteria. Each trial would run a sequence of related tasks and introduce a legitimate criteria change midway through the sequence.
 
 The comparison conditions should include:
 \begin{itemize}[leftmargin=*]
@@ -625,24 +501,9 @@ The comparison conditions should include:
 \item MCP-mediated stewardship over maintained artifacts and context patterns.
 \end{itemize}
 
-The benchmark should measure stale artifact rate, context consistency across agents, duplicate procedure creation, affectedness accuracy, review burden, and future-agent reuse. The expected result is not assumed. A shared wiki or repository may perform well on recall and reuse; the proposed harness should be judged specifically on maintained-state metrics such as current artifact resolution, invalidation correctness, propagation completeness, context-pattern consistency, and stewardship closure.
+The benchmark should measure stale artifact rate, context consistency across agents, duplicate procedure creation, affectedness accuracy, review burden, and future-agent reuse. The expected result is not assumed. A shared wiki or repository may perform well on recall and reuse; the proposed harness should be judged specifically on maintained-state metrics such as current artifact resolution, invalidation correctness, propagation completeness, context-pattern consistency, and stewardship integration.
 
-\subsection{Benchmark-Style Task Families}
-
-Promising task families include:
-\begin{itemize}[leftmargin=*]
-\item repeated company-intelligence tasks across multiple agents,
-\item strategy planning where criteria evolve,
-\item research synthesis with changing inclusion criteria,
-\item codebase maintenance where requirements, plans, patches, and verification artifacts must remain aligned,
-\item multi-agent competitive analysis where context patterns determine which static and generated artifacts enter context.
-\end{itemize}
-
-These task families should be evaluated across the comparison conditions above rather than only against isolated baselines.
-
-\subsection{Evaluation Hypotheses}
-
-Future experiments should avoid claiming that the harness makes models smarter or guarantees better final answers. The appropriate hypotheses are structural:
+Other task families include strategy planning with evolving criteria, codebase maintenance where requirements and verification artifacts must remain aligned, and multi-agent competitive analysis where context patterns determine which static and generated artifacts enter context. Future experiments should avoid claiming that the harness makes models smarter or guarantees better final answers. The appropriate hypotheses are structural:
 \begin{itemize}[leftmargin=*]
 \item fewer completed tasks leave stale authoritative artifacts,
 \item affected subgraphs are identified more quickly and accurately,
@@ -659,13 +520,9 @@ The proposed architecture has important limits.
 \item \textbf{Latency and coordination overhead.} Context matching, current-state resolution, validation, and review can slow down work that would otherwise be completed locally.
 \item \textbf{Annotation burden.} Agents and humans may need to supply roles, scopes, rationales, dependency metadata, and no-update-needed justifications. Poor annotations weaken the harness.
 \item \textbf{Not every task justifies the machinery.} Exploratory, one-off, low-stakes, or rapidly changing tasks may be better served by ad hoc agent work, ordinary communication, or simple shared notes.
-\item \textbf{Bad structure can propagate errors.} A flawed context pattern or incorrect authority decision may make future loops consistently wrong.
+\item \textbf{Bad structure and pattern drift.} A flawed context pattern, incorrect authority decision, or overfit procedure may make future loops consistently wrong.
 \item \textbf{False invalidations and missed dependencies.} Overbroad affectedness can create unnecessary recomputation and review; omitted dependencies can leave stale artifacts active.
-\item \textbf{Stewardship noise and proposal overload.} Many agents may continuously propose artifact edits, pattern diffs, stale markings, and invalidations. Without quality thresholds, deduplication, batching, ownership rules, and review queues, stewardship activity can become noise that slows the system rather than improving it.
-\item \textbf{Governance bottlenecks.} Policy over permissions, approval, review, and supersession is central, but review gates can become bottlenecks or encode organizational politics.
-\item \textbf{Pattern drift remains possible.} Context patterns can become stale, overfit to local tasks, accumulate unnecessary complexity, or become brittle under new task distributions.
-\item \textbf{Bad structure may propagate mistakes more efficiently.} The same mechanism that helps future loops reuse good procedures may also make them confidently reuse bad procedures.
-\item \textbf{Dependency modeling is imperfect.} If the graph omits a real dependency, invalidation and propagation will be incomplete; if it invents dependencies, the system may become noisy and expensive.
+\item \textbf{Stewardship noise and governance bottlenecks.} Many agents may propose edits, pattern diffs, stale markings, and invalidations. Without thresholds, deduplication, batching, ownership metadata, and review queues, stewardship activity can become noise or concentrate into slow approval queues.
 \item \textbf{Private model reasoning should not be persisted.} The harness maintains artifacts, context patterns, validations, and provenance, not hidden chain-of-thought.
 \item \textbf{Communication remains necessary.} A2A, chat, review comments, and human discussion still matter; the harness does not replace them.
 \item \textbf{Evaluation remains future work.} The paper provides an agenda and architecture, not benchmark results.
@@ -673,13 +530,9 @@ The proposed architecture has important limits.
 
 \section{Conclusion}
 
-As some agent systems scale from one loop to many long-lived, dependency-bearing loops, the central problem may become not only how agents talk, delegate, or remember, but how they maintain shared executable intelligence. Many locally successful outer loops can still produce organizational-scale drift if they reconstruct context differently, patch final outputs locally, leave intermediate artifacts stale, and fail to publish improved procedures.
+As agent systems scale from one loop to many long-lived, dependency-bearing loops, the central problem may become not only how agents talk, delegate, or remember, but what shared executable structure they can consume and collectively maintain. LLM-maintained wikis and shared repositories show that agents can accumulate knowledge and coordinate over durable files. The shared stewardship harness builds on that intuition but changes the maintained object: what future loops should execute, which artifacts are current, what has become stale, and how task execution updates the shared execution environment.
 
-LLM-maintained wikis and shared repositories show that agents can accumulate shared knowledge and coordinate over durable files. The stewardship harness builds on that intuition but changes the maintained object: not only what has been written, but what future loops should execute, which artifacts are current, what has become stale, and how each completed task improves the shared execution environment.
-
-We proposed the shared stewardship harness as an MCP-accessible execution control plane for multi-agent AI systems that have long-lived shared state. A2A lets agents find and communicate with other agents. MCP lets outer loops access the shared harness. The harness maintains executable graph structure, artifact state, context-pattern registries, supersession, current-state resolution, invalidation, and propagation. Context patterns encode learned procedural and contextual knowledge in executable form.
-
-The behavioral claim is as important as the architectural claim. Stewardship-compliant outer loops leave behind improved maintained state: updated artifacts, context patterns, dependency structure, validation rules, or explicit evidence that no shared update was needed. A weak loop preserves a procedural discovery in a final answer; a stewardship-aware loop turns that discovery into an executable context pattern, criteria artifact, validation rule, or dependency update that future loops can run. The shared harness supplies the mechanism, but stewardship is the protocol expectation for the loop. This remains a proposal and evaluation agenda: multi-agent systems should be evaluated not only by whether a task was completed, but by whether the next agent inherits a better shared execution environment.
+We proposed the shared stewardship harness as an MCP-accessible execution control plane for multi-agent AI systems with long-lived shared state. A2A lets agents find and communicate with other agents; MCP lets outer loops access the harness; the harness maintains artifacts, context patterns, authority, supersession, invalidation, affectedness, and stewardship integration. This remains a proposal and evaluation agenda: multi-agent systems should be evaluated not only by whether a task was completed, but by whether the next agent inherits better maintained executable state.
 
 \begin{thebibliography}{99}
 
@@ -759,8 +612,8 @@ Linyue Pan, Lexiao Zou, Shuo Guo, Jingchen Ni, and Hai-Tao Zheng.
 \newblock arXiv:2603.25723, 2026.
 
 \bibitem{ning2026codeharness}
-Xuying Ning, Katherine Tieu, Dongqi Fu, Tianxin Wei, Zihao Li, Yuanchen Bei, and others.
-\newblock Code as Agent Harness.
+Xuying Ning, Katherine Tieu, Dongqi Fu, Tianxin Wei, Zihao Li, Yuanchen Bei, Jiaru Zou, Mengting Ai, Zhining Liu, Ting-Wei Li, Lingjie Chen, Yanjun Zhao, Ke Yang, Bingxuan Li, Cheng Qian, Gaotang Li, Xiao Lin, Zhichen Zeng, Ruizhong Qiu, Sirui Chen, Yifan Sun, Xiyuan Yang, Ruida Wang, Rui Pan, Chenyuan Yang, Dylan Zhang, Liri Fang, Zikun Cui, Yang Cao, Pan Chen, Dorothy Sun, Ren Chen, Mahesh Srinivasan, Nipun Mathur, Yinglong Xia, Hong Li, Hong Yan, Pan Lu, Lingming Zhang, Tong Zhang, Hanghang Tong, and Jingrui He.
+\newblock Code as Agent Harness: Toward Executable, Verifiable, and Stateful Agent Systems.
 \newblock arXiv:2605.18747, 2026.
 
 \bibitem{lou2026autoharness}
