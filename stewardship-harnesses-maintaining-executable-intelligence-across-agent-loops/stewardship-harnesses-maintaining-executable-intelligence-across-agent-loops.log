@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 12:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 12:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -858,26 +858,26 @@ Underfull \hbox (badness 2111) in paragraph at lines 413--413
 Underfull \vbox (badness 1331) has occurred while \output is active []
 
  [9]
-[10] [11]
-Underfull \hbox (badness 1490) in paragraph at lines 560--563
+[10] [11] [12]
+Underfull \hbox (badness 1490) in paragraph at lines 563--566
 []\OT1/ptm/m/n/10 Model Con-text Pro-to-col.  Spec-i-fi-ca-tion 2025-06-18: Too
 ls.  []$\OT1/cmtt/m/n/10 https : / / modelcontextprotocol . io /
  []
 
-[12]
-Underfull \hbox (badness 1478) in paragraph at lines 620--623
+
+Underfull \hbox (badness 1478) in paragraph at lines 623--626
 \OT1/ptm/m/n/10 P. Mur-phy.  Au-to-Har-ness: Im-prov-ing LLM Agents by Au-to-ma
 t-i-cally Syn-the-siz-ing a Code Har-ness.
  []
 
 
-Underfull \hbox (badness 2409) in paragraph at lines 630--633
+Underfull \hbox (badness 2409) in paragraph at lines 633--636
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu
 -big.  Agent Work-flow Mem-ory.
  []
 
 [13]
-Underfull \hbox (badness 4217) in paragraph at lines 660--664
+Underfull \hbox (badness 4217) in paragraph at lines 663--667
 []\OT1/ptm/m/n/10 Andrej Karpa-thy.  LLM Wiki.  GitHub Gist, 2026.  []$\OT1/cmt
 t/m/n/10 https : / / gist . github . com / karpathy /
  []
@@ -896,11 +896,11 @@ Package rerunfilecheck Info: File `stewardship-harnesses-maintaining-executable
 Here is how much of TeX's memory you used:
  22860 strings out of 467525
  427435 string characters out of 5418982
- 841179 words of memory out of 5000000
+ 841204 words of memory out of 5000000
  51287 multiletter control sequences out of 15000+600000
  652821 words of font info for 87 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,13n,104p,1228b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,104p,1228b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><
 /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
@@ -912,7 +912,7 @@ l/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
 2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf
 -dist/fonts/type1/urw/times/utmri8a.pfb>
 Output written on stewardship-harnesses-maintaining-executable-intelligence-acr
-oss-agent-loops.pdf (14 pages, 183674 bytes).
+oss-agent-loops.pdf (14 pages, 183884 bytes).
 PDF statistics:
  403 PDF objects out of 1000 (max. 8388607)
  363 compressed objects within 4 object streams

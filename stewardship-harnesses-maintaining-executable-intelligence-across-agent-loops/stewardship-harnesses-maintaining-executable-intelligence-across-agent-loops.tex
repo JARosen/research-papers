@@ -40,7 +40,7 @@ Multi-agent AI systems increasingly consist of agents with their own task loops:
 
 We hypothesize that such systems need shared executable intelligence that these agent loops can consume and collectively steward: durable, versioned procedures and artifacts that future agents can run against. A shared stewardship harness is an MCP-accessible execution control plane that maintains current artifacts, executable context patterns, supersession, authority, dependency-aware invalidation, affectedness, and stewardship integration. Outer loops use this structure when it applies, ask the harness to execute relevant structure with task inputs, consume the resulting artifacts, and propose updates when their work reveals gaps.
 
-The contribution is a systems abstraction and reference architecture, not an empirical benchmark. We define the shared stewardship harness and executable context patterns, distinguish agent interoperability from maintained executable state, outline an MCP-accessible harness interface, and propose evaluation criteria for future work. Whether such mechanisms reduce drift or improve downstream work remains an empirical question.
+The contribution is a systems abstraction and reference architecture, not an empirical benchmark. We define the shared stewardship harness and executable context patterns, distinguish agent interoperability from maintained executable state, outline an MCP-accessible harness interface, and propose evaluation criteria for testing cross-agent drift and maintained-state quality.
 \end{abstract}
 
 \section{Introduction}
@@ -188,7 +188,7 @@ where $y_i$ is an isolated task output. Isolated completion does not imply maint
 
 \subsection{Architectural Objective}
 
-The architectural objective is to reduce drift accumulation across repeated tasks while preserving task-completion performance. In long-lived workloads with dependency-bearing artifacts, executable stewardship should improve maintained-state quality: fewer stale current artifacts, fewer duplicated procedures, more consistent context materialization, and more accurate affectedness after changes. This is structural, not a claim that the harness makes models smarter. Future evaluations should measure both drift reduction and the added latency, annotation burden, review burden, and proposal noise.
+The architectural objective is to reduce drift accumulation across repeated tasks while preserving task-completion performance. In long-lived workloads with dependency-bearing artifacts, executable stewardship should improve maintained-state quality: fewer stale current artifacts, fewer duplicated procedures, more consistent context materialization, and more accurate affectedness after changes. This is structural, not a claim that the harness makes models smarter. Future evaluations should measure both drift reduction and the added latency, review burden, and proposal noise.
 
 \subsection{Cross-Agent Drift}
 
@@ -518,7 +518,6 @@ The proposed architecture has important limits.
 
 \begin{itemize}[leftmargin=*]
 \item \textbf{Latency and coordination overhead.} Context matching, current-state resolution, validation, and review can slow down work that would otherwise be completed locally.
-\item \textbf{Annotation burden.} Agents and humans may need to supply roles, scopes, rationales, dependency metadata, and no-update-needed justifications. Poor annotations weaken the harness.
 \item \textbf{Not every task justifies the machinery.} Exploratory, one-off, low-stakes, or rapidly changing tasks may be better served by ad hoc agent work, ordinary communication, or simple shared notes.
 \item \textbf{Bad structure and pattern drift.} A flawed context pattern, incorrect authority decision, or overfit procedure may make future loops consistently wrong.
 \item \textbf{False invalidations and missed dependencies.} Overbroad affectedness can create unnecessary recomputation and review; omitted dependencies can leave stale artifacts active.
@@ -532,7 +531,11 @@ The proposed architecture has important limits.
 
 As agent systems scale from one loop to many long-lived, dependency-bearing loops, the central problem may become not only how agents talk, delegate, or remember, but what shared executable structure they can consume and collectively maintain. LLM-maintained wikis and shared repositories show that agents can accumulate knowledge and coordinate over durable files. The shared stewardship harness builds on that intuition but changes the maintained object: what future loops should execute, which artifacts are current, what has become stale, and how task execution updates the shared execution environment.
 
-We proposed the shared stewardship harness as an MCP-accessible execution control plane for multi-agent AI systems with long-lived shared state. A2A lets agents find and communicate with other agents; MCP lets outer loops access the harness; the harness maintains artifacts, context patterns, authority, supersession, invalidation, affectedness, and stewardship integration. This remains a proposal and evaluation agenda: multi-agent systems should be evaluated not only by whether a task was completed, but by whether the next agent inherits better maintained executable state.
+We proposed the shared stewardship harness as an MCP-accessible execution control plane for multi-agent AI systems with long-lived shared state. A2A lets agents find and communicate with other agents; MCP lets outer loops access the harness; the harness maintains artifacts, context patterns, authority, supersession, invalidation, affectedness, and stewardship integration.
+
+The hypothesis behind stewardship harnesses is that multi-agent systems become more capable not only by adding more agents, but by giving those agents shared executable structure that compounds across tasks. When each loop can consume maintained structure and improve it during execution, the system can accumulate usable procedure, context, and artifact state rather than merely accumulating messages or outputs. This may allow long-lived agent teams to approach problems whose complexity exceeds what any single loop can reliably reconstruct from scratch.
+
+This remains a proposal and evaluation agenda: multi-agent systems should be evaluated not only by whether a task was completed, but by whether the next agent inherits better maintained executable state.
 
 \begin{thebibliography}{99}
 
