@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 16:49
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  11 JUN 2026 17:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -319,34 +319,44 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@lastruleclass=\count313
 \@thisrulewidth=\dimen184
 )
+(/usr/local/texlive/2026/texmf-dist/tex/latex/tools/array.sty
+Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
+\col@sep=\dimen185
+\ar@mcellbox=\box55
+\extrarowheight=\dimen186
+\NC@list=\toks25
+\extratabsurround=\skip71
+\backup@length=\skip72
+\ar@cellbox=\box56
+)
 (/usr/local/texlive/2026/texmf-dist/tex/latex/enumitem/enumitem.sty
 Package: enumitem 2025/02/06 v3.11 Customized lists
-\labelindent=\skip71
-\enit@outerparindent=\dimen185
-\enit@toks=\toks25
-\enit@inbox=\box55
+\labelindent=\skip73
+\enit@outerparindent=\dimen187
+\enit@toks=\toks26
+\enit@inbox=\box57
 \enit@count@id=\count314
 \enitdp@description=\count315
 )
 (/usr/local/texlive/2026/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \c@float@type=\count316
-\float@exts=\toks26
-\float@box=\box56
-\@float@everytoks=\toks27
-\@floatcapt=\box57
+\float@exts=\toks27
+\float@box=\box58
+\@float@everytoks=\toks28
+\@floatcapt=\box59
 )
 (/usr/local/texlive/2026/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
 (/usr/local/texlive/2026/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
 (/usr/local/texlive/2026/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.te
 x
-\pgfutil@everybye=\toks28
-\pgfutil@tempdima=\dimen186
-\pgfutil@tempdimb=\dimen187
+\pgfutil@everybye=\toks29
+\pgfutil@tempdima=\dimen188
+\pgfutil@tempdimb=\dimen189
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
-\pgfutil@abb=\box58
+\pgfutil@abb=\box60
 ) (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/pgf.revision.tex)
 Package: pgfrcs 2025-08-29 v3.1.11a (3.1.11a)
@@ -358,32 +368,32 @@ Package: pgf 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
 Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
-\pgfkeys@pathtoks=\toks29
-\pgfkeys@temptoks=\toks30
+\pgfkeys@pathtoks=\toks30
+\pgfkeys@temptoks=\toks31
 
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfil
 tered.code.tex
-\pgfkeys@tmptoks=\toks31
+\pgfkeys@tmptoks=\toks32
 ))
-\pgf@x=\dimen188
-\pgf@y=\dimen189
-\pgf@xa=\dimen190
-\pgf@ya=\dimen191
-\pgf@xb=\dimen192
-\pgf@yb=\dimen193
-\pgf@xc=\dimen194
-\pgf@yc=\dimen195
-\pgf@xd=\dimen196
-\pgf@yd=\dimen197
+\pgf@x=\dimen190
+\pgf@y=\dimen191
+\pgf@xa=\dimen192
+\pgf@ya=\dimen193
+\pgf@xb=\dimen194
+\pgf@yb=\dimen195
+\pgf@xc=\dimen196
+\pgf@yc=\dimen197
+\pgf@xd=\dimen198
+\pgf@yd=\dimen199
 \w@pgf@writea=\write3
 \r@pgf@reada=\read2
 \c@pgf@counta=\count317
 \c@pgf@countb=\count318
 \c@pgf@countc=\count319
 \c@pgf@countd=\count320
-\t@pgf@toka=\toks32
-\t@pgf@tokb=\toks33
-\t@pgf@tokc=\toks34
+\t@pgf@toka=\toks33
+\t@pgf@tokb=\toks34
+\t@pgf@tokc=\toks35
 \pgf@sys@id@count=\count321
 
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg
@@ -432,12 +442,12 @@ Package: pgfcore 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
-\pgfmath@dimen=\dimen198
+\pgfmath@dimen=\dimen256
 \pgfmath@count=\count324
-\pgfmath@box=\box59
-\pgfmath@toks=\toks35
-\pgfmath@stack@operand=\toks36
-\pgfmath@stack@operation=\toks37
+\pgfmath@box=\box61
+\pgfmath@toks=\toks36
+\pgfmath@stack@operand=\toks37
+\pgfmath@stack@operation=\toks38
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.
 tex)
@@ -464,52 +474,52 @@ erarithmetics.code.tex)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.co
 de.tex
 File: pgfcorepoints.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@picminx=\dimen199
-\pgf@picmaxx=\dimen256
-\pgf@picminy=\dimen257
-\pgf@picmaxy=\dimen258
-\pgf@pathminx=\dimen259
-\pgf@pathmaxx=\dimen260
-\pgf@pathminy=\dimen261
-\pgf@pathmaxy=\dimen262
-\pgf@xx=\dimen263
-\pgf@xy=\dimen264
-\pgf@yx=\dimen265
-\pgf@yy=\dimen266
-\pgf@zx=\dimen267
-\pgf@zy=\dimen268
+\pgf@picminx=\dimen257
+\pgf@picmaxx=\dimen258
+\pgf@picminy=\dimen259
+\pgf@picmaxy=\dimen260
+\pgf@pathminx=\dimen261
+\pgf@pathmaxx=\dimen262
+\pgf@pathminy=\dimen263
+\pgf@pathmaxy=\dimen264
+\pgf@xx=\dimen265
+\pgf@xy=\dimen266
+\pgf@yx=\dimen267
+\pgf@yy=\dimen268
+\pgf@zx=\dimen269
+\pgf@zy=\dimen270
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconst
 ruct.code.tex
 File: pgfcorepathconstruct.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@path@lastx=\dimen269
-\pgf@path@lasty=\dimen270
+\pgf@path@lastx=\dimen271
+\pgf@path@lasty=\dimen272
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage
 .code.tex
 File: pgfcorepathusage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@shorten@end@additional=\dimen271
-\pgf@shorten@start@additional=\dimen272
+\pgf@shorten@end@additional=\dimen273
+\pgf@shorten@start@additional=\dimen274
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.co
 de.tex
 File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfpic=\box60
-\pgf@hbox=\box61
-\pgf@layerbox@main=\box62
+\pgfpic=\box62
+\pgf@hbox=\box63
+\pgf@layerbox@main=\box64
 \pgf@picture@serial@count=\count326
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicst
 ate.code.tex
 File: pgfcoregraphicstate.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgflinewidth=\dimen273
+\pgflinewidth=\dimen275
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransform
 ations.code.tex
 File: pgfcoretransformations.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@pt@x=\dimen274
-\pgf@pt@y=\dimen275
-\pgf@pt@temp=\dimen276
+\pgf@pt@x=\dimen276
+\pgf@pt@y=\dimen277
+\pgf@pt@temp=\dimen278
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.cod
 e.tex
@@ -526,12 +536,12 @@ File: pgfcorepathprocessing.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.co
 de.tex
 File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowsep=\dimen277
+\pgfarrowsep=\dimen279
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.cod
 e.tex
 File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@max=\dimen278
+\pgf@max=\dimen280
 \pgf@sys@shading@range@num=\count327
 \pgf@shadingcount=\count328
 )
@@ -542,7 +552,7 @@ File: pgfcoreimage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.
 code.tex
 File: pgfcoreexternal.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfexternal@startupbox=\box63
+\pgfexternal@startupbox=\box65
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.co
 de.tex
@@ -563,7 +573,7 @@ File: pgfcorerdf.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.cod
 e.tex
 File: pgfmoduleshapes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfnodeparttextbox=\box64
+\pgfnodeparttextbox=\box66
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.
 tex
@@ -572,8 +582,8 @@ File: pgfmoduleplot.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
 -0-65.sty
 Package: pgfcomp-version-0-65 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@nodesepstart=\dimen279
-\pgf@nodesepend=\dimen280
+\pgf@nodesepstart=\dimen281
+\pgf@nodesepend=\dimen282
 )
 (/usr/local/texlive/2026/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
 -1-18.sty
@@ -586,10 +596,10 @@ Package: pgfcomp-version-1-18 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex))
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
 Package: pgffor 2025-08-29 v3.1.11a (3.1.11a)
-\pgffor@iter=\dimen281
-\pgffor@skip=\dimen282
-\pgffor@stack=\toks38
-\pgffor@toks=\toks39
+\pgffor@iter=\dimen283
+\pgffor@skip=\dimen284
+\pgffor@stack=\toks39
+\pgffor@toks=\toks40
 ))
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.cod
 e.tex
@@ -599,20 +609,20 @@ Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
 dlers.code.tex
 File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@plot@mark@count=\count329
-\pgfplotmarksize=\dimen283
+\pgfplotmarksize=\dimen285
 )
-\tikz@lastx=\dimen284
-\tikz@lasty=\dimen285
-\tikz@lastxsaved=\dimen286
-\tikz@lastysaved=\dimen287
-\tikz@lastmovetox=\dimen288
-\tikz@lastmovetoy=\dimen289
-\tikzleveldistance=\dimen290
-\tikzsiblingdistance=\dimen291
-\tikz@figbox=\box65
-\tikz@figbox@bg=\box66
-\tikz@tempbox=\box67
-\tikz@tempbox@bg=\box68
+\tikz@lastx=\dimen286
+\tikz@lasty=\dimen287
+\tikz@lastxsaved=\dimen288
+\tikz@lastysaved=\dimen289
+\tikz@lastmovetox=\dimen290
+\tikz@lastmovetoy=\dimen291
+\tikzleveldistance=\dimen292
+\tikzsiblingdistance=\dimen293
+\tikz@figbox=\box67
+\tikz@figbox@bg=\box68
+\tikz@tempbox=\box69
+\tikz@tempbox@bg=\box70
 \tikztreelevel=\count330
 \tikznumberofchildren=\count331
 \tikznumberofcurrentchild=\count332
@@ -634,10 +644,10 @@ File: tikzlibrarytopaths.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.
 meta.code.tex
 File: pgflibraryarrows.meta.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowinset=\dimen292
-\pgfarrowlength=\dimen293
-\pgfarrowwidth=\dimen294
-\pgfarrowlinewidth=\dimen295
+\pgfarrowinset=\dimen294
+\pgfarrowlength=\dimen295
+\pgfarrowwidth=\dimen296
+\pgfarrowlinewidth=\dimen297
 )
 (/usr/local/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
 s/tikzlibrarypositioning.code.tex
@@ -660,7 +670,7 @@ s/tikzlibraryfit.code.tex
 File: tikzlibraryfit.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 3
-4.
+5.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
@@ -674,24 +684,24 @@ ps.aux)
 \openout1 = `the-stewardship-pattern-maintaining-executable-intelligence-across
 -agent-loops.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 35.
+LaTeX Font Info:    ... okay on input line 35.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -762,16 +772,16 @@ LaTeX Font Info:    ... okay on input line 34.
 (/usr/local/texlive/2026/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count339
-\scratchdimen=\dimen296
-\scratchbox=\box69
+\scratchdimen=\dimen298
+\scratchbox=\box71
 \nofMPsegments=\count340
 \nofMParguments=\count341
-\everyMPshowfont=\toks40
+\everyMPshowfont=\toks41
 \MPscratchCnt=\count342
-\MPscratchDim=\dimen297
+\MPscratchDim=\dimen299
 \MPnumerator=\count343
 \makeMPintoPDFobject=\count344
-\everyMPtoPDFconversion=\toks41
+\everyMPtoPDFconversion=\toks42
 ) (/usr/local/texlive/2026/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
@@ -781,7 +791,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 34.
+Package hyperref Info: Link coloring OFF on input line 35.
 
 (./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
 ps.out)
@@ -791,111 +801,117 @@ ps.out)
 \openout4 = `the-stewardship-pattern-maintaining-executable-intelligence-across
 -agent-loops.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 38.
 
  (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 38.
 
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-Underfull \vbox (badness 2426) has occurred while \output is active []
-
- [1
+) [1
 
 
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc}]
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 5
-9.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 6
+0.
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-) [2]
-Underfull \hbox (badness 10000) in paragraph at lines 151--152
+)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [2]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [3]
+Underfull \hbox (badness 10000) in paragraph at lines 154--155
 []\OT1/ptm/b/n/10 Selection. \OT1/ptm/m/n/10 Through MCP, the loop searches or 
 se-lects the cur-rent com-piled struc-ture for
  []
 
 
-Underfull \hbox (badness 1776) in paragraph at lines 151--152
+Underfull \hbox (badness 1776) in paragraph at lines 154--155
 \OT1/cmtt/m/n/10 competitor[]risk[]assessment\OT1/ptm/m/n/10 : a con-text pat-t
 ern, graph re-gion, out-put con-tract, and rel-e-vant ar-ti-fact
- []
-
-[3]
-Underfull \hbox (badness 10000) in paragraph at lines 180--180
-[]\OT1/ptm/m/n/7 Markdown pages, sum-maries,
- []
-
-
-Underfull \hbox (badness 2460) in paragraph at lines 181--182
-[]\OT1/ptm/m/n/7 Semantic current-state res-o-lu-tion
- []
-
-
-Underfull \hbox (badness 2753) in paragraph at lines 181--182
-\OT1/ptm/m/n/7 for LLM-native ar-ti-facts as the
- []
-
-
-Underfull \hbox (badness 1558) in paragraph at lines 182--183
-\OT1/ptm/m/n/7 su-per-s-es-sion as pri-mary ab-strac-
- []
-
-
-Underfull \hbox (badness 2856) in paragraph at lines 183--184
-[]\OT1/ptm/m/n/7 Executable con-text pat-terns and
- []
-
-
-Underfull \hbox (badness 3568) in paragraph at lines 184--184
-\OT1/ptm/m/n/7 state, re-view struc-ture, run-time
  []
 
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [4]
-[5]
-Underfull \hbox (badness 1466) in paragraph at lines 241--242
-[]\OT1/ptm/m/n/9 Multiple sum-maries, rubrics, or anal-y-ses are treated as cur
--rent be-cause no
+Underfull \hbox (badness 10000) in paragraph at lines 209--209
+[]|\OT1/ptm/m/n/7 Markdown pages, sum-maries,
  []
 
-[6] [7] [8] [9]
-Underfull \hbox (badness 1127) in paragraph at lines 434--435
-[]\OT1/ptm/m/n/9 Maintained-state se-man-tics un-less backed
+
+Underfull \hbox (badness 2460) in paragraph at lines 210--211
+[]|\OT1/ptm/m/n/7 Semantic current-state res-o-lu-tion
  []
 
-[10] [11] [12] [13]
-Underfull \hbox (badness 1490) in paragraph at lines 586--589
+
+Underfull \hbox (badness 2753) in paragraph at lines 210--211
+\OT1/ptm/m/n/7 for LLM-native ar-ti-facts as the
+ []
+
+
+Underfull \hbox (badness 1558) in paragraph at lines 211--212
+\OT1/ptm/m/n/7 su-per-s-es-sion as pri-mary ab-strac-
+ []
+
+
+Underfull \hbox (badness 2856) in paragraph at lines 212--213
+[]|\OT1/ptm/m/n/7 Executable con-text pat-terns and
+ []
+
+
+Underfull \hbox (badness 3568) in paragraph at lines 213--213
+\OT1/ptm/m/n/7 state, re-view struc-ture, run-time
+ []
+
+
+Underfull \vbox (badness 2368) has occurred while \output is active []
+
+ [5]
+[6]
+Underfull \hbox (badness 1466) in paragraph at lines 270--271
+[]|\OT1/ptm/m/n/9 Multiple sum-maries, rubrics, or anal-y-ses are treated as cu
+r-rent be-cause no
+ []
+
+[7] [8] [9] [10] [11]
+Underfull \hbox (badness 1127) in paragraph at lines 507--508
+[]|\OT1/ptm/m/n/9 Maintained-state se-man-tics un-less backed
+ []
+
+[12] [13] [14] [15]
+Underfull \hbox (badness 1490) in paragraph at lines 709--712
 []\OT1/ptm/m/n/10 Model Con-text Pro-to-col.  Spec-i-fi-ca-tion 2025-06-18: Too
 ls.  []$\OT1/cmtt/m/n/10 https : / / modelcontextprotocol . io /
  []
 
-
-Underfull \hbox (badness 1478) in paragraph at lines 646--649
+[16]
+Underfull \hbox (badness 1478) in paragraph at lines 769--772
 \OT1/ptm/m/n/10 P. Mur-phy.  Au-to-Har-ness: Im-prov-ing LLM Agents by Au-to-ma
 t-i-cally Syn-the-siz-ing a Code Har-ness.
  []
 
 
-Underfull \hbox (badness 2409) in paragraph at lines 656--659
+Underfull \hbox (badness 2409) in paragraph at lines 779--782
 []\OT1/ptm/m/n/10 Zora Zhiruo Wang, Ji-ayuan Mao, Daniel Fried, and Gra-ham Neu
 -big.  Agent Work-flow Mem-ory.
  []
 
-[14]
-Underfull \hbox (badness 4217) in paragraph at lines 686--690
+
+Underfull \hbox (badness 4217) in paragraph at lines 809--813
 []\OT1/ptm/m/n/10 Andrej Karpa-thy.  LLM Wiki.  GitHub Gist, 2026.  []$\OT1/cmt
 t/m/n/10 https : / / gist . github . com / karpathy /
  []
 
-[15]
+[17] [18]
 (./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loo
 ps.aux)
  ***********
@@ -904,16 +920,16 @@ L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `the-stewardship-pattern-maintaining-executab
 le-intelligence-across-agent-loops.out' has not changed.
-(rerunfilecheck)             Checksum: F369B39D2DC07F40B66A95A6C65DCD7C;6558.
+(rerunfilecheck)             Checksum: A1C8897272281B68F352A529A5CE3D0E;7281.
  ) 
 Here is how much of TeX's memory you used:
- 22865 strings out of 467525
- 427532 string characters out of 5418982
- 840789 words of memory out of 5000000
- 51289 multiletter control sequences out of 15000+600000
- 652821 words of font info for 87 fonts, out of 8000000 for 9000
+ 22955 strings out of 467525
+ 428836 string characters out of 5418982
+ 843474 words of memory out of 5000000
+ 51364 multiletter control sequences out of 15000+600000
+ 652988 words of font info for 88 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,12n,104p,1242b,832s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,104p,1403b,829s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><
 /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
@@ -921,14 +937,15 @@ sr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/
 local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/l
 ocal/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/loc
 al/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/loca
-l/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
-2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf
--dist/fonts/type1/urw/times/utmri8a.pfb>
+l/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/
+texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/20
+26/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026/texmf-d
+ist/fonts/type1/urw/times/utmri8a.pfb>
 Output written on the-stewardship-pattern-maintaining-executable-intelligence-a
-cross-agent-loops.pdf (15 pages, 187467 bytes).
+cross-agent-loops.pdf (18 pages, 213428 bytes).
 PDF statistics:
- 412 PDF objects out of 1000 (max. 8388607)
- 371 compressed objects within 4 object streams
- 109 named destinations out of 1000 (max. 500000)
- 285 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 451 PDF objects out of 1000 (max. 8388607)
+ 404 compressed objects within 5 object streams
+ 120 named destinations out of 1000 (max. 500000)
+ 309 words of extra memory for PDF output out of 10000 (max. 10000000)
 

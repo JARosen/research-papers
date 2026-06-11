@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1781210950.46566 "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.tex" "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.pdf" "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops" 1781210951.47512 0
+["pdflatex"] 1781214631.39522 "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.tex" "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.pdf" "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops" 1781214632.22881 0
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -26,6 +26,7 @@
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1136768653 1116 933a60c408fc0a863a92debe84b2d294 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm" 1136768653 1116 25a7bf822c58caf309a702ef79f4afbb ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm" 1136768653 768 1321e9409b4137d6fb428ac9dc956269 ""
+  "/usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm" 1136768653 764 c98a2af25c99b73a368cf7336e255190 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb" 1248133631 36281 c355509802a035cadc5f15869451dcee ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
@@ -33,6 +34,7 @@
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1248133631 32716 08e384dc442464e7285e891af9f45947 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb" 1248133631 31099 c85edf1dd5b9e826d67c9c7293b6786c ""
+  "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb" 1248133631 29078 718ea4567ceff944262b0f5b0800e1d9 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb" 1136849748 44729 811d6c62865936705a31c797a1d5dada ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb" 1136849748 46026 6dab18b61c907687b520c72847215a68 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmri8a.pfb" 1136849748 45458 a3faba884469519614ca56ba5f6b1de1 ""
@@ -164,6 +166,7 @@
   "/usr/local/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd" 1137110629 619 96f56dc5d1ef1fe1121f1cfeec70ee0c ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/refcount/refcount.sty" 1576624809 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1750533675 9684 a33a14b82ce60d6e77cb9be689d79ee6 ""
+  "/usr/local/texlive/2026/texmf-dist/tex/latex/tools/array.sty" 1761946296 15651 9d7c62df82cb29a555c00550babfe364 ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/url/url.sty" 1388531844 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/local/texlive/2026/texmf-dist/tex/latex/xcolor/xcolor.sty" 1727642399 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "/usr/local/texlive/2026/texmf-dist/web2c/texmf.cnf" 1770478701 43630 e9fa012910491fe5ae08a72c3c2997a7 ""
@@ -171,9 +174,9 @@
   "/usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1774209607 3636776 dc5fa9b6b1453b9d196cd42edf876004 ""
   "/usr/local/texlive/2026/texmf.cnf" 1774209515 577 648cd9f92f9c0eac486f4c71c85cfbbe ""
   "arxiv.sty" 1778164055.54912 7642 824ef14f3548279d54b419cf5e0f3098 ""
-  "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.aux" 1781210951.40764 9874 ba62cdab883ac52ce1f33e568408f01f "pdflatex"
-  "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.out" 1781210951.40832 6558 f369b39d2dc07f40b66a95a6c65dcd7c "pdflatex"
-  "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.tex" 1781210945.4472 62618 c76ee58f37da462c82161ddf79858155 ""
+  "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.aux" 1781214632.15379 10923 76810916a659e9197800b1ba95c96527 "pdflatex"
+  "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.out" 1781214632.15518 7281 a1c8897272281b68f352a529a5ce3d0e "pdflatex"
+  "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.tex" 1781214627.95347 70238 863b23af89ea5011ffe2867f95903740 ""
   (generated)
   "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.aux"
   "the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.log"

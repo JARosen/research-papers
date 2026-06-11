@@ -98,6 +98,8 @@ INPUT /usr/local/texlive/2026/texmf-dist/tex/generic/uniquecounter/uniquecounter
 INPUT /usr/local/texlive/2026/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty
+INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/tools/array.sty
+INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/tools/array.sty
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/enumitem/enumitem.sty
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/enumitem/enumitem.sty
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/float/float.sty
@@ -303,17 +305,18 @@ INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmrc7t.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/vf/adobe/times/ptmr8c.vf
+INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmr7t.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/vf/adobe/times/ptmb7t.vf
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
-INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmr7t.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/vf/adobe/times/ptmb7t.vf
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
+INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm
 INPUT the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.aux
 INPUT ./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.out
 INPUT ./the-stewardship-pattern-maintaining-executable-intelligence-across-agent-loops.out
@@ -324,6 +327,7 @@ INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb
+INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/urw/times/utmri8a.pfb
